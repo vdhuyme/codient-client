@@ -1,0 +1,33 @@
+{
+  "name": "Vo Duc Huy Portfolio",
+  "short_name": "Vo Duc Huy",
+  "description": "Showcasing the work and skills of Vo Duc Huy, a passionate web developer.",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#fff",
+  "background_color": "#fff",
+  "icons": [
+    {
+      "src": "/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "author": "Vo Duc Huy",
+  "version": "1.0.1",
+  "categories": ["portfolio", "development"],
+  "keywords": ["web developer", "software engineer", "portfolio", "projects", "frontend", "backend"],
+  "lang": "en",
+  "dir": "ltr",
+  "orientation": "any",
+  "related_applications": [
+    {
+      "platform": "web"
+    }
+  ]
+}
