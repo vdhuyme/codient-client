@@ -1,6 +1,5 @@
 import { toast } from 'sonner'
 import AboutImg from '@/assets/profile.png'
-import Info from './Info'
 import './about.css'
 import { motion } from 'framer-motion'
 
@@ -21,8 +20,6 @@ const About = () => {
         <img src={AboutImg} alt="Vo Duc Huy - Software Engineer" className="about__img" />
 
         <div className="about__data">
-          <Info />
-
           <motion.p
             className="about__description"
             initial="hidden"

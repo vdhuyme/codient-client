@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import './header.css'
-import ThemeProvider from '../theme-provider/theme-provider'
+import ThemeSwitch from '../theme-switch/theme-switch'
 import { Link } from 'react-router-dom'
 
 const Header = () => {
@@ -52,7 +52,7 @@ const Header = () => {
               </a>
             </li>
 
-            <ThemeProvider />
+            <ThemeSwitch />
           </ul>
 
           <i className="uil uil-times nav__close" onClick={() => setToggle(false)}></i>
