@@ -108,7 +108,6 @@ const Contact = () => {
       <span className="section__subtitle">Feel free to reach out</span>
 
       <div className="contact__container container grid">
-        {/* Contact methods */}
         <div className="contact__content">
           <h3 className="contact__title">Reach me directly</h3>
 
@@ -128,7 +127,6 @@ const Contact = () => {
           </div>
         </div>
 
-        {/* Contact form */}
         <div className="contact__content">
           <h3 className="contact__title">Send me a message</h3>
 

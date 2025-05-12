@@ -8,8 +8,7 @@ const Qualification = () => {
       icon: 'uil-graduation-cap',
       title: 'Information Technology Engineers',
       subtitle: 'Can Tho University - GPA 3.24',
-      date: '09/2019 - 05/2024',
-      position: 'left'
+      date: '09/2019 - 05/2024'
     },
     {
       id: 2,
@@ -17,8 +16,7 @@ const Qualification = () => {
       icon: 'uil-award',
       title: 'TOEIC 600',
       subtitle: '(ETS – Educational Testing Service)',
-      date: '01/2024 - 01/2026',
-      position: 'right'
+      date: '01/2024 - 01/2026'
     }
   ]
 
@@ -30,7 +28,7 @@ const Qualification = () => {
       <div className="qualification__container container">
         <div className="qualification__timeline">
           {qualifications.map((qualification) => (
-            <div key={qualification.id} className={`qualification__item ${qualification.position}`}>
+            <div key={qualification.id} className="qualification__item">
               <div className="qualification__content-box">
                 <div className="qualification__header">
                   <i className={`uil ${qualification.icon} qualification__icon`}></i>
