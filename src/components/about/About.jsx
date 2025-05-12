@@ -1,6 +1,5 @@
 import { toast } from 'sonner'
 import AboutImg from '@/assets/profile.png'
-import Info from './Info'
 import './about.css'
 import { motion } from 'framer-motion'
 
@@ -13,7 +12,7 @@ const About = () => {
     'With a strong passion for technology, I am dedicated to advancing my expertise and contributing to the development of high-performing, scalable solutions. I value collaboration and am committed to delivering impactful products that drive meaningful results.'
 
   return (
-    <section id="about" className="abount section">
+    <section id="about" className="about section">
       <h3 className="section__title">About Me</h3>
       <span className="section__subtitle">Get to Know Me</span>
 
@@ -21,8 +20,6 @@ const About = () => {
         <img src={AboutImg} alt="Vo Duc Huy - Software Engineer" className="about__img" />
 
         <div className="about__data">
-          <Info />
-
           <motion.p
             className="about__description"
             initial="hidden"
@@ -54,7 +51,7 @@ const About = () => {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
-            Download CV
+            Resume
           </motion.a>
         </div>
       </div>

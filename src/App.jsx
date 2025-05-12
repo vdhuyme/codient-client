@@ -22,12 +22,7 @@ function App() {
 
       <ScrollTop />
 
-      <Toaster
-        richColors
-        toastOptions={{
-          className: 'toast'
-        }}
-      />
+      <Toaster richColors />
     </Router>
   )
 }
