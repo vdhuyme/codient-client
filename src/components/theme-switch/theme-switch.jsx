@@ -12,7 +12,7 @@ const ThemeSwitch = () => {
       title: 'Dark'
     },
     system: {
-      icon: 'adjust',
+      icon: 'adjust-half',
       title: 'System'
     }
   }

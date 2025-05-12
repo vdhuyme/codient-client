@@ -151,87 +151,85 @@ const Portfolio = () => {
   }
 
   return (
-    <div style={{ overflowX: 'hidden' }}>
-      <AnimatePresence mode="wait">
+    <AnimatePresence mode="wait">
+      <motion.div
+        key="welcome-overlay"
+        initial={{ height: '100vh' }}
+        animate={{ height: 0 }}
+        exit={{ height: 0 }}
+        transition={{
+          duration: 0.9,
+          ease: [0.76, 0, 0.24, 1],
+          delay: 1.5
+        }}
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          background: `linear-gradient(135deg, ${theme.primaryColor} 0%, ${theme.secondaryColor} 100%)`,
+          zIndex: 999,
+          overflow: 'hidden',
+          backdropFilter: 'blur(10px)'
+        }}
+      >
+        {renderSeasonalElements()}
         <motion.div
-          key="welcome-overlay"
-          initial={{ height: '100vh' }}
-          animate={{ height: 0 }}
-          exit={{ height: 0 }}
-          transition={{
-            duration: 0.9,
-            ease: [0.76, 0, 0.24, 1],
-            delay: 1.5
-          }}
+          key="welcome-message-container"
+          initial={{ opacity: 1 }}
+          animate={{ opacity: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4, delay: 1 }}
           style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            background: `linear-gradient(135deg, ${theme.primaryColor} 0%, ${theme.secondaryColor} 100%)`,
-            zIndex: 999,
-            overflow: 'hidden',
-            backdropFilter: 'blur(10px)'
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%',
+            color: theme.textColor,
+            fontWeight: 'bold',
+            textShadow: '0 2px 10px rgba(0,0,0,0.1)'
           }}
         >
-          {renderSeasonalElements()}
-          <motion.div
-            key="welcome-message-container"
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4, delay: 1 }}
+          <WelcomeMessage />
+        </motion.div>
+      </motion.div>
+
+      <motion.div key="main-content" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+        <div>
+          <motion.div key="home-section" style={{ y: parallaxY2 }}>
+            <Home />
+          </motion.div>
+
+          <ScrollAnimationWrapper key="about-section" delay={0.1}>
+            <About />
+          </ScrollAnimationWrapper>
+
+          <ScrollAnimationWrapper key="experience-section" delay={0.2}>
+            <Experience />
+          </ScrollAnimationWrapper>
+
+          <ScrollAnimationWrapper key="skill-section" delay={0.3}>
+            <Skill />
+          </ScrollAnimationWrapper>
+
+          <ScrollAnimationWrapper key="qualification-section" delay={0.4}>
+            <Qualification />
+          </ScrollAnimationWrapper>
+
+          <ScrollAnimationWrapper key="contact-section" delay={0.5}>
+            <Contact />
+          </ScrollAnimationWrapper>
+        </div>
+
+        <motion.div key="background-gradient" style={{ y: parallaxY3 }}>
+          <div
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '100%',
-              color: theme.textColor,
-              fontWeight: 'bold',
-              textShadow: '0 2px 10px rgba(0,0,0,0.1)'
+              background: `radial-gradient(circle at 70% 20%, ${theme.primaryColor} 0%, transparent 70%)`
             }}
-          >
-            <WelcomeMessage />
-          </motion.div>
+          />
         </motion.div>
-
-        <motion.div key="main-content" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-          <div>
-            <motion.div key="home-section" style={{ y: parallaxY2 }}>
-              <Home />
-            </motion.div>
-
-            <ScrollAnimationWrapper key="about-section" delay={0.1}>
-              <About />
-            </ScrollAnimationWrapper>
-
-            <ScrollAnimationWrapper key="experience-section" delay={0.2}>
-              <Experience />
-            </ScrollAnimationWrapper>
-
-            <ScrollAnimationWrapper key="skill-section" delay={0.3}>
-              <Skill />
-            </ScrollAnimationWrapper>
-
-            <ScrollAnimationWrapper key="qualification-section" delay={0.4}>
-              <Qualification />
-            </ScrollAnimationWrapper>
-
-            <ScrollAnimationWrapper key="contact-section" delay={0.5}>
-              <Contact />
-            </ScrollAnimationWrapper>
-          </div>
-
-          <motion.div key="background-gradient" style={{ y: parallaxY3 }}>
-            <div
-              style={{
-                background: `radial-gradient(circle at 70% 20%, ${theme.primaryColor} 0%, transparent 70%)`
-              }}
-            />
-          </motion.div>
-        </motion.div>
-      </AnimatePresence>
-    </div>
+      </motion.div>
+    </AnimatePresence>
   )
 }
 

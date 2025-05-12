@@ -217,7 +217,7 @@ body.modal-open {
 }
 
 .modal__content {
-  max-height: calc(90vh - 60px);
+  max-height: 70vh;
   overflow-y: auto;
   overscroll-behavior: contain;
   touch-action: pan-y;
