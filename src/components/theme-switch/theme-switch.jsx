@@ -5,15 +5,15 @@ const ThemeSwitch = () => {
   const themes = {
     light: {
       icon: 'sun',
-      title: 'Light Mode'
+      title: 'Light'
     },
     dark: {
       icon: 'moon',
-      title: 'Dark Mode'
+      title: 'Dark'
     },
     system: {
-      icon: 'desktop',
-      title: 'System Mode'
+      icon: 'adjust',
+      title: 'System'
     }
   }
 

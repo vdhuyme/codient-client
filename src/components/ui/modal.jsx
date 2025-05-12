@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 const Modal = ({ isOpen, onClose, title, children, size = 'medium', closeOnOutsideClick = true }) => {
   const modalRef = useRef(null)
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 576
 
   useEffect(() => {
     const handleEscKey = (e) => {
@@ -14,7 +15,16 @@ const Modal = ({ isOpen, onClose, title, children, size = 'medium', closeOnOutsi
     }
 
     window.addEventListener('keydown', handleEscKey)
-    return () => window.removeEventListener('keydown', handleEscKey)
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+
+    return () => {
+      window.removeEventListener('keydown', handleEscKey)
+      document.body.style.overflow = ''
+    }
   }, [isOpen, onClose])
 
   const handleOutsideClick = (e) => {
@@ -26,15 +36,30 @@ const Modal = ({ isOpen, onClose, title, children, size = 'medium', closeOnOutsi
   const modalContent = (
     <AnimatePresence>
       {isOpen && (
-        <div className="modal__overlay" onClick={handleOutsideClick}>
+        <motion.div
+          className="modal__overlay"
+          onClick={handleOutsideClick}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        >
           <motion.div
             className={`modal__container modal__container--${size}`}
             ref={modalRef}
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            drag={isMobile ? 'y' : false}
+            dragConstraints={{ top: 0, bottom: 0 }}
+            onDragEnd={(e, info) => {
+              if (isMobile && info.offset.y > 100) {
+                onClose()
+              }
+            }}
           >
+            {isMobile && <div className="modal__drag-handle" />}
             <div className="modal__header">
               <h3 className="modal__title">{title}</h3>
               <button className="modal__close" onClick={onClose} aria-label="Close modal">
@@ -43,7 +68,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'medium', closeOnOutsi
             </div>
             <div className="modal__content">{children}</div>
           </motion.div>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>
   )

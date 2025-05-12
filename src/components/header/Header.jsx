@@ -6,6 +6,15 @@ import { Link } from 'react-router-dom'
 const Header = () => {
   const [toggle, setToggle] = useState(false)
 
+  const navItems = [
+    { label: 'Home', icon: 'uil-house-user', link: '#home' },
+    { label: 'About', icon: 'uil-user-circle', link: '#about' },
+    { label: 'Experience', icon: 'uil-briefcase', link: '#experience' },
+    { label: 'Skills', icon: 'uil-brackets-curly', link: '#skill' },
+    { label: 'Qualifications', icon: 'uil-award', link: '#qualification' },
+    { label: 'Contact', icon: 'uil-comment-message', link: '#contact' }
+  ]
+
   return (
     <header className="header">
       <nav className="nav container">
@@ -15,43 +24,13 @@ const Header = () => {
 
         <div className={toggle ? 'nav__menu show__menu' : 'nav__menu'}>
           <ul className="nav__list">
-            <li className="nav__item">
-              <a href="#home" className="nav__link">
-                <i className="uil uil-estate nav__icon"></i> Home
-              </a>
-            </li>
-
-            <li className="nav__item">
-              <a href="#about" className="nav__link">
-                <i className="uil uil-user nav__icon"></i> About
-              </a>
-            </li>
-
-            <li className="nav__item">
-              <a href="#experience" className="nav__link">
-                <i className="uil uil-shield-check nav__icon"></i> Experience
-              </a>
-            </li>
-
-            <li className="nav__item">
-              <a href="#skill" className="nav__link">
-                <i className="uil uil-file-alt nav__icon"></i> Skills
-              </a>
-            </li>
-
-            <li className="nav__item">
-              <a href="#qualification" className="nav__link">
-                <i className="uil uil-check-circle nav__icon"></i>
-                Qualifications
-              </a>
-            </li>
-
-            <li className="nav__item">
-              <a href="#contact" className="nav__link">
-                <i className="uil uil-message nav__icon"></i> Contact
-              </a>
-            </li>
-
+            {navItems.map((item, index) => (
+              <li key={index} className="nav__item">
+                <a href={item.link} className="nav__link">
+                  <i className={`uil ${item.icon} nav__icon`}></i> {item.label}
+                </a>
+              </li>
+            ))}
             <ThemeSwitch />
           </ul>
 
