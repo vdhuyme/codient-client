@@ -124,7 +124,7 @@ const Contact = () => {
           <form ref={form} onSubmit={sendContact} className="contact__form">
             <div className="contact__form__div">
               <label htmlFor="name" className="contact__form__tag">
-                Name
+                Name<span className="require__label">*</span>
               </label>
 
               <input
@@ -141,7 +141,7 @@ const Contact = () => {
 
             <div className="contact__form__div">
               <label htmlFor="" className="contact__form__tag">
-                Email
+                Email<span className="require__label">*</span>
               </label>
 
               <input
@@ -158,7 +158,7 @@ const Contact = () => {
 
             <div className="contact__form__div contact__form__area">
               <label htmlFor="" className="contact__form__tag">
-                Message
+                Message<span className="require__label">*</span>
               </label>
 
               <textarea

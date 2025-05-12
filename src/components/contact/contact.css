@@ -124,6 +124,10 @@
   margin-right: 0.5rem;
 }
 
+.require__label {
+  color: red;
+}
+
 @keyframes rotation {
   0% {
     transform: rotate(0deg);

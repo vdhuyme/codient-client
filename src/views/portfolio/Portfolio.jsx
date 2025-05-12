@@ -16,14 +16,14 @@ const fadeInUpVariants = {
     transition: {
       duration: 0.8,
       delay: i * 0.1,
-      ease: [0.25, 0.1, 0.25, 1]
+      ease: [0.4, 0, 0.2, 1]
     }
   })
 }
 
 const ScrollAnimationWrapper = ({ children, className = '', delay = 0 }) => {
   const [ref, inView] = useInView({
-    triggerOnce: false,
+    triggerOnce: true,
     threshold: 0.15,
     rootMargin: '-50px 0px'
   })
@@ -40,8 +40,8 @@ const Portfolio = () => {
   const [mounted, setMounted] = useState(false)
   const { scrollY } = useScroll()
 
-  const parallaxY2 = useTransform(scrollY, [0, 1000], [0, -100])
-  const parallaxY3 = useTransform(scrollY, [0, 1000], [0, -50])
+  const parallaxY2 = useTransform(scrollY, [0, 1000], [0, -100], { clamp: true })
+  const parallaxY3 = useTransform(scrollY, [0, 1000], [0, -50], { clamp: true })
 
   useEffect(() => {
     const date = new Date()

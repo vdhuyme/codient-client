@@ -1,11 +1,24 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const Modal = ({ isOpen, onClose, title, children, size = 'medium', closeOnOutsideClick = true }) => {
   const modalRef = useRef(null)
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 576
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 576)
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+    }
+  }, [])
 
   useEffect(() => {
     const handleEscKey = (e) => {
@@ -15,6 +28,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'medium', closeOnOutsi
     }
 
     window.addEventListener('keydown', handleEscKey)
+
     if (isOpen) {
       document.body.classList.add('modal-open')
     } else {
@@ -33,37 +47,68 @@ const Modal = ({ isOpen, onClose, title, children, size = 'medium', closeOnOutsi
     }
   }
 
+  const modalVariants = {
+    initial: { y: '100%', opacity: 0 },
+    animate: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: 'tween',
+        duration: 0.3,
+        ease: 'easeOut'
+      }
+    },
+    exit: {
+      y: '100%',
+      opacity: 0,
+      transition: {
+        type: 'tween',
+        duration: 0.2,
+        ease: 'easeIn'
+      }
+    }
+  }
+
+  const overlayVariants = {
+    initial: { opacity: 0 },
+    animate: {
+      opacity: 1,
+      transition: { duration: 0.3 }
+    },
+    exit: {
+      opacity: 0,
+      transition: { duration: 0.2 }
+    }
+  }
+
   const modalContent = (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {isOpen && (
         <motion.div
           className="modal__overlay"
           onClick={handleOutsideClick}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          variants={overlayVariants}
         >
           <motion.div
             className={`modal__container modal__container--${size}`}
             ref={modalRef}
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            variants={modalVariants}
+            drag={isMobile ? 'y' : false}
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={0.7}
+            onDragEnd={(e, info) => {
+              if (isMobile && info.offset.y > 100) {
+                onClose()
+              }
+            }}
           >
-            {isMobile && (
-              <motion.div
-                className="modal__drag-handle"
-                drag="y"
-                dragConstraints={{ top: 0, bottom: 0 }}
-                onDragEnd={(e, info) => {
-                  if (info.offset.y > 100) {
-                    onClose()
-                  }
-                }}
-              />
-            )}
+            {isMobile && <div className="modal__drag-handle" />}
 
             <div className="modal__header">
               <h3 className="modal__title">{title}</h3>
