@@ -1,92 +1,33 @@
 .qualification__container {
-  max-width: 768px;
   margin: 0 auto;
 }
 
 .qualification__timeline {
-  position: relative;
-  max-width: 1200px;
+  display: flex;
+  flex-wrap: wrap;
   margin: 0 auto;
 }
 
-.qualification__timeline::after {
-  content: '';
-  position: absolute;
-  width: 1px;
-  background-color: var(--text-color);
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  margin-left: -1px;
-}
-
 .qualification__item {
-  padding: 10px 40px;
+  padding: 10px 20px;
   position: relative;
   width: 50%;
   box-sizing: border-box;
 }
 
-.qualification__item::after {
-  content: '';
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  background-color: var(--text-color);
-  border-radius: 50%;
-  top: 25px;
-  z-index: 1;
-}
-
 .left {
-  left: 0;
+  padding-right: 15px;
 }
 
 .right {
-  left: 50%;
-}
-
-.left::before {
-  position: absolute;
-  top: 22px;
-  width: 0;
-  height: 0;
-  right: 30px;
-  border: medium solid var(--container-color);
-  border-width: 10px 0 10px 10px;
-  border-color: transparent transparent transparent var(--container-color);
-  z-index: 1;
-}
-
-.right::before {
-  position: absolute;
-  top: 22px;
-  width: 0;
-  height: 0;
-  left: 30px;
-  border: medium solid var(--container-color);
-  border-width: 10px 10px 10px 0;
-  border-color: transparent var(--container-color) transparent transparent;
-  z-index: 1;
-}
-
-.right::after {
-  left: -8px;
-}
-
-.left::after {
-  right: -8px;
+  padding-left: 15px;
 }
 
 .qualification__content-box {
   padding: 1.5rem;
   background-color: var(--container-color);
-  border-radius: 0.75rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  position: relative;
-  transition:
-    transform 0.3s,
-    box-shadow 0.3s;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .qualification__header {
@@ -129,30 +70,15 @@
 }
 
 @media screen and (max-width: 768px) {
-  .qualification__timeline::after {
-    left: 31px;
-  }
-
   .qualification__item {
     width: 100%;
-    padding-left: 70px;
-    padding-right: 25px;
+    padding: 10px 15px;
   }
 
-  .qualification__item::before {
-    left: 60px;
-    border: medium solid var(--container-color);
-    border-width: 10px 10px 10px 0;
-    border-color: transparent var(--container-color) transparent transparent;
-  }
-
-  .left::after,
-  .right::after {
-    left: 23px;
-  }
-
+  .left,
   .right {
-    left: 0%;
+    padding-left: 15px;
+    padding-right: 15px;
   }
 }
 
@@ -165,10 +91,5 @@
 @media screen and (max-width: 350px) {
   .qualification__content-box {
     padding: 1rem;
-  }
-
-  .qualification__item {
-    padding-left: 60px;
-    padding-right: 15px;
   }
 }

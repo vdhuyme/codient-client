@@ -150,7 +150,7 @@ img {
   background-color: var(--title-color);
   color: var(--container-color);
   padding: 1.25rem 2rem;
-  border-radius: 1rem;
+  border-radius: 1.25rem;
   font-weight: var(--font-medium);
 }
 
@@ -238,13 +238,12 @@ body.modal-open {
 
 .modal__container {
   background-color: var(--container-color);
-  border-radius: 1rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  max-height: 90vh;
-  overflow-y: auto;
+  border-radius: 1.25rem;
+  max-width: 90%;
   width: 100%;
-  overscroll-behavior: contain;
-  touch-action: auto;
+  max-height: 90vh;
+  overflow: hidden;
+  position: relative;
 }
 
 .modal__container--small {
@@ -298,11 +297,13 @@ body.modal-open {
 }
 
 .modal__drag-handle {
-  width: 36px;
-  height: 4px;
-  background-color: rgba(0, 0, 0, 0.15);
-  border-radius: 999px;
-  margin: 0.5rem auto 0.25rem auto;
+  width: 40px;
+  height: 5px;
+  background-color: #ccc;
+  border-radius: 3px;
+  margin: 0.5rem auto;
+  cursor: grab;
+  touch-action: pan-y;
 }
 
 [data-theme='dark'] .modal__drag-handle {
@@ -316,7 +317,7 @@ body.modal-open {
   }
 
   .modal__container {
-    border-radius: 1rem 1rem 0 0;
+    border-radius: 1.25rem 1.25rem 0 0;
     width: 100%;
     max-width: 100%;
     margin: 0;

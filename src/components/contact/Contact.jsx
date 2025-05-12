@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { contactSchema } from './validation'
 import { sendEmail } from './email-service'
 import { motion } from 'framer-motion'
+import FormField from '../ui/form-field'
 
 const Contact = () => {
   const form = useRef()
@@ -84,98 +85,86 @@ const Contact = () => {
     }
   }
 
+  const contactMethods = [
+    {
+      icon: 'bx bx-mail-send',
+      title: 'Email',
+      data: 'voduchuy2001@gmail.com',
+      href: 'mailto:voduchuy2001@gmail.com',
+      buttonText: 'Write me'
+    },
+    {
+      icon: 'bx bx-phone',
+      title: 'Phone number',
+      data: '(+84) 962 785 101',
+      href: 'tel:0962785101',
+      buttonText: 'Call me'
+    }
+  ]
+
   return (
     <section id="contact" className="contact section">
-      <h2 className="section__title">Get In Touch</h2>
-      <span className="section__subtitle">Contact For Work</span>
+      <h2 className="section__title">Let&apos;s Connect</h2>
+      <span className="section__subtitle">Feel free to reach out</span>
 
       <div className="contact__container container grid">
+        {/* Contact methods */}
         <div className="contact__content">
-          <h3 className="contact__title">Talk to me</h3>
+          <h3 className="contact__title">Reach me directly</h3>
 
           <div className="contact__info">
-            <div className="contact__card">
-              <i className="bx bx-mail-send contact__card__icon"></i>
+            {contactMethods.map((method, index) => (
+              <div className="contact__card" key={index}>
+                <i className={`${method.icon} contact__card__icon`}></i>
 
-              <h3 className="contact__card__title">Email</h3>
-              <span className="contact__card__data">voduchuy2001@gmail.com</span>
-              <a href="mailto:voduchuy2001@gmail.com" className="contact__card__button">
-                Write me
-                <i className="bx bx-right-arrow-alt contact__button__icon"></i>
-              </a>
-            </div>
-
-            <div className="contact__card">
-              <i className="bx bx-phone contact__card__icon"></i>
-
-              <h3 className="contact__card__title">Phone nmber</h3>
-              <span className="contact__card__data">(+84) 962 785 101</span>
-              <a href="callto:0962785101" className="contact__card__button">
-                Call me
-                <i className="bx bx-right-arrow-alt contact__button__icon"></i>
-              </a>
-            </div>
+                <h3 className="contact__card__title">{method.title}</h3>
+                <span className="contact__card__data">{method.data}</span>
+                <a href={method.href} className="contact__card__button">
+                  {method.buttonText}
+                  <i className="bx bx-right-arrow-alt contact__button__icon"></i>
+                </a>
+              </div>
+            ))}
           </div>
         </div>
 
+        {/* Contact form */}
         <div className="contact__content">
-          <h3 className="contact__title">Compose your message for me</h3>
+          <h3 className="contact__title">Send me a message</h3>
 
-          <form ref={form} onSubmit={sendContact} className="contact__form">
-            <div className="contact__form__div">
-              <label htmlFor="name" className="contact__form__tag">
-                Name<span className="require__label">*</span>
-              </label>
+          <form ref={form} onSubmit={sendContact} className="contact__form" autoComplete="off">
+            <FormField
+              id="name"
+              name="name"
+              label="Full Name"
+              value={formData.name}
+              onChange={handleOnChange}
+              error={errors.name}
+              placeholder="John Doe"
+            />
+            <FormField
+              id="email"
+              name="email"
+              label="Email Address"
+              value={formData.email}
+              onChange={handleOnChange}
+              error={errors.email}
+              placeholder="example@email.com"
+            />
+            <FormField
+              id="message"
+              name="message"
+              label="Your Message"
+              value={formData.message}
+              onChange={handleOnChange}
+              error={errors.message}
+              placeholder="Type your message here..."
+              isTextarea
+            />
 
-              <input
-                name="name"
-                id="name"
-                value={formData.name}
-                onChange={handleOnChange}
-                type="text"
-                placeholder="Enter your name"
-                className="contact__form__input"
-              />
-              {errors.name && <span className="text__error">{errors.name}</span>}
-            </div>
-
-            <div className="contact__form__div">
-              <label htmlFor="" className="contact__form__tag">
-                Email<span className="require__label">*</span>
-              </label>
-
-              <input
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleOnChange}
-                type="text"
-                placeholder="Enter your email"
-                className="contact__form__input"
-              />
-              {errors.email && <span className="text__error">{errors.email}</span>}
-            </div>
-
-            <div className="contact__form__div contact__form__area">
-              <label htmlFor="" className="contact__form__tag">
-                Message<span className="require__label">*</span>
-              </label>
-
-              <textarea
-                id="message"
-                name="message"
-                value={formData.message}
-                onChange={handleOnChange}
-                cols="20"
-                rows="10"
-                placeholder="Enter your message"
-                className="contact__form__input"
-              ></textarea>
-              {errors.message && <span className="text__error">{errors.message}</span>}
-            </div>
-
-            <motion.button disabled={isLoading} className="button button__flex" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-              {isLoading && <span className="loader"></span>} Send Message
+            <motion.button disabled={isLoading} className="button button__flex" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+              {isLoading && <span className="loader" />}
+              Send Message
             </motion.button>
           </form>
         </div>
