@@ -94,6 +94,10 @@
   .experience__container {
     margin-left: var(--mb-1-5);
   }
+
+  .experience-modal__details {
+    padding: 0.75rem 0.75rem var(--mb-1);
+  }
 }
 
 @media screen and (max-width: 576px) {

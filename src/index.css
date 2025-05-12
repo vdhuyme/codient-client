@@ -210,6 +210,19 @@ img {
   }
 }
 
+body.modal-open {
+  overflow: hidden;
+  height: 100%;
+  position: relative;
+}
+
+.modal__content {
+  max-height: calc(90vh - 60px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+
 .modal__overlay {
   position: fixed;
   inset: 0;
@@ -228,6 +241,8 @@ img {
   max-height: 90vh;
   overflow-y: auto;
   width: 100%;
+  overscroll-behavior: contain;
+  touch-action: auto;
 }
 
 .modal__container--small {

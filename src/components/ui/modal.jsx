@@ -16,14 +16,14 @@ const Modal = ({ isOpen, onClose, title, children, size = 'medium', closeOnOutsi
 
     window.addEventListener('keydown', handleEscKey)
     if (isOpen) {
-      document.body.style.overflow = 'hidden'
+      document.body.classList.add('modal-open')
     } else {
-      document.body.style.overflow = ''
+      document.body.classList.remove('modal-open')
     }
 
     return () => {
       window.removeEventListener('keydown', handleEscKey)
-      document.body.style.overflow = ''
+      document.body.classList.remove('modal-open')
     }
   }, [isOpen, onClose])
 
@@ -51,21 +51,27 @@ const Modal = ({ isOpen, onClose, title, children, size = 'medium', closeOnOutsi
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            drag={isMobile ? 'y' : false}
-            dragConstraints={{ top: 0, bottom: 0 }}
-            onDragEnd={(e, info) => {
-              if (isMobile && info.offset.y > 100) {
-                onClose()
-              }
-            }}
           >
-            {isMobile && <div className="modal__drag-handle" />}
+            {isMobile && (
+              <motion.div
+                className="modal__drag-handle"
+                drag="y"
+                dragConstraints={{ top: 0, bottom: 0 }}
+                onDragEnd={(e, info) => {
+                  if (info.offset.y > 100) {
+                    onClose()
+                  }
+                }}
+              />
+            )}
+
             <div className="modal__header">
               <h3 className="modal__title">{title}</h3>
               <button className="modal__close" onClick={onClose} aria-label="Close modal">
                 <i className="bx bx-x"></i>
               </button>
             </div>
+
             <div className="modal__content">{children}</div>
           </motion.div>
         </motion.div>

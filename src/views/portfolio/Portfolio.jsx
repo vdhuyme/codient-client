@@ -151,7 +151,7 @@ const Portfolio = () => {
   }
 
   return (
-    <div className="overflow-x-hidden">
+    <div style={{ overflowX: 'hidden' }}>
       <AnimatePresence mode="wait">
         <motion.div
           key="welcome-overlay"
