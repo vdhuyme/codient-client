@@ -83,6 +83,18 @@ textarea {
   font-style: var(--normal-font-size);
 }
 
+html,
+body {
+  overflow: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
+
 body {
   background-color: var(--body-color);
   color: var(--text-color);
