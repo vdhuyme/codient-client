@@ -2,9 +2,9 @@ import { useState } from 'react'
 import './contact.css'
 import { z } from 'zod'
 import { useRef } from 'react'
-import { toast } from 'sonner'
-import { contactSchema } from './validation'
-import { sendEmail } from './email-service'
+import { toast } from 'react-hot-toast'
+import { contactSchema } from './validation.js'
+import { sendEmail } from './email-service.js'
 import { motion } from 'framer-motion'
 import FormField from '../ui/form-field'
 
@@ -36,14 +36,12 @@ const Contact = () => {
   }
 
   const handleValidationErrors = (error) => {
-    if (error instanceof z.ZodError) {
-      error.errors.forEach((err) => {
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          [err.path[0]]: err.message
-        }))
-      })
-    }
+    error.errors.forEach((err) => {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        [err.path[0]]: err.message
+      }))
+    })
   }
 
   const handleSubmitSuccess = (response) => {
@@ -78,7 +76,9 @@ const Contact = () => {
       handleSubmitSuccess(response)
     } catch (error) {
       setIsLoading(false)
-      handleValidationErrors(error)
+      if (error instanceof z.ZodError) {
+        handleValidationErrors(error)
+      }
       if (error.response) {
         handleSubmitError(error)
       }
@@ -109,8 +109,6 @@ const Contact = () => {
 
       <div className="contact__container container grid">
         <div className="contact__content">
-          <h3 className="contact__title">Reach me directly</h3>
-
           <div className="contact__info">
             {contactMethods.map((method, index) => (
               <div className="contact__card" key={index}>
@@ -128,8 +126,6 @@ const Contact = () => {
         </div>
 
         <div className="contact__content">
-          <h3 className="contact__title">Send me a message</h3>
-
           <form ref={form} onSubmit={sendContact} className="contact__form" autoComplete="off">
             <FormField
               id="name"
@@ -161,7 +157,7 @@ const Contact = () => {
             />
 
             <motion.button disabled={isLoading} className="button button__flex" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-              {isLoading && <span className="loader" />}
+              {isLoading && <span className="button__loader" />}
               Send Message
             </motion.button>
           </form>

@@ -103,10 +103,6 @@ const Portfolio = () => {
 
   const theme = seasonThemes[currentSeason]
 
-  const renderSeasonalElements = () => {
-    return null
-  }
-
   const WelcomeMessage = () => {
     const [ref, inView] = useInView({
       triggerOnce: false,
@@ -151,7 +147,7 @@ const Portfolio = () => {
   }
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence>
       <motion.div
         key="welcome-overlay"
         initial={{ height: '100vh' }}
@@ -173,7 +169,6 @@ const Portfolio = () => {
           backdropFilter: 'blur(10px)'
         }}
       >
-        {renderSeasonalElements()}
         <motion.div
           key="welcome-message-container"
           initial={{ opacity: 1 }}

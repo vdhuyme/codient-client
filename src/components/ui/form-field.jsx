@@ -1,6 +1,6 @@
-const FormField = ({ id, name, label, value, onChange, error, placeholder, isTextarea = false }) => (
-  <div className={`contact__form__div ${isTextarea ? 'contact__form__area' : ''}`}>
-    <label htmlFor={id} className="contact__form__tag">
+const FormField = ({ id, name, label, value, onChange, error, placeholder, isTextarea = false, ...props }) => (
+  <div className={`form__div ${isTextarea ? 'form__area' : ''}`}>
+    <label htmlFor={id} className="form__tag">
       {label}
       <span className="require__label">*</span>
     </label>
@@ -14,10 +14,11 @@ const FormField = ({ id, name, label, value, onChange, error, placeholder, isTex
         rows="10"
         cols="20"
         placeholder={placeholder}
-        className="contact__form__input"
+        className="form__input"
+        {...props}
       />
     ) : (
-      <input id={id} name={name} type="text" value={value} onChange={onChange} placeholder={placeholder} className="contact__form__input" />
+      <input id={id} name={name} type="text" value={value} onChange={onChange} placeholder={placeholder} className="form__input" {...props} />
     )}
 
     {error && <span className="text__error">{error}</span>}

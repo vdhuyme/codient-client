@@ -1,11 +1,11 @@
-import { toast } from 'sonner'
+import toast from 'react-hot-toast'
 import AboutImg from '@/assets/profile.png'
 import './about.css'
 import { motion } from 'framer-motion'
 
 const About = () => {
   const handleDownloadResume = () => {
-    toast.warning('The resume is being updated')
+    toast.error('The resume is being updated')
   }
 
   const description =
@@ -13,7 +13,7 @@ const About = () => {
 
   return (
     <section id="about" className="about section">
-      <h3 className="section__title">About Me</h3>
+      <h2 className="section__title">About Me</h2>
       <span className="section__subtitle">Get to Know Me</span>
 
       <div className="about__container container grid">

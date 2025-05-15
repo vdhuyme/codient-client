@@ -1,4 +1,11 @@
-.not_found_content {
+.not__found {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.not__found__content {
   grid-template-columns: 116px repeat(2, 1fr);
   padding-top: 5.5rem;
   column-gap: 2rem;

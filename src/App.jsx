@@ -1,28 +1,36 @@
-import { Toaster } from 'sonner'
-import Footer from './components/footer/Footer'
-import Header from './components/header/Header'
-import ScrollTop from './components/scroll-top/ScrollTop'
+import { Toaster } from 'react-hot-toast'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Portfolio from './views/portfolio/Portfolio'
 import NotFound from './components/not-found/NotFound'
+import Login from './views/login/Login'
+import PrivateRoute from './routes/private'
+import MainLayout from './components/layouts/main'
+import DashboardLayout from './components/layouts/Dashboard'
+import Index from './views/dashboard'
+import PublicRoute from './routes/public'
 
 function App() {
   return (
     <Router>
-      <Header />
+      <Routes>
+        <Route element={<MainLayout />}>
+          <Route element={<PublicRoute />}>
+            <Route path="/login" element={<Login />} />
+          </Route>
 
-      <main className="main">
-        <Routes>
           <Route path="/" element={<Portfolio />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </main>
+        </Route>
 
-      <Footer />
+        <Route element={<PrivateRoute />}>
+          <Route element={<DashboardLayout />}>
+            <Route path="/dashboard" element={<Index />} />
+          </Route>
+        </Route>
 
-      <ScrollTop />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
 
-      <Toaster richColors />
+      <Toaster position="top-right" />
     </Router>
   )
 }
