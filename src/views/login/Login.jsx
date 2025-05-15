@@ -6,6 +6,8 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { loginSchema } from './validation'
 import { z } from 'zod'
+import { useAuth } from '@/contexts/auth'
+import { useNavigate } from 'react-router-dom'
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false)
@@ -40,6 +42,8 @@ const Login = () => {
     })
   }
 
+  const { setAuthToken } = useAuth()
+  const navigate = useNavigate()
   const handleLogin = async (event) => {
     event.preventDefault()
     setIsLoading(true)
@@ -48,9 +52,8 @@ const Login = () => {
       loginSchema.parse(data)
       const { email, password } = data
       const { token } = await login({ email, password })
-      localStorage.setItem('access_token', token)
-      toast.success('Login success')
-      window.location.href = '/dashboard'
+      setAuthToken(token)
+      navigate('/dashboard')
     } catch (error) {
       setIsLoading(false)
       if (error instanceof z.ZodError) {

@@ -4,11 +4,11 @@ import './theme-switch.css'
 const ThemeSwitch = () => {
   const themes = {
     light: {
-      icon: 'sun',
+      icon: 'moon',
       title: 'Light'
     },
     dark: {
-      icon: 'moon',
+      icon: 'sun',
       title: 'Dark'
     },
     system: {

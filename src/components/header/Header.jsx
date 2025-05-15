@@ -2,9 +2,11 @@ import { useState } from 'react'
 import './header.css'
 import ThemeSwitch from '../theme-switch/theme-switch'
 import { Link } from 'react-router-dom'
+import { useAuth } from '@/contexts/auth'
 
 const Header = () => {
   const [toggle, setToggle] = useState(false)
+  const { token } = useAuth()
 
   const navItems = [
     { label: 'Home', icon: 'uil-house-user', link: '#home' },
@@ -18,7 +20,7 @@ const Header = () => {
   return (
     <header className="header">
       <nav className="nav container">
-        <Link to={'/'} className="nav__logo">
+        <Link to={token ? '/dashboard' : '/'} className="nav__logo">
           Vo Duc Huy
         </Link>
 
