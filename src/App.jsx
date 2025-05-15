@@ -6,7 +6,7 @@ import Login from './views/login/Login'
 import PrivateRoute from './routes/private'
 import MainLayout from './components/layouts/Main'
 import DashboardLayout from './components/layouts/Dashboard'
-import Index from './views/dashboard'
+import Index from './views/dashboard/Index'
 import PublicRoute from './routes/public'
 
 function App() {
