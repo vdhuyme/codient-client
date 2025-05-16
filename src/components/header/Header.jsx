@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/auth'
 
 const Header = () => {
   const [toggle, setToggle] = useState(false)
-  const { token } = useAuth()
+  const { isAuthenticated } = useAuth()
 
   const navItems = [
     { label: 'Home', icon: 'uil-house-user', link: '#home' },
@@ -20,7 +20,7 @@ const Header = () => {
   return (
     <header className="header">
       <nav className="nav container">
-        <Link to={token ? '/dashboard' : '/'} className="nav__logo">
+        <Link to={isAuthenticated ? '/dashboard' : '/'} className="nav__logo">
           Vo Duc Huy
         </Link>
 

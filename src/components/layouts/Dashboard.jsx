@@ -96,7 +96,7 @@ const DashboardLayout = () => {
     navigate('/')
   }
 
-  const { logout } = useAuth()
+  const { logout, authUser } = useAuth()
 
   return (
     <div className={`dashboard ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
@@ -120,8 +120,8 @@ const DashboardLayout = () => {
         <div className="sidebar__user">
           <img src="http://localhost:3009/src/assets/profile.png" alt="User" className="sidebar__user-img" />
           <div className="sidebar__user-info">
-            <h3>John Doe</h3>
-            <span>Administrator</span>
+            <h3>{authUser.name}</h3>
+            <span>{authUser.status}</span>
           </div>
         </div>
 

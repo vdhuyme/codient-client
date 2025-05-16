@@ -1,4 +1,4 @@
-import { login } from '@/api/auth'
+import { login, me } from '@/api/auth'
 import './login.css'
 import { toast } from 'react-hot-toast'
 import FormField from '../../components/ui/form-field'
@@ -53,6 +53,8 @@ const Login = () => {
       const { email, password } = data
       const { token } = await login({ email, password })
       setAuthToken(token)
+      const { user } = await me()
+      localStorage.setItem('auth_user', JSON.stringify(user))
       navigate('/dashboard')
     } catch (error) {
       setIsLoading(false)

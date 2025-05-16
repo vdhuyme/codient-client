@@ -5,10 +5,10 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL
 })
 
-const accessToken = localStorage.getItem('access_token')
-
 api.interceptors.request.use(
   (config) => {
+    const accessToken = localStorage.getItem('access_token')
+
     if (accessToken) {
       config.headers['Authorization'] = `Bearer ${accessToken}`
     }
@@ -24,6 +24,7 @@ api.interceptors.response.use(
     return response
   },
   async (error) => {
+    const accessToken = localStorage.getItem('access_token')
     if (error.status === UNAUTHORIZED && accessToken) {
       window.location.href = '/login'
     }

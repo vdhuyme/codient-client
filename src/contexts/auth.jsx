@@ -19,8 +19,9 @@ export const AuthProvider = ({ children }) => {
   }
 
   const isAuthenticated = !!token
+  const authUser = JSON.parse(localStorage.getItem('auth_user'))
 
-  return <AuthContext.Provider value={{ token, setAuthToken, logout, isAuthenticated }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ token, setAuthToken, logout, isAuthenticated, authUser }}>{children}</AuthContext.Provider>
 }
 
 export const useAuth = () => useContext(AuthContext)
