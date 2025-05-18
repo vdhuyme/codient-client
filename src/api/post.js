@@ -1,7 +1,7 @@
 import api from '@/utils/axios'
 
-export const getPublicPosts = async () => {
-  const response = await api.get('/posts')
+export const getPosts = async ({ page, limit, query, sort }) => {
+  const response = await api.get('/posts', { params: { page, limit, query, sort } })
   return response.data
 }
 

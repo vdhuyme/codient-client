@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
-import './dashboard.css'
+import './dashboard-layout.css'
+import 'react-quill-new/dist/quill.snow.css'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/auth'
+import { getStatusLabel } from '@/utils/base-status'
 
 const menuItems = [
   { label: 'Dashboard', icon: 'bx bx-chart', path: '/dashboard' },
@@ -16,16 +18,17 @@ const DashboardLayout = () => {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light')
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 576)
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    const stored = localStorage.getItem('sidebar_collapsed')
-    return stored === 'true'
+    return localStorage.getItem('sidebar_collapsed') === 'true'
   })
   const [isSidebarMobileOpen, setSidebarMobileOpen] = useState(false)
-  const [isOverlayActive, setOverlayActive] = useState(false)
+
+  const { logout, authUser } = useAuth()
+  const navigate = useNavigate()
+  const currentYear = new Date().getFullYear()
 
   const toggleSidebar = () => {
     if (isMobile) {
       setSidebarMobileOpen((prev) => !prev)
-      setOverlayActive((prev) => !prev)
     } else {
       setSidebarCollapsed((prev) => {
         localStorage.setItem('sidebar_collapsed', String(!prev))
@@ -37,45 +40,35 @@ const DashboardLayout = () => {
   const handleThemeChange = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light'
     setTheme(newTheme)
-
     if (newTheme === 'dark') {
       document.documentElement.setAttribute('data-theme', 'dark')
-      localStorage.setItem('theme', 'dark')
     } else {
       document.documentElement.removeAttribute('data-theme')
-      localStorage.setItem('theme', 'light')
     }
+    localStorage.setItem('theme', newTheme)
   }
 
-  // Set trạng thái mobile và xử lý lần đầu
-  useEffect(() => {
-    const isMobileView = window.innerWidth <= 576
-    setIsMobile(isMobileView)
-
-    if (isMobileView) {
-      setSidebarCollapsed(false)
-      setSidebarMobileOpen(false)
-      setOverlayActive(false)
-      localStorage.removeItem('sidebar_collapsed')
-    }
-  }, [])
-
-  // Theo dõi resize để cập nhật isMobile
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 576)
+      const isNowMobile = window.innerWidth <= 576
+      setIsMobile(isNowMobile)
+
+      if (isNowMobile) {
+        setSidebarCollapsed(false)
+        setSidebarMobileOpen(false)
+        localStorage.removeItem('sidebar_collapsed')
+      }
     }
 
+    handleResize()
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Đóng sidebar mobile khi click ngoài
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (isMobile && !e.composedPath().some((el) => el?.classList?.contains('sidebar') || el?.classList?.contains('mobile-menu-btn'))) {
         setSidebarMobileOpen(false)
-        setOverlayActive(false)
       }
     }
 
@@ -91,24 +84,14 @@ const DashboardLayout = () => {
     }
   }, [theme])
 
-  const navigate = useNavigate()
-  const goToWebsite = () => {
-    navigate('/')
-  }
-
-  const { logout, authUser } = useAuth()
+  const goToWebsite = () => navigate('/')
 
   return (
     <div className={`dashboard ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-      {/* Sidebar overlay for mobile */}
-      <div
-        className={`sidebar-overlay ${isOverlayActive ? 'active' : ''}`}
-        onClick={() => {
-          setSidebarMobileOpen(false)
-          setOverlayActive(false)
-        }}
-      ></div>
+      {/* Overlay (only for mobile + open sidebar) */}
+      {isMobile && isSidebarMobileOpen && <div className="sidebar-overlay active" onClick={() => setSidebarMobileOpen(false)}></div>}
 
+      {/* Sidebar */}
       <aside className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''} ${isSidebarMobileOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar__logo">
           <h2>Admin</h2>
@@ -118,10 +101,14 @@ const DashboardLayout = () => {
         </div>
 
         <div className="sidebar__user">
-          <img src="http://localhost:3009/src/assets/profile.png" alt="User" className="sidebar__user-img" />
+          <img
+            src={authUser?.avatar ?? `https://ui-avatars.com/api/?background=0D8ABC&color=fff&&name=${authUser?.name}`}
+            alt="User"
+            className="sidebar__user-img"
+          />
           <div className="sidebar__user-info">
-            <h3>{authUser.name}</h3>
-            <span>{authUser.status}</span>
+            <h3>{authUser?.name}</h3>
+            <span className="badge badge--success">{getStatusLabel(authUser?.status)}</span>
           </div>
         </div>
 
@@ -146,6 +133,7 @@ const DashboardLayout = () => {
         </div>
       </aside>
 
+      {/* Main content */}
       <main className="main__content">
         <header className="nav__header">
           {isMobile && (
@@ -175,7 +163,7 @@ const DashboardLayout = () => {
               <span className="header__badge">3</span>
             </div>
             <div className="header__profile">
-              <img src="http://localhost:3009/src/assets/profile.png" alt="Profile" />
+              <img src={authUser?.avatar ?? `https://ui-avatars.com/api/?background=0D8ABC&color=fff&&name=${authUser?.name}`} alt="Profile" />
             </div>
           </div>
         </header>
@@ -185,7 +173,7 @@ const DashboardLayout = () => {
         </div>
 
         <footer className="footer">
-          <p>&copy; 2023 Admin Dashboard. All rights reserved.</p>
+          <p>&copy; {currentYear} Vo Duc Huy. All rights reserved.</p>
           <div className="footer__links">
             <a href="#">Privacy Policy</a>
             <a href="#">Terms of Service</a>

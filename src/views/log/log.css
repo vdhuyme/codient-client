@@ -1,0 +1,25 @@
+.logs {
+  background-color: var(--container-color);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+th .bx {
+  margin-left: 5px;
+  font-size: 14px;
+  vertical-align: middle;
+  color: #6b7280; /* Màu xám nhạt */
+  transition: color 0.2s ease;
+}
+
+th:hover .bx {
+  color: #111827; /* Màu đậm khi hover */
+}

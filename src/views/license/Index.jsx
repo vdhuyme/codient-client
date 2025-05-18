@@ -1,5 +1,23 @@
 const Index = () => {
-  return <div>License Index</div>
+  return (
+    <>
+      <div className="content__header">
+        <h1>Dashboard</h1>
+        <ol className="breadcrumb">
+          <li className="breadcrumb__item">
+            <a href="#">Home</a>
+          </li>
+          <li className="breadcrumb__item active">Licenses</li>
+        </ol>
+      </div>
+
+      <div className="card">
+        <div className="card__header flex">
+          <h3>Licenses</h3>
+        </div>
+      </div>
+    </>
+  )
 }
 
 export default Index

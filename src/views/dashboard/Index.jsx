@@ -1,3 +1,5 @@
+import './dashboard.css'
+
 const Index = () => {
   return (
     <>
