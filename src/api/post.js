@@ -9,3 +9,13 @@ export const createPost = async ({ title, description, content, thumbnail, image
   const response = await api.post('/posts', { title, description, content, thumbnail, images })
   return response.data
 }
+
+export const updatePost = async (id, { title, description, content, thumbnail, images }) => {
+  const response = await api.post(`/posts/${id}`, { title, description, content, thumbnail, images })
+  return response.data
+}
+
+export const deletePost = async (id) => {
+  const response = await api.delete(`/posts/${id}`)
+  return response.data
+}

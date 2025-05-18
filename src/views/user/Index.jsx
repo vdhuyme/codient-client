@@ -1,3 +1,6 @@
+import { Link } from 'react-router-dom'
+import './user.css'
+
 const Index = () => {
   return (
     <>
@@ -5,7 +8,7 @@ const Index = () => {
         <h1>Dashboard</h1>
         <ol className="breadcrumb">
           <li className="breadcrumb__item">
-            <a href="#">Home</a>
+            <Link to={'/dashboard'}>Home</Link>
           </li>
           <li className="breadcrumb__item active">Users</li>
         </ol>

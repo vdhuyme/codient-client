@@ -13,6 +13,7 @@ import {
 import { format, parseISO } from 'date-fns'
 import { getLogs } from '@/api/log'
 import toast from 'react-hot-toast'
+import { Link } from 'react-router-dom'
 
 const Index = () => {
   const [dateFilter, setDateFilter] = useState(format(new Date(), 'yyyy-MM-dd'))
@@ -67,13 +68,18 @@ const Index = () => {
     columnHelper.display({
       id: 'actions',
       header: 'Actions',
-      cell: (info) => (
-        <div className="table__actions">
-          <button className="table__btn btn-secondary" onClick={() => handleViewDetails(info.row.original)}>
-            <i className="bx bx-plus-circle"></i>
-          </button>
-        </div>
-      )
+      cell: (info) => {
+        const row = info.row
+        const isExpanded = expandedLog && expandedLog.timestamp === row.original.timestamp
+
+        return (
+          <div className="table__actions">
+            <button className="table__btn table__btn--view" onClick={() => handleViewDetails(row.original)}>
+              <i className={`bx ${isExpanded ? 'bx-minus-circle' : 'bx-plus-circle'}`}></i>
+            </button>
+          </div>
+        )
+      }
     })
   ]
 
@@ -102,7 +108,7 @@ const Index = () => {
         <h1>Dashboard</h1>
         <ol className="breadcrumb">
           <li className="breadcrumb__item">
-            <a href="#">Home</a>
+            <Link to={'/dashboard'}>Home</Link>
           </li>
           <li className="breadcrumb__item active">Logs</li>
         </ol>
@@ -110,13 +116,14 @@ const Index = () => {
 
       {/* Logs Table */}
       <div className="card">
-        <div className="card__header flex">
+        <div className="card__header">
           <h3>System Logs</h3>
-          <div className="flex gap-2">
+
+          <div className="filter-controls">
             <div className="form-group">
               <select defaultValue={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="form-select" disabled={isLoading}>
-                <option value="error">Error</option>
-                <option value="combined">Combined</option>
+                <option value="error">Errors Only</option>
+                <option value="combined">All Logs</option>
               </select>
             </div>
             <div className="form-group">
@@ -137,7 +144,7 @@ const Index = () => {
               <i className="bx bx-loader-circle bx-spin"></i>
               <p>Loading logs...</p>
             </div>
-          ) : data?.logs?.length === 0 ? (
+          ) : data?.length === 0 ? (
             <div className="empty-state">
               <i className="bx bx-file"></i>
               <p>No logs found for the selected filters.</p>
@@ -180,13 +187,13 @@ const Index = () => {
                             <div className="stack-trace">
                               <h4 className="font-medium mb-2">Stack Trace</h4>
                               <div className="overflow-x-auto">
-                                <pre className="text-xs bg-gray-100 p-3 rounded whitespace-pre">{row.original.stack}</pre>
+                                <pre className="bg-gray-100 p-3 rounded whitespace-pre">{row.original.stack}</pre>
                               </div>
                               {row.original.body && (
                                 <div className="mt-4">
                                   <h4 className="font-medium mb-2">Request Body</h4>
                                   <div className="overflow-x-auto">
-                                    <pre className="text-xs bg-gray-100 p-3 rounded whitespace-pre">{JSON.stringify(row.original.body, null, 2)}</pre>
+                                    <pre className="bg-gray-100 p-3 rounded whitespace-pre">{JSON.stringify(row.original.body, null, 2)}</pre>
                                   </div>
                                 </div>
                               )}

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import ReactQuill from 'react-quill-new'
-import 'react-quill-new/dist/quill.snow.css'
 import './category.css'
 import { getCategories, createCategory, updateCategory, deleteCategory, getCategoryDetail } from '@/api/category'
 import slugify from 'slugify'
@@ -8,6 +7,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { categorySchema } from './schema'
 import { toast } from 'react-hot-toast'
+import { Link } from 'react-router-dom'
 
 const getCategoryDescendantIds = (categories, parentId, result = []) => {
   const children = categories.filter((cat) => cat.parent?.id === parentId)
@@ -224,7 +224,7 @@ const Index = () => {
         <h1>Dashboard</h1>
         <ol className="breadcrumb">
           <li className="breadcrumb__item">
-            <a href="#">Home</a>
+            <Link to={'/dashboard'}>Home</Link>
           </li>
           <li className="breadcrumb__item active">Category</li>
         </ol>
@@ -277,7 +277,7 @@ const Index = () => {
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="form-group">
+              <div className="form-group mb-4">
                 <label htmlFor="categoryName">
                   Name <span className="required">*</span>
                 </label>
@@ -290,7 +290,7 @@ const Index = () => {
                 {errors.name && <div className="invalid-feedback">{errors.name.message}</div>}
               </div>
 
-              <div className="form-group">
+              <div className="form-group mb-4">
                 <label htmlFor="categorySlug">
                   Permalink <span className="required">*</span>
                 </label>
@@ -306,7 +306,7 @@ const Index = () => {
                 </p>
               </div>
 
-              <div className="form-group">
+              <div className="form-group mb-4">
                 <label htmlFor="categoryParent">Parent</label>
                 <select id="categoryParent" {...register('parent')} className="form-select" disabled={formMode === 'view' || isLoading}>
                   <option value="">None (Top Level)</option>
@@ -320,7 +320,7 @@ const Index = () => {
                 </select>
               </div>
 
-              <div className="form-group">
+              <div className="form-group mb-4">
                 <label>Description</label>
                 <Controller
                   name="description"

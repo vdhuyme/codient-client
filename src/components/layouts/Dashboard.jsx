@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import './dashboard-layout.css'
-import 'react-quill-new/dist/quill.snow.css'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/auth'
 import { getStatusLabel } from '@/utils/base-status'

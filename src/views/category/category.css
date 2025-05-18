@@ -38,7 +38,7 @@
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 0.5rem;
   background-color: var(--container-color);
-  cursor: pointer;
+  cursor: move;
   transition: all 0.2s;
   margin-bottom: var(--mb-0-5);
 }
@@ -112,13 +112,6 @@
 
 .category-action-btn:hover {
   opacity: 1 !important;
-}
-
-.category-drag {
-  color: var(--text-color);
-  opacity: 0.5;
-  cursor: move;
-  font-size: 1.25rem;
 }
 
 .category-children {

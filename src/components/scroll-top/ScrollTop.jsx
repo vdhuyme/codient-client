@@ -3,8 +3,9 @@ import './scroll-top.css'
 const ScrollTop = () => {
   window.addEventListener('scroll', function () {
     const scrollTop = document.querySelector('.scroll__top')
-
-    scrollY >= 560 ? scrollTop.classList.add('show__scroll') : scrollTop.classList.remove('show__scroll')
+    if (scrollTop) {
+      scrollY >= 560 ? scrollTop.classList.add('show__scroll') : scrollTop.classList.remove('show__scroll')
+    }
   })
 
   return (

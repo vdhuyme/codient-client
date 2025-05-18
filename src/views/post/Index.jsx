@@ -1,14 +1,16 @@
-import { getPosts } from '@/api/post'
+import { deletePost, getPosts } from '@/api/post'
 import { useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import React from 'react'
 import { createColumnHelper, flexRender, getCoreRowModel, useReactTable, getSortedRowModel, getPaginationRowModel } from '@tanstack/react-table'
 import { useDebounce } from '@/hooks/use.debounce'
+import './post.css'
+import { Link } from 'react-router-dom'
 
 const Index = () => {
   const [data, setData] = useState({ posts: [], total: 0 })
   const [page, setPage] = useState(1)
-  const [limit, setLimit] = useState(5)
+  const [limit, setLimit] = useState(25)
   const [query, setQuery] = useState('')
   const debouncedQuery = useDebounce(query, 1000)
   const [sort, setSort] = useState('ASC')
@@ -22,14 +24,18 @@ const Index = () => {
       cell: (info) => info.getValue(),
       enableSorting: true
     }),
+    columnHelper.accessor('status', {
+      header: 'Status',
+      cell: (info) => <span className={`badge ${info.getValue() === 'pending' ? 'badge--danger' : 'badge--info'}`}>{info.getValue()}</span>
+    }),
     columnHelper.accessor('excerpt', {
       header: 'Excerpt',
       cell: (info) => info.getValue(),
       enableSorting: true
     }),
-    columnHelper.accessor('createdAt', {
-      header: 'Created At',
-      cell: (info) => new Date(info.getValue()).toLocaleString(),
+    columnHelper.accessor('author.name', {
+      header: 'Author',
+      cell: (info) => info.getValue(),
       enableSorting: true
     }),
     columnHelper.accessor('actions', {
@@ -39,12 +45,12 @@ const Index = () => {
         return (
           <div className="table__actions">
             <button className="table__btn table__btn--view" onClick={() => setExpandedPost(expandedPost?.id === row.id ? null : row)}>
-              <i className={`bx bx-chevron-${expandedPost ? 'down' : 'right'}`}></i>
+              <i className={`bx bx-chevron-${expandedPost?.id === row.id ? 'down' : 'right'}`}></i>
             </button>
             <button className="table__btn table__btn--edit">
               <i className="bx bx-edit"></i>
             </button>
-            <button className="table__btn table__btn--delete">
+            <button className="table__btn table__btn--delete" onClick={() => handleDeletePost(row.id)}>
               <i className="bx bx-trash"></i>
             </button>
           </div>
@@ -53,6 +59,21 @@ const Index = () => {
       enableSorting: false
     })
   ]
+
+  const handleDeletePost = async (id) => {
+    setIsLoading(true)
+    try {
+      await deletePost(id)
+      await fetchPosts()
+      toast.success('Deleted post')
+    } catch (error) {
+      console.error('Failed to fetch posts:', error)
+      setData({ posts: [], total: 0 })
+      toast.error(error?.data?.message || 'Failed to delete posts')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const fetchPosts = useCallback(async () => {
     setIsLoading(true)
@@ -94,14 +115,12 @@ const Index = () => {
       }
     },
     onPaginationChange: (updater) => {
-      if (typeof updater === 'function') {
-        const newPagination = updater({
-          pageIndex: page - 1,
-          pageSize: limit
-        })
-        setPage(newPagination.pageIndex + 1)
-        setLimit(newPagination.pageSize)
-      }
+      const pagination = updater({
+        pageIndex: page - 1,
+        pageSize: limit
+      })
+      setPage(pagination.pageIndex + 1)
+      setLimit(pagination.pageSize)
     },
     manualPagination: true,
     pageCount: Math.ceil((data.total || 0) / limit)
@@ -126,16 +145,15 @@ const Index = () => {
         <h1>Dashboard</h1>
         <ol className="breadcrumb">
           <li className="breadcrumb__item">
-            <a href="#">Home</a>
+            <Link to={'/dashboard'}>Home</Link>
           </li>
           <li className="breadcrumb__item active">Posts</li>
         </ol>
       </div>
-
       <div className="card">
         <div className="card__header">
           <h3>Posts</h3>
-          <div className="flex gap-2">
+          <div className="filter-controls">
             <div className="form-group">
               <input
                 type="search"
@@ -148,16 +166,22 @@ const Index = () => {
             </div>
             <div className="form-group">
               <select value={limit} onChange={handleLimitChange} className="form-select" disabled={isLoading}>
-                <option value={5}>5 per page</option>
-                <option value={10}>10 per page</option>
-                <option value={25}>25 per page</option>
-                <option value={50}>50 per page</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+                <option value={200}>200</option>
               </select>
             </div>
             <div className="form-group">
-              <button onClick={handleSortToggle} className="btn" disabled={isLoading}>
+              <button onClick={handleSortToggle} className="btn btn-secondary" disabled={isLoading}>
                 <i className={`bx ${sort === 'ASC' ? 'bx-sort-up' : 'bx-sort-down'}`}></i>
                 {sort === 'ASC' ? 'Ascending' : 'Descending'}
+              </button>
+            </div>
+
+            <div className="form-group">
+              <button className="btn btn-primary">
+                <i className="bx bx-plus"></i> New Post
               </button>
             </div>
           </div>
@@ -172,7 +196,7 @@ const Index = () => {
           ) : data?.posts?.length === 0 ? (
             <div className="empty-state">
               <i className="bx bx-file"></i>
-              <p>No posts found for the selected filters.</p>
+              <p>No posts found.</p>
             </div>
           ) : (
             <div className="overflow-x-auto w-full">
@@ -210,7 +234,7 @@ const Index = () => {
                         <tr className="bg-gray-50">
                           <td colSpan={columns.length} className="p-4">
                             <div className="post-detail">
-                              <h4 className="font-medium mb-2">Full Content</h4>
+                              <h4 className="font-medium mb-2">Content</h4>
                               <div className="overflow-x-auto">
                                 <pre>{row.original.content}</pre>
                               </div>

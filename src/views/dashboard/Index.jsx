@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import './dashboard.css'
 
 const Index = () => {
@@ -7,7 +8,7 @@ const Index = () => {
         <h1>Dashboard</h1>
         <ol className="breadcrumb">
           <li className="breadcrumb__item">
-            <a href="#">Home</a>
+            <Link to={'/dashboard'}>Home</Link>
           </li>
           <li className="breadcrumb__item active">Dashboard</li>
         </ol>

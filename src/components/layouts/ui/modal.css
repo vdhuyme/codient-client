@@ -1,0 +1,141 @@
+/* Modal styles with framer-motion support */
+.modal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.modal__container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  width: 95%;
+  max-width: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: #d4d4d4 #f5f5f5;
+}
+
+.modal__container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal__container::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 3px;
+}
+
+.modal__container::-webkit-scrollbar-thumb {
+  background-color: #d4d4d4;
+  border-radius: 3px;
+}
+
+/* Modal sizes */
+.modal__container--small {
+  max-width: 400px;
+}
+
+.modal__container--medium {
+  max-width: 600px;
+}
+
+.modal__container--large {
+  max-width: 900px;
+}
+
+.modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #eee;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1;
+}
+
+.modal__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #f5f5f5;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.2s ease;
+}
+
+.modal__close:hover {
+  background: #e5e5e5;
+  color: #333;
+}
+
+.modal__content {
+  padding: 20px;
+}
+
+/* Drag handle for mobile */
+.modal__drag-handle {
+  width: 40px;
+  height: 5px;
+  background-color: #e0e0e0;
+  border-radius: 3px;
+  margin: 10px auto 5px;
+  cursor: grab;
+}
+
+.modal__drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Modal open state for body */
+body.modal-open {
+  overflow: hidden;
+  padding-right: var(--scrollbar-width, 0px); /* Prevent layout shift */
+}
+
+/* Mobile specific styles */
+@media (max-width: 576px) {
+  .modal__overlay {
+    align-items: flex-end;
+  }
+
+  .modal__container {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    max-height: 80vh;
+    width: 100%;
+  }
+
+  .modal__container--small,
+  .modal__container--medium,
+  .modal__container--large {
+    max-width: 100%;
+  }
+
+  .modal__header {
+    padding: 14px 16px;
+  }
+
+  .modal__content {
+    padding: 16px;
+  }
+}
