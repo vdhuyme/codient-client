@@ -9,6 +9,8 @@ import DashboardLayout from './components/layouts/Dashboard'
 import DashboardIndex from './views/dashboard/Index'
 import CategoryIndex from './views/category/Index'
 import PostIndex from './views/post/Index'
+import PostCreate from './views/post/Create'
+import PostEdit from './views/post/Edit'
 import UserIndex from './views/user/Index'
 import LicenseIndex from './views/license/Index'
 import LogIndex from './views/log/Index'
@@ -30,7 +32,11 @@ function App() {
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<DashboardIndex />} />
             <Route path="/categories" element={<CategoryIndex />} />
+
             <Route path="/posts" element={<PostIndex />} />
+            <Route path="/posts/create" element={<PostCreate />} />
+            <Route path="/posts/edit/:id" element={<PostEdit />} />
+
             <Route path="/users" element={<UserIndex />} />
             <Route path="/licenses" element={<LicenseIndex />} />
             <Route path="/logs" element={<LogIndex />} />

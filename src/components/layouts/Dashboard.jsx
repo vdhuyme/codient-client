@@ -114,7 +114,7 @@ const DashboardLayout = () => {
         <nav className="sidebar__menu">
           <ul>
             {menuItems.map((item, index) => (
-              <li key={index} className="sidebar__item">
+              <li key={index} className="sidebar__item" onClick={() => setSidebarMobileOpen(false)}>
                 <NavLink to={item.path} className={({ isActive }) => `sidebar__link ${isActive ? 'active' : ''}`}>
                   <i className={item.icon}></i>
                   <span>{item.label}</span>

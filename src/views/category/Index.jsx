@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
-import ReactQuill from 'react-quill-new'
 import './category.css'
 import { getCategories, createCategory, updateCategory, deleteCategory, getCategoryDetail } from '@/api/category'
 import slugify from 'slugify'
-import { useForm, Controller } from 'react-hook-form'
+import { FormProvider, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { categorySchema } from './schema'
 import { toast } from 'react-hot-toast'
 import { Link } from 'react-router-dom'
+import FormInput from '@/components/layouts/ui/form-input'
+import FormSelect from '@/components/layouts/ui/form-select'
+import FormEditor from '@/components/layouts/ui/form-editor'
 
 const getCategoryDescendantIds = (categories, parentId, result = []) => {
   const children = categories.filter((cat) => cat.parent?.id === parentId)
@@ -27,15 +29,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [formMode, setFormMode] = useState('view') // 'view', 'edit', 'create'
 
-  const {
-    control,
-    register,
-    setValue,
-    handleSubmit,
-    watch,
-    reset,
-    formState: { errors, isDirty }
-  } = useForm({
+  const methods = useForm({
     resolver: zodResolver(categorySchema),
     defaultValues: {
       name: '',
@@ -44,6 +38,15 @@ const Index = () => {
       description: ''
     }
   })
+
+  const {
+    register,
+    setValue,
+    handleSubmit,
+    watch,
+    reset,
+    formState: { errors, dirtyFields }
+  } = methods
 
   const watchName = watch('name')
   const watchSlug = watch('slug')
@@ -67,16 +70,17 @@ const Index = () => {
   }
 
   useEffect(() => {
-    // Auto-generate slug based on name
-    if (watchName && (formMode === 'create' || !watchSlug || (formMode === 'edit' && isDirty))) {
-      const slug = slugify(watchName || '', {
+    const shouldAutoGenerate = watchName && ((formMode === 'create' && !dirtyFields.slug) || (formMode === 'edit' && !watchSlug && !dirtyFields.slug))
+
+    if (shouldAutoGenerate) {
+      const slug = slugify(watchName, {
         lower: true,
         strict: true,
         trim: true
       })
       setValue('slug', slug)
     }
-  }, [watchName, setValue, formMode, watchSlug, isDirty])
+  }, [watchName, watchSlug, formMode, dirtyFields.slug, setValue])
 
   const handleSelectCategory = async (category) => {
     setIsLoading(true)
@@ -259,15 +263,18 @@ const Index = () => {
 
           <div className="category-editor-container">
             <div className="editor-header flex justify-between">
-              {formMode === 'create' ? (
-                <h3>Create New Category</h3>
-              ) : formMode === 'edit' ? (
-                <h3>Edit Category: {selectedCategory?.name}</h3>
-              ) : selectedCategory ? (
-                <h3>Category Details: {selectedCategory.name}</h3>
-              ) : (
-                <h3>Select a category or create a new one</h3>
-              )}
+              <h3>
+                {(() => {
+                  switch (formMode) {
+                    case 'create':
+                      return 'Create New Category'
+                    case 'edit':
+                      return selectedCategory ? `Edit Category: ${selectedCategory.name}` : 'Edit Category'
+                    default:
+                      return selectedCategory ? `Category Details: ${selectedCategory.name}` : 'Select a category or create a new one'
+                  }
+                })()}
+              </h3>
 
               {formMode === 'view' && selectedCategory && (
                 <button className="btn btn-secondary" onClick={handleEditMode} disabled={isLoading}>
@@ -276,101 +283,67 @@ const Index = () => {
               )}
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="form-group mb-4">
-                <label htmlFor="categoryName">
-                  Name <span className="required">*</span>
-                </label>
-                <input
+            <FormProvider {...methods}>
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <FormInput
                   id="categoryName"
-                  {...register('name')}
-                  className={`form-control ${errors.name ? 'is-invalid' : ''}`}
+                  label="Name"
+                  required
+                  register={register('name')}
+                  error={errors.name}
                   disabled={formMode === 'view' || isLoading}
                 />
-                {errors.name && <div className="invalid-feedback">{errors.name.message}</div>}
-              </div>
 
-              <div className="form-group mb-4">
-                <label htmlFor="categorySlug">
-                  Permalink <span className="required">*</span>
-                </label>
-                <input
+                <FormInput
                   id="categorySlug"
-                  {...register('slug')}
-                  className={`form-control ${errors.slug ? 'is-invalid' : ''}`}
+                  label="Permalink"
+                  required
+                  register={register('slug')}
+                  error={errors.slug}
                   disabled={formMode === 'view' || isLoading}
+                  helpText={
+                    <>
+                      Preview: <span id="permalinkPreview">{`${import.meta.env.VITE_CLIENT_DOMAIN}/categories/${watch('slug')}`}</span>
+                    </>
+                  }
                 />
-                {errors.slug && <div className="invalid-feedback">{errors.slug.message}</div>}
-                <p className="form-text">
-                  Preview: <span id="permalinkPreview">{`${import.meta.env.VITE_CLIENT_DOMAIN}/categories/${watch('slug')}`}</span>
-                </p>
-              </div>
 
-              <div className="form-group mb-4">
-                <label htmlFor="categoryParent">Parent</label>
-                <select id="categoryParent" {...register('parent')} className="form-select" disabled={formMode === 'view' || isLoading}>
-                  <option value="">None (Top Level)</option>
-                  {flattenCategories(availableParentCategories)
-                    .filter((cat) => cat.id !== selectedCategory?.id)
-                    .map((cat) => (
-                      <option key={cat.id} value={cat.id.toString()}>
-                        {'—'.repeat(cat.depth)} {cat.name}
-                      </option>
-                    ))}
-                </select>
-              </div>
+                <FormSelect
+                  name="parent"
+                  label="Parent Category"
+                  options={[
+                    { label: 'None', value: '' },
+                    ...flattenCategories(availableParentCategories).map((cat) => ({
+                      label: `${'—'.repeat(cat.depth)} ${cat.name}`,
+                      value: cat.id
+                    }))
+                  ]}
+                  disabled={formMode === 'view'}
+                />
+                <FormEditor name="description" label="Description" disabled={formMode === 'view'} />
 
-              <div className="form-group mb-4">
-                <label>Description</label>
-                <Controller
-                  name="description"
-                  control={control}
-                  render={({ field }) => (
-                    <ReactQuill
-                      theme="snow"
-                      value={field.value || ''}
-                      onChange={field.onChange}
-                      readOnly={formMode === 'view'}
-                      modules={{
-                        toolbar: formMode !== 'view' && {
-                          container: [
-                            [{ header: [1, 2, 3, false] }],
-                            ['bold', 'italic', 'underline', 'strike'],
-                            ['blockquote', 'code-block'],
-                            [{ list: 'ordered' }, { list: 'bullet' }],
-                            [{ indent: '-1' }, { indent: '+1' }],
-                            [{ align: [] }],
-                            ['link', 'image'],
-                            ['clean']
-                          ]
-                        }
-                      }}
-                    />
+                <div className="form-actions">
+                  {formMode !== 'view' && (
+                    <>
+                      <button type="button" className="btn btn-secondary" onClick={handleCancelEdit} disabled={isLoading}>
+                        Cancel
+                      </button>
+                      <button type="submit" className="btn btn-primary" disabled={isLoading}>
+                        {isLoading ? (
+                          <>
+                            <i className="bx bx-loader-alt bx-spin"></i> Saving...
+                          </>
+                        ) : formMode === 'create' ? (
+                          'Create Category'
+                        ) : (
+                          'Update Category'
+                        )}
+                      </button>
+                    </>
                   )}
-                />
-              </div>
-
-              <div className="form-actions">
-                {formMode !== 'view' && (
-                  <>
-                    <button type="button" className="btn btn-secondary" onClick={handleCancelEdit} disabled={isLoading}>
-                      Cancel
-                    </button>
-                    <button type="submit" className="btn btn-primary" disabled={isLoading}>
-                      {isLoading ? (
-                        <>
-                          <i className="bx bx-loader-alt bx-spin"></i> Saving...
-                        </>
-                      ) : formMode === 'create' ? (
-                        'Create Category'
-                      ) : (
-                        'Update Category'
-                      )}
-                    </button>
-                  </>
-                )}
-              </div>
-            </form>
+                </div>
+              </form>
+            </FormProvider>
           </div>
         </div>
       </div>

@@ -11,3 +11,8 @@
   column-gap: 2rem;
   align-items: center;
 }
+
+.section__title {
+  font-size: var(--big-font-size);
+  margin-bottom: var(--mb-0-25);
+}

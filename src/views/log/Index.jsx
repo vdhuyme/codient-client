@@ -187,13 +187,50 @@ const Index = () => {
                             <div className="stack-trace">
                               <h4 className="font-medium mb-2">Stack Trace</h4>
                               <div className="overflow-x-auto">
-                                <pre className="bg-gray-100 p-3 rounded whitespace-pre">{row.original.stack}</pre>
+                                <pre className="bg-gray-100 p-3 rounded whitespace-pre">{row.original.stack || 'Nothing'}</pre>
                               </div>
+
                               {row.original.body && (
                                 <div className="mt-4">
                                   <h4 className="font-medium mb-2">Request Body</h4>
                                   <div className="overflow-x-auto">
                                     <pre className="bg-gray-100 p-3 rounded whitespace-pre">{JSON.stringify(row.original.body, null, 2)}</pre>
+                                  </div>
+                                </div>
+                              )}
+
+                              {row.original.params && (
+                                <div className="mt-4">
+                                  <h4 className="font-medium mb-2">Params</h4>
+                                  <div className="overflow-x-auto">
+                                    <pre className="bg-gray-100 p-3 rounded whitespace-pre">{JSON.stringify(row.original.params, null, 2)}</pre>
+                                  </div>
+                                </div>
+                              )}
+
+                              {row.original.query && (
+                                <div className="mt-4">
+                                  <h4 className="font-medium mb-2">Query</h4>
+                                  <div className="overflow-x-auto">
+                                    <pre className="bg-gray-100 p-3 rounded whitespace-pre">{JSON.stringify(row.original.query, null, 2)}</pre>
+                                  </div>
+                                </div>
+                              )}
+
+                              {row.original.headers && (
+                                <div className="mt-4">
+                                  <h4 className="font-medium mb-2">Headers</h4>
+                                  <div className="overflow-x-auto">
+                                    <pre className="bg-gray-100 p-3 rounded whitespace-pre">{JSON.stringify(row.original.headers, null, 2)}</pre>
+                                  </div>
+                                </div>
+                              )}
+
+                              {row.original.ip && (
+                                <div className="mt-4">
+                                  <h4 className="font-medium mb-2">IP Address</h4>
+                                  <div className="overflow-x-auto">
+                                    <pre className="bg-gray-100 p-3 rounded whitespace-pre">{row.original.ip}</pre>
                                   </div>
                                 </div>
                               )}

@@ -253,8 +253,8 @@ const Index = () => {
         <div className="card__footer p-4">
           <div className="flex items-center justify-between">
             <div className="pagination-info">
-              Showing {data?.posts?.length > 0 ? (page - 1) * limit + 1 : 0} to {Math.min(page * limit, (page - 1) * limit + data?.posts?.length)} of{' '}
-              {data.total || 0} posts
+              {data?.posts?.length > 0 ? (page - 1) * limit + 1 : 0} to {Math.min(page * limit, (page - 1) * limit + data?.posts?.length)} of{' '}
+              {data.total || 0}
             </div>
 
             <div className="pagination-controls flex items-center gap-2">
