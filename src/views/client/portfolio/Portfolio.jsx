@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
-import About from '@/components/about/About'
-import Contact from '@/components/contact/Contact'
-import Experience from '@/components/experience/Experience'
-import Home from '@/components/home/Home'
-import Qualification from '@/components/qualification/Qualification'
-import Skill from '@/components/skill/Skill'
+import About from '@/components/client/about/About'
+import Contact from '@/components/client/contact/Contact'
+import Experience from '@/components/client/experience/Experience'
+import Home from '@/components/client/home/Home'
+import Qualification from '@/components/client/qualification/Qualification'
+import Skill from '@/components/client/skill/Skill'
 
 const fadeInUpVariants = {
   hidden: { opacity: 0, y: 60 },

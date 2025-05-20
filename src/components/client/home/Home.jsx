@@ -1,7 +1,7 @@
 import Data from './Data'
 import './home.css'
 import Social from './Social'
-import profile from '../../assets/profile.png'
+import profile from '@/assets/profile.png'
 
 const Home = () => {
   return (

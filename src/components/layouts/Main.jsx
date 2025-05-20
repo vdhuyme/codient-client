@@ -1,6 +1,6 @@
-import Header from '@/components/header/Header'
-import Footer from '@/components/footer/Footer'
-import ScrollTop from '@/components/scroll-top/ScrollTop'
+import Header from '@/components/client/header/Header'
+import Footer from '@/components/client/footer/Footer'
+import ScrollTop from '@/components/client/scroll-top/ScrollTop'
 import { Outlet } from 'react-router-dom'
 
 const MainLayout = () => {

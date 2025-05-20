@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast'
 import { contactSchema } from './validation.js'
 import { sendEmail } from './email-service.js'
 import { motion } from 'framer-motion'
-import FormField from '../ui/form-field'
+import FormField from '@/components/ui/form-field'
 
 const Contact = () => {
   const form = useRef()

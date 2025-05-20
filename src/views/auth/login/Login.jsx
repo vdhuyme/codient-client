@@ -1,7 +1,7 @@
 import { login, me } from '@/api/auth'
 import './login.css'
 import { toast } from 'react-hot-toast'
-import FormField from '../../components/ui/form-field'
+import FormField from '@/components/ui/form-field'
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { loginSchema } from './validation'

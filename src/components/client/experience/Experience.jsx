@@ -40,7 +40,7 @@ const Experience = () => {
     {
       id: 3,
       company: 'ARCHI ELITE TECHNOLOGY JOINT STOCK COMPANY',
-      position: 'Web Development Intern',
+      position: 'Intern/Fresher',
       startDate: '2023-05-01',
       endDate: '2023-07-31',
       details: [

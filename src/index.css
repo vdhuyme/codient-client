@@ -2,35 +2,56 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
 
 :root {
-  --header-height: 3rem;
+  /* Color Palette - Light */
+  --primary-color: #4a6cf7;
+  --primary-hover: #3b5de7;
+  --secondary-color: #6c757d;
+  --success-color: #2ec551;
+  --info-color: #50a5f1;
+  --warning-color: #f3bc53;
+  --danger-color: #f1556c;
+  --light-color: #f6f6f9;
+  --dark-color: #343a40;
 
-  /* Light Theme Colors */
+  /* Interface Colors */
+  --border-color: #e5e7eb;
+  --bg-color: #f5f7fb;
+  --body-color: #f5f7fb;
+  --container-color: #ffffff;
+  --card-bg: #ffffff;
+  --text-color: #495057;
+  --text-muted: #74788d;
   --title-color: hsl(210, 15%, 20%);
-  --text-color: hsl(210, 15%, 35%);
-  --body-color: hsl(210, 20%, 98%);
-  --container-color: #fff;
+  --heading-color: #343a40;
 
-  /* Dark Theme Colors with Navy Blue Accents */
-  --title-color-dark: hsl(220, 15%, 80%);
-  --text-color-dark: hsl(220, 15%, 75%);
-  --body-color-dark: hsl(220, 25%, 20%);
-  --container-color-dark: hsl(220, 25%, 30%);
-  --accent-color-dark: hsl(220, 50%, 40%);
-
+  /* Font */
   --body-font: 'Poppins', sans-serif;
   --big-font-size: 3.5rem;
-  --h1-font-size: 2.25rem;
+  --h1-font-size: 2rem;
   --h2-font-size: 1.5rem;
   --h3-font-size: 1.25rem;
   --normal-font-size: 1rem;
   --small-font-size: 0.875rem;
-  --smaller-font-size: 0.813rem;
+  --smaller-font-size: 0.75rem;
   --tiny-font-size: 0.625rem;
 
+  --font-light: 300;
   --font-normal: 400;
   --font-medium: 500;
   --font-semibold: 600;
+  --font-bold: 700;
 
+  /* Semantic Colors */
+  --blue-color: hsl(210, 80%, 50%);
+  --green-color: hsl(150, 60%, 50%);
+  --orange-color: hsl(30, 90%, 60%);
+  --red-color: hsl(0, 70%, 60%);
+  --purple-color: hsl(270, 60%, 60%);
+  --teal-color: hsl(180, 60%, 45%);
+  --indigo-color: hsl(240, 70%, 55%);
+  --yellow-color: hsl(48, 100%, 60%);
+
+  /* Spacing */
   --mb-0-25: 0.25rem;
   --mb-0-5: 0.5rem;
   --mb-0-75: 0.75rem;
@@ -40,9 +61,30 @@
   --mb-2-5: 2.5rem;
   --mb-3: 3rem;
 
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+  /* Misc */
+  --transition-speed: 0.3s;
+
+  /* Z-index */
   --z-tooltip: 10;
   --z-fixed: 100;
   --z-modal: 1000;
+
+  /* Dark theme reference (not used directly in light) */
+  --title-color-dark: hsl(220, 15%, 80%);
+  --text-color-dark: hsl(220, 15%, 75%);
+  --body-color-dark: hsl(220, 25%, 20%);
+  --container-color-dark: hsl(220, 25%, 30%);
+  --accent-color-dark: hsl(220, 50%, 40%);
+
+  /* Sidebar Layout */
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 70px;
+  --header-height: 60px;
 }
 
 [data-theme='dark'] {
@@ -50,7 +92,12 @@
   --text-color: var(--text-color-dark);
   --body-color: var(--body-color-dark);
   --container-color: var(--container-color-dark);
+  --card-bg: var(--container-color-dark);
+  --heading-color: var(--title-color-dark);
   --accent-color: var(--accent-color-dark);
+  --border-color: hsl(220, 15%, 30%);
+  --bg-color: hsl(220, 20%, 15%);
+  --text-muted: hsl(220, 10%, 60%);
 }
 
 @media screen and (max-width: 992px) {
