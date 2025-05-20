@@ -1,5 +1,8 @@
 import { Link } from 'react-router-dom'
 import './dashboard.css'
+import { ComposableMap, Geographies, Geography } from 'react-simple-maps'
+
+const geoUrl = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json'
 
 const Index = () => {
   return (
@@ -82,6 +85,11 @@ const Index = () => {
               <button className="chart__btn">Yearly</button>
             </div>
           </div>
+          <ComposableMap>
+            <Geographies geography={geoUrl}>
+              {({ geographies }) => geographies.map((geo) => <Geography key={geo.rsmKey} geography={geo} />)}
+            </Geographies>
+          </ComposableMap>
           <div className="chart__body">
             <div className="chart__placeholder">
               <div className="chart__bars">
