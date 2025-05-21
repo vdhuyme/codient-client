@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion'
-import { Github, Linkedin, Mail, Phone, MapPin, Plane, Book, Music, Coffee, Code, Volleyball, Download } from 'lucide-react'
+import { Github, Linkedin, Mail, Phone, MapPin, Plane, Book, Music, Coffee, Code, Volleyball, Download, Loader } from 'lucide-react'
 import avatar from '@/assets/profile.png'
 import html2canvas from 'html2canvas-pro'
 import jsPDF from 'jspdf'
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { format } from 'date-fns'
 import ResumeViewExporter from '@/components/customs/resume.view.exporter'
 
@@ -17,9 +17,11 @@ const ResumePage = () => {
     { label: 'Exploring new technologies', icon: Code }
   ]
 
+  const [isLoading, setIsLoading] = useState(false)
   const pdfExporterRef = useRef(null)
   const handleDownload = async () => {
-    const filename = `${format(new Date(), 'yyyy-MM-dd')} - Vo Duc Huy - Software Engineer`
+    setIsLoading(true)
+    const filename = `${format(new Date(), 'yyyy-MM-dd H:i:s')} - Vo Duc Huy - Software Engineer`
 
     try {
       const element = pdfExporterRef.current
@@ -54,6 +56,8 @@ const ResumePage = () => {
       pdf.save(filename)
     } catch (err) {
       console.error('Error generating PDF:', err)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -96,7 +100,7 @@ const ResumePage = () => {
         <div className="container relative z-10 mx-auto max-w-4xl px-4 py-12">
           {/* Header Section */}
           <header className="mb-12 border-b border-slate-800/30 pb-8">
-            <div className="flex flex-col-reverse md:flex-col items-start justify-between gap-8 md:flex-row md:items-center">
+            <div className="flex flex-col-reverse items-start justify-between gap-8 md:flex-row md:items-center">
               <div className="flex-1">
                 <motion.h1
                   initial={{ opacity: 0, y: 10 }}
@@ -179,8 +183,8 @@ const ResumePage = () => {
                   className="mt-4 flex items-center rounded-md border border-indigo-500/40 bg-indigo-500/10 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-indigo-500/20"
                   whileHover={{ scale: 1.03 }}
                 >
-                  <Download className="mr-2 h-4 w-4" />
-                  Download CV
+                  {isLoading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                  {isLoading ? 'Downloading...' : 'Download CV'}
                 </motion.button>
               </motion.div>
             </div>
