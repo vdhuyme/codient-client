@@ -55,7 +55,7 @@ const RegisterPage = () => {
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
-        className="absolute left-4 top-4 z-10"
+        className="absolute left-4 top-4 z-20"
       >
         <Link to="/" className="inline-flex items-center text-sm font-medium text-indigo-400 transition-colors hover:text-indigo-300">
           <ChevronLeft className="mr-1 h-4 w-4" />
@@ -245,7 +245,7 @@ const RegisterPage = () => {
               className="mt-8 text-center text-sm text-gray-400"
             >
               Already have an account?{' '}
-              <Link href="/login" className="font-medium text-indigo-400 hover:text-indigo-300">
+              <Link to="/login" className="font-medium text-indigo-400 hover:text-indigo-300">
                 Sign in
               </Link>
             </motion.p>

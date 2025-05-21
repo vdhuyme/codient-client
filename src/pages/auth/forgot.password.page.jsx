@@ -54,7 +54,7 @@ const ForgotPasswordPage = () => {
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
-        className="absolute left-4 top-4 z-10"
+        className="absolute left-4 top-4 z-20"
       >
         <Link to="/login" className="inline-flex items-center text-sm font-medium text-indigo-400 transition-colors hover:text-indigo-300">
           <ChevronLeft className="mr-1 h-4 w-4" />

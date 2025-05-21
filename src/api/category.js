@@ -20,7 +20,7 @@ export const deleteCategory = async (id) => {
   return response.data
 }
 
-export const getCategoryDetail = async (id) => {
+export const getCategory = async (id) => {
   const response = await api.get(`/categories/${id}`)
   return response.data
 }
