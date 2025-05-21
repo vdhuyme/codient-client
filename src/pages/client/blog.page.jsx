@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Search, Calendar, User, Clock, ChevronRight, Filter } from 'lucide-react'
+import { Search, Calendar, User, Clock, ChevronRight, Filter, ChevronLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 const BlogPage = () => {
@@ -108,6 +108,13 @@ const BlogPage = () => {
       </div>
 
       <div className="container relative z-10 mx-auto max-w-5xl px-4 py-12">
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} className="mb-8">
+          <Link to={'/'} className="inline-flex items-center text-sm font-medium text-indigo-400 transition-colors hover:text-indigo-300">
+            <ChevronLeft className="mr-1 h-4 w-4" />
+            Back to Home
+          </Link>
+        </motion.div>
+
         {/* Header */}
         <header className="mb-12 text-center">
           <motion.h1
@@ -164,11 +171,19 @@ const BlogPage = () => {
             >
               <Filter className="mr-2 h-4 w-4 text-indigo-400" />
               <span className="mr-2 text-sm text-gray-300">Filter:</span>
-              <select className="rounded-md border border-indigo-500/30 bg-slate-900/80 px-2 py-1 text-sm text-white backdrop-blur-sm focus:border-indigo-500/50 focus:outline-none focus:ring-1 focus:ring-indigo-500/50">
-                <option>Latest</option>
-                <option>Popular</option>
-                <option>Oldest</option>
-              </select>
+              <div className="relative inline-block">
+                <select className="appearance-none rounded-md border border-indigo-500/30 bg-slate-900/80 px-6 py-2 pl-2 text-white placeholder-gray-400 backdrop-blur-sm focus:border-indigo-500/50 focus:outline-none focus:ring-1 focus:ring-indigo-500/50">
+                  <option>Latest</option>
+                  <option>Popular</option>
+                  <option>Oldest</option>
+                </select>
+
+                <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-indigo-400">
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </motion.div>
           </div>
 
@@ -183,7 +198,7 @@ const BlogPage = () => {
               <motion.button
                 key={category}
                 onClick={() => setActiveCategory(category)}
-                className={`rounded-full px-4 py-1 text-sm font-medium transition-all ${
+                className={`rounded-full px-4 py-1 text-sm font-medium transition-all cursor-pointer ${
                   activeCategory === category
                     ? 'bg-indigo-500/20 text-indigo-300'
                     : 'bg-slate-800/50 text-gray-400 hover:bg-slate-800 hover:text-gray-300'
@@ -230,7 +245,7 @@ const BlogPostCard = ({ post, index }) => (
     transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
     className="group overflow-hidden rounded-lg border border-indigo-500/20 bg-slate-900/50 backdrop-blur-sm transition-all hover:border-indigo-500/40"
   >
-    <Link href={`/posts/${post.slug}`}>
+    <Link to={`/posts/${post.slug}`}>
       <div className="relative h-48 overflow-hidden">
         <motion.div className="absolute inset-0 bg-indigo-900/20" whileHover={{ opacity: 0 }} transition={{ duration: 0.3 }} />
         <motion.img

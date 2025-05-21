@@ -1,17 +1,18 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Eye, EyeOff, Mail, Lock, ArrowRight, ChevronLeft } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, ChevronLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-const LoginPage = () => {
+const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false)
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    // Handle login logic here
-    console.log('Login with:', { email, password })
+    // Handle registration logic here
+    console.log('Register with:', { name, email, password })
   }
 
   return (
@@ -64,7 +65,7 @@ const LoginPage = () => {
 
       <div className="container relative z-10 mx-auto flex min-h-screen max-w-screen-xl items-center justify-center px-4 py-12">
         <div className="flex w-full max-w-6xl flex-col-reverse overflow-hidden rounded-2xl border border-indigo-500/20 bg-slate-900/50 shadow-xl backdrop-blur-sm md:flex-row">
-          {/* Left side - Login Form */}
+          {/* Left side - Registration Form */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -78,7 +79,7 @@ const LoginPage = () => {
                 transition={{ duration: 0.5, delay: 0.2 }}
                 className="mb-2 text-3xl font-bold text-white"
               >
-                Welcome Back
+                Create an Account
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0, y: -10 }}
@@ -86,7 +87,7 @@ const LoginPage = () => {
                 transition={{ duration: 0.5, delay: 0.3 }}
                 className="text-gray-400"
               >
-                Sign in to your account to continue
+                Join our community and get started today
               </motion.p>
             </div>
 
@@ -97,6 +98,26 @@ const LoginPage = () => {
               onSubmit={handleSubmit}
               className="space-y-6"
             >
+              <div className="space-y-2">
+                <label htmlFor="name" className="text-sm font-medium text-gray-300">
+                  Full Name
+                </label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <User className="h-5 w-5 text-indigo-400" />
+                  </div>
+                  <input
+                    id="name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    className="w-full rounded-lg border border-indigo-500/30 bg-slate-800/50 px-4 py-3 pl-10 text-white placeholder-gray-500 transition-colors focus:border-indigo-500/50 focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
+                    placeholder="John Doe"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <label htmlFor="email" className="text-sm font-medium text-gray-300">
                   Email
@@ -118,14 +139,9 @@ const LoginPage = () => {
               </div>
 
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label htmlFor="password" className="text-sm font-medium text-gray-300">
-                    Password
-                  </label>
-                  <Link to="/forgot-password" className="text-xs font-medium text-indigo-400 transition-colors hover:text-indigo-300">
-                    Forgot password?
-                  </Link>
-                </div>
+                <label htmlFor="password" className="text-sm font-medium text-gray-300">
+                  Password
+                </label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                     <Lock className="h-5 w-5 text-indigo-400" />
@@ -147,17 +163,26 @@ const LoginPage = () => {
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
+                <p className="text-xs text-gray-500">Password must be at least 8 characters long and include a number and a special character.</p>
               </div>
 
               <div className="flex items-center">
                 <input
-                  id="remember-me"
-                  name="remember-me"
+                  id="terms"
+                  name="terms"
                   type="checkbox"
+                  required
                   className="h-4 w-4 rounded border-gray-600 bg-slate-800 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-slate-800"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-300">
-                  Remember me
+                <label htmlFor="terms" className="ml-2 block text-sm text-gray-300">
+                  I agree to the{' '}
+                  <Link href="/terms" className="text-indigo-400 hover:text-indigo-300">
+                    Terms of Service
+                  </Link>{' '}
+                  and{' '}
+                  <Link href="/privacy" className="text-indigo-400 hover:text-indigo-300">
+                    Privacy Policy
+                  </Link>
                 </label>
               </div>
 
@@ -167,7 +192,7 @@ const LoginPage = () => {
                 type="submit"
                 className="group relative flex w-full items-center justify-center rounded-lg bg-indigo-600 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-800"
               >
-                Sign in
+                Create Account
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </motion.button>
             </motion.form>
@@ -178,7 +203,7 @@ const LoginPage = () => {
                   <div className="w-full border-t border-gray-700"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="bg-slate-900/50 px-2 text-gray-400">Or continue with</span>
+                  <span className="bg-slate-900/50 px-2 text-gray-400">Or sign up with</span>
                 </div>
               </div>
 
@@ -208,7 +233,7 @@ const LoginPage = () => {
                     />
                     <path d="M1 1h22v22H1z" fill="none" />
                   </svg>
-                  Sign in with Google
+                  Sign up with Google
                 </motion.button>
               </div>
             </motion.div>
@@ -219,9 +244,9 @@ const LoginPage = () => {
               transition={{ duration: 0.5, delay: 0.7 }}
               className="mt-8 text-center text-sm text-gray-400"
             >
-              Don&apos;t have an account?{' '}
-              <Link to="/register" className="font-medium text-indigo-400 hover:text-indigo-300">
-                Sign up
+              Already have an account?{' '}
+              <Link href="/login" className="font-medium text-indigo-400 hover:text-indigo-300">
+                Sign in
               </Link>
             </motion.p>
           </motion.div>
@@ -275,12 +300,12 @@ const LoginPage = () => {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"
+                      d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
                     />
                   </svg>
                 </div>
-                <h2 className="text-2xl font-bold text-white">Secure Login</h2>
-                <p className="mt-2 text-gray-300">Your data is protected with industry-leading encryption and security practices.</p>
+                <h2 className="text-2xl font-bold text-white">Join Our Community</h2>
+                <p className="mt-2 text-gray-300">Create an account to access exclusive features and personalized content.</p>
               </motion.div>
 
               <motion.div
@@ -289,16 +314,7 @@ const LoginPage = () => {
                 transition={{ duration: 0.5, delay: 0.6 }}
                 className="z-10 mt-auto text-center"
               >
-                <p className="text-sm text-gray-400">
-                  By signing in, you agree to our{' '}
-                  <Link href="/terms" className="text-indigo-400 hover:text-indigo-300">
-                    Terms of Service
-                  </Link>{' '}
-                  and{' '}
-                  <Link href="/privacy" className="text-indigo-400 hover:text-indigo-300">
-                    Privacy Policy
-                  </Link>
-                </p>
+                <p className="text-sm text-gray-400">We value your privacy and are committed to protecting your personal data.</p>
               </motion.div>
             </div>
           </motion.div>
@@ -308,4 +324,4 @@ const LoginPage = () => {
   )
 }
 
-export default LoginPage
+export default RegisterPage

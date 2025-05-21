@@ -17,9 +17,5 @@
   "lang": "en",
   "dir": "ltr",
   "orientation": "any",
-  "related_applications": [
-    {
-      "platform": "web"
-    }
-  ]
+  "related_applications": []
 }

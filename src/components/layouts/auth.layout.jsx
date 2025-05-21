@@ -1,5 +1,12 @@
+import React from 'react'
+import { Outlet } from 'react-router-dom'
+
 const AuthLayout = () => {
-  return <div>AuthLayout</div>
+  return (
+    <React.Fragment>
+      <Outlet />
+    </React.Fragment>
+  )
 }
 
 export default AuthLayout

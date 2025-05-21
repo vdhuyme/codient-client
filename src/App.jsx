@@ -11,6 +11,8 @@ import LoginPage from '@/pages/auth/login.page'
 import ResumePage from '@/pages/client/resume.page'
 import BlogPage from '@/pages/client/blog.page'
 import BlogDetailPage from '@/pages/client/blog.detail.page'
+import RegisterPage from '@/pages/auth/register.page'
+import ForgotPasswordPage from '@/pages/auth/forgot.password.page'
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
         <Route element={<AuthLayout />}>
           <Route element={<PublicRoute />}>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           </Route>
         </Route>
 

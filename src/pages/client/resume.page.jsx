@@ -1,11 +1,12 @@
 import { motion } from 'framer-motion'
-import { Github, Linkedin, Mail, Phone, MapPin, Plane, Book, Music, Coffee, Code, Volleyball, Download, Loader } from 'lucide-react'
+import { Github, Linkedin, Mail, Phone, MapPin, Plane, Book, Music, Coffee, Code, Volleyball, Download, Loader, ChevronLeft } from 'lucide-react'
 import avatar from '@/assets/profile.png'
 import html2canvas from 'html2canvas-pro'
 import jsPDF from 'jspdf'
 import React, { useRef, useState } from 'react'
 import { format } from 'date-fns'
 import ResumeViewExporter from '@/components/customs/resume.view.exporter'
+import { Link } from 'react-router-dom'
 
 const ResumePage = () => {
   const interests = [
@@ -98,6 +99,13 @@ const ResumePage = () => {
         </div>
 
         <div className="container relative z-10 mx-auto max-w-4xl px-4 py-12">
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} className="mb-8">
+            <Link to={'/'} className="inline-flex items-center text-sm font-medium text-indigo-400 transition-colors hover:text-indigo-300">
+              <ChevronLeft className="mr-1 h-4 w-4" />
+              Back to Home
+            </Link>
+          </motion.div>
+
           {/* Header Section */}
           <header className="mb-12 border-b border-slate-800/30 pb-8">
             <div className="flex flex-col-reverse items-start justify-between gap-8 md:flex-row md:items-center">

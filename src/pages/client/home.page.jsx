@@ -400,7 +400,6 @@ const SocialButton = ({ icon, label, href, activeTooltip, setActiveTooltip }) =>
 
 // Action Button
 const ActionButton = ({ label, icon, to, primary = false }) => {
-  console.log(123)
   return (
     <motion.button
       className={`group relative overflow-hidden rounded-md border ${

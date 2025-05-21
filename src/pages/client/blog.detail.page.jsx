@@ -1,4 +1,5 @@
-'use client'
+import useEmblaCarousel from 'embla-carousel-react'
+import './css/blog.detail.css'
 
 import { motion } from 'framer-motion'
 import { Calendar, User, Clock, Facebook, Twitter, Linkedin, LinkIcon, ChevronLeft, MessageCircle, ThumbsUp, Bookmark } from 'lucide-react'
@@ -100,21 +101,10 @@ module.exports = {
     }
   ]
 
-  const scrollbarHideStyle = `
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-`
+  const [relatedPostCarouselRef] = useEmblaCarousel()
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950">
-      <style jsx global>
-        {scrollbarHideStyle}
-      </style>
       {/* Subtle gradient background */}
       <div className="absolute inset-0 z-0 bg-gradient-to-br from-slate-950 to-slate-900">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(79,70,229,0.3),rgba(15,23,42,0.9))]" />
@@ -151,7 +141,7 @@ module.exports = {
       <div className="container relative z-10 mx-auto max-w-4xl px-4 py-12">
         {/* Back to blog */}
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} className="mb-8">
-          <Link href="/blog" className="inline-flex items-center text-sm font-medium text-indigo-400 transition-colors hover:text-indigo-300">
+          <Link to={'/posts'} className="inline-flex items-center text-sm font-medium text-indigo-400 transition-colors hover:text-indigo-300">
             <ChevronLeft className="mr-1 h-4 w-4" />
             Back to Blog
           </Link>
@@ -210,7 +200,7 @@ module.exports = {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
-            className="prose prose-invert prose-indigo max-w-none rounded-lg border border-indigo-500/20 bg-slate-900/50 p-6 backdrop-blur-sm"
+            className="prose prose-invert prose-indigo rounded-lg border border-indigo-500/20 bg-slate-900/50 p-6 backdrop-blur-sm text-gray-400 max-w-full overflow-x-auto break-words [&_img]:max-w-full [&_pre]:break-words [&_table]:block [&_table]:overflow-x-auto"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
 
@@ -264,11 +254,13 @@ module.exports = {
             <div className="p-6">
               <h3 className="mb-4 text-lg font-medium text-white">About the Author</h3>
               <div className="flex items-center">
-                <img
-                  src={post.authorImage || '/placeholder.svg'}
-                  alt={post.author}
-                  className="mr-4 h-16 w-16 rounded-full border border-indigo-500/20"
-                />
+                <div className="w-16 h-16 mr-2">
+                  <img
+                    src={post.authorImage || '/placeholder.svg'}
+                    alt={post.author}
+                    className="mr-4 h-16 w-16 rounded-full border border-indigo-500/20"
+                  />
+                </div>
                 <div>
                   <h4 className="font-medium text-indigo-300">{post.author}</h4>
                   <p className="text-sm text-gray-400">{post.authorBio}</p>
@@ -282,8 +274,8 @@ module.exports = {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 1 }} className="mt-12">
           <h2 className="mb-6 text-2xl font-bold text-white">Related Articles</h2>
           <div className="relative">
-            <div className="overflow-x-auto pb-4 scrollbar-hide">
-              <div className="flex w-max space-x-6">
+            <div ref={relatedPostCarouselRef} className="overflow-x-auto pb-4 scrollbar-hide">
+              <div className="flex min-w-[20rem] space-x-6">
                 {[...relatedPosts, ...relatedPosts, ...relatedPosts].map((post, index) => (
                   <div key={`${post.id}-${index}`} className="w-72 flex-none">
                     <RelatedPostCard post={post} index={index} />
