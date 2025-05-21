@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Github, Twitter, Facebook, Instagram, FileText, Sparkles, ExternalLink } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import avatar from '@/assets/profile.png'
 
 const HomePage = () => {
   const containerRef = useRef(null)
@@ -58,7 +59,7 @@ const HomePage = () => {
       <div className="container relative z-10 mx-auto flex min-h-screen flex-col items-center justify-center px-4 py-20 md:flex-row md:items-center md:justify-between md:gap-12 lg:px-8">
         {/* Profile image section with automatic elegant effect */}
         <motion.div
-          className="hidden md:block mb-10 md:mb-0 md:w-2/5"
+          className="mb-10 md:mb-0 md:w-2/5"
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
@@ -124,42 +125,18 @@ const HomePage = () => {
 
               {/* Avatar image with automatic subtle movement */}
               <motion.div
-                className="absolute left-1/2 top-1/2 h-60 w-60 -translate-x-1/2 -translate-y-1/2 transform overflow-hidden rounded-full border border-white/10"
+                className="absolute inset-0 rounded-full overflow-hidden border border-white/10"
                 animate={{
-                  scale: [1, 1.02, 1],
-                  y: ['-50%', '-51%', '-50%', '-49%', '-50%'],
-                  x: ['-50%', '-49%', '-50%', '-51%', '-50%']
+                  y: ['0%', '-2%', '0%', '2%', '0%'],
+                  x: ['0%', '1%', '0%', '-1%', '0%']
                 }}
                 transition={{
-                  scale: {
-                    duration: 4,
-                    repeat: Number.POSITIVE_INFINITY,
-                    repeatType: 'reverse'
-                  },
-                  y: {
-                    duration: 8,
-                    repeat: Number.POSITIVE_INFINITY,
-                    repeatType: 'loop'
-                  },
-                  x: {
-                    duration: 10,
-                    repeat: Number.POSITIVE_INFINITY,
-                    repeatType: 'loop'
-                  }
+                  duration: 10,
+                  repeat: Infinity,
+                  repeatType: 'loop'
                 }}
               >
-                {/* Subtle overlay for better integration with automatic animation */}
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-tr from-indigo-900/20 to-transparent mix-blend-overlay"
-                  animate={{
-                    opacity: [0.2, 0.3, 0.2]
-                  }}
-                  transition={{
-                    duration: 5,
-                    repeat: Number.POSITIVE_INFINITY,
-                    repeatType: 'reverse'
-                  }}
-                />
+                <img src={avatar} alt="Vo Duc Huy" className="h-full w-full object-cover" />
               </motion.div>
 
               {/* Animated light dots around avatar */}
@@ -292,10 +269,10 @@ const HomePage = () => {
             {skills.map((skill, index) => (
               <motion.span
                 key={skill}
-                className="inline-flex items-center rounded-full border border-indigo-500/30 bg-indigo-500/5 px-3 py-1 text-sm font-medium text-indigo-200 backdrop-blur-sm"
+                className="inline-flex cursor-context-menu items-center rounded-full border border-indigo-500/30 bg-indigo-500/5 px-3 py-1 text-sm font-medium text-indigo-200 backdrop-blur-sm"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, delay: 1.2 + index * 0.1 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
                 whileHover={{
                   scale: 1.03,
                   backgroundColor: 'rgba(99, 102, 241, 0.1)',
@@ -308,7 +285,7 @@ const HomePage = () => {
             ))}
           </motion.div>
 
-          {/* Elegant Social links */}
+          {/* Social links */}
           <motion.div
             className="mt-10 flex flex-wrap justify-center gap-5 md:justify-start"
             initial={{ opacity: 0, y: 10 }}
@@ -318,14 +295,14 @@ const HomePage = () => {
             <SocialButton
               icon={<FileText className="h-5 w-5" />}
               label="Resume"
-              href="/resume" // nội bộ
+              href="/resume"
               activeTooltip={activeTooltip}
               setActiveTooltip={setActiveTooltip}
             />
             <SocialButton
               icon={<Github className="h-5 w-5" />}
               label="GitHub"
-              href="https://github.com/vdhuyme" // ngoài
+              href="https://github.com/vdhuyme"
               activeTooltip={activeTooltip}
               setActiveTooltip={setActiveTooltip}
             />
@@ -366,8 +343,6 @@ const HomePage = () => {
     </div>
   )
 }
-
-// Elegant Social Buttonimport { Link } from 'react-router-dom';
 
 const SocialButton = ({ icon, label, href, activeTooltip, setActiveTooltip }) => {
   const isExternal = href?.startsWith('http')
@@ -423,7 +398,7 @@ const SocialButton = ({ icon, label, href, activeTooltip, setActiveTooltip }) =>
   )
 }
 
-// Elegant Action Button
+// Action Button
 const ActionButton = ({ label, icon, primary = false }) => {
   return (
     <motion.button
