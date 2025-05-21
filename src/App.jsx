@@ -9,6 +9,8 @@ import NotFoundPage from '@/pages/error/not.found.page'
 import HomePage from '@/pages/client/home.page'
 import LoginPage from '@/pages/auth/login.page'
 import ResumePage from '@/pages/client/resume.page'
+import BlogPage from '@/pages/client/blog.page'
+import BlogDetailPage from '@/pages/client/blog.detail.page'
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
         <Route element={<ClientLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/resume" element={<ResumePage />} />
+          <Route path="/posts" element={<BlogPage />} />
+          <Route path="/posts/:slug" element={<BlogDetailPage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

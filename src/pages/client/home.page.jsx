@@ -336,7 +336,7 @@ const HomePage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1.6 }}
           >
-            <ActionButton primary label="Explore Articles" icon={<ExternalLink className="ml-2 h-4 w-4" />} />
+            <ActionButton primary label="Explore Articles" to={'/posts'} icon={<ExternalLink className="ml-2 h-4 w-4" />} />
           </motion.div>
         </motion.div>
       </div>
@@ -399,7 +399,8 @@ const SocialButton = ({ icon, label, href, activeTooltip, setActiveTooltip }) =>
 }
 
 // Action Button
-const ActionButton = ({ label, icon, primary = false }) => {
+const ActionButton = ({ label, icon, to, primary = false }) => {
+  console.log(123)
   return (
     <motion.button
       className={`group relative overflow-hidden rounded-md border ${
@@ -415,10 +416,10 @@ const ActionButton = ({ label, icon, primary = false }) => {
         }`}
       />
 
-      <span className="flex items-center justify-center">
+      <Link to={to} className="flex items-center justify-center">
         {label}
         {icon}
-      </span>
+      </Link>
     </motion.button>
   )
 }

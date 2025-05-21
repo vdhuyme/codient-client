@@ -179,6 +179,7 @@ const ResumePage = () => {
                 </div>
 
                 <motion.button
+                  disabled={isLoading}
                   onClick={handleDownload}
                   className="mt-4 flex items-center rounded-md border border-indigo-500/40 bg-indigo-500/10 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-indigo-500/20"
                   whileHover={{ scale: 1.03 }}
