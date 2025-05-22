@@ -452,7 +452,7 @@ const RelatedPostCard = ({ post, index }) => (
     transition={{ duration: 0.5, delay: 0.2 + (index % 3) * 0.1 }}
     className="group h-full overflow-hidden rounded-lg border border-indigo-500/20 bg-slate-900/50 backdrop-blur-sm transition-all hover:border-indigo-500/40"
   >
-    <Link href={`/blog/${post.slug}`}>
+    <Link to={`/blog/${post.slug}`}>
       <div className="relative h-40 overflow-hidden">
         <motion.div className="absolute inset-0 bg-indigo-900/20" whileHover={{ opacity: 0 }} transition={{ duration: 0.3 }} />
         <motion.img
