@@ -9,3 +9,8 @@ export const getPublishedPost = async (slug) => {
   const response = await api.get(`/published-posts/${slug}`)
   return response.data
 }
+
+export const getPublishedRelatedPost = async (slug) => {
+  const response = await api.get(`/published-posts/related/${slug}`)
+  return response.data
+}

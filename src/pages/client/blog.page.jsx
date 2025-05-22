@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom'
 import { getPublishedCategories } from '@/api/published.categories'
 import { getPublishedPosts } from '@/api/published.post'
 import { format } from 'date-fns'
+import LoadingOverlay from '@/components/customs/loading.overlay'
+import { useDebounce } from '@/hooks/use.debounce'
 
 const BlogPage = () => {
   const [activeCategory, setActiveCategory] = useState('All')
@@ -97,37 +99,126 @@ const BlogPage = () => {
       updatedAt: '2025-05-21T20:25:56.063Z'
     }
   ]
-
   const defaultCategories = ['All', 'Technology', 'Design', 'Development', 'Career']
+  const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(1) // Số bài viết mỗi trang
+  const [query, setQuery] = useState('')
+  const [searchInput, setSearchInput] = useState('') // Separate state for input
+  const [sort, setSort] = useState('DESC') // DESC, ASC
+  const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  const [totalPosts, setTotalPosts] = useState(0)
+  const debouncedSearch = useDebounce(query, 750)
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchInput(e.target.value)
+  }
 
   useEffect(() => {
-    const fetchPublishedCategories = async () => {
-      try {
-        const { categories } = await getPublishedCategories()
-        setCategories(categories.length > 0 ? ['All', ...categories.map((category) => category.name)] : defaultCategories)
-      } catch (error) {
-        setCategories(defaultCategories)
-        console.log('Failed to fetch categories')
-      }
+    setQuery(debouncedSearch)
+  }, [debouncedSearch])
+
+  // Handle sort change
+  const handleSortChange = (e) => {
+    const newSort = e.target.value
+    setSort(newSort)
+    setPage(1) // Reset to first page when sorting changes
+  }
+
+  // Handle category change
+  const handleCategoryChange = (category) => {
+    setActiveCategory(category)
+    setPage(1) // Reset to first page when category changes
+  }
+
+  // Fetch categories
+  const fetchCategories = async () => {
+    try {
+      const { categories } = await getPublishedCategories({ page: 1, limit: 100, query: '', sort: 'ASC' })
+      setCategories(categories.length > 0 ? ['All', ...categories.map((category) => category.name)] : defaultCategories)
+    } catch (error) {
+      setCategories(defaultCategories)
+      console.log('Failed to fetch categories')
+    }
+  }
+
+  // Fetch posts with parameters
+  const fetchPosts = async (pageNum = 1, isLoadMore = false) => {
+    if (isLoadMore) {
+      setIsLoadingMore(true)
+    } else {
+      setIsLoading(true)
     }
 
-    const fetchPublishedPosts = async () => {
-      try {
-        const { posts } = await getPublishedPosts()
-        setPosts(posts.length > 0 ? posts : defaultPosts)
-      } catch (error) {
+    try {
+      const params = {
+        page: pageNum,
+        limit,
+        query: query.trim(),
+        sort,
+        category: activeCategory !== 'All' ? activeCategory : undefined
+      }
+
+      const response = await getPublishedPosts(params)
+      const { posts: newPosts, total, hasMore: moreAvailable } = response
+
+      if (newPosts && newPosts.length > 0) {
+        if (isLoadMore) {
+          // Append new posts to existing ones
+          setPosts((prevPosts) => [...prevPosts, ...newPosts])
+        } else {
+          // Replace posts with new results
+          setPosts(newPosts)
+        }
+        setTotalPosts(total || newPosts.length)
+        setHasMore(moreAvailable !== undefined ? moreAvailable : newPosts.length === limit)
+      } else {
+        if (!isLoadMore) {
+          setPosts(defaultPosts)
+          setTotalPosts(defaultPosts.length)
+          setHasMore(false)
+        }
+      }
+    } catch (error) {
+      if (!isLoadMore) {
         setPosts(defaultPosts)
-        console.log('Failed to fetch categories')
+        setTotalPosts(defaultPosts.length)
+        setHasMore(false)
       }
+      console.log('Failed to fetch posts:', error)
+    } finally {
+      setIsLoading(false)
+      setIsLoadingMore(false)
     }
+  }
 
-    fetchPublishedPosts()
-    fetchPublishedCategories()
+  // Load more posts
+  const handleLoadMore = () => {
+    if (!isLoadingMore && hasMore) {
+      const nextPage = page + 1
+      setPage(nextPage)
+      fetchPosts(nextPage, true)
+    }
+  }
+
+  // Initial load
+  useEffect(() => {
+    fetchCategories()
   }, [])
 
-  const filteredPosts = activeCategory === 'All' ? posts : posts.filter((post) => post.category.name === activeCategory)
+  // Fetch posts when dependencies change
+  useEffect(() => {
+    fetchPosts(page, false)
+  }, [query, sort, activeCategory])
 
-  return (
+  // Filter posts for display (fallback for client-side filtering if needed)
+  const filteredPosts = posts
+
+  return isLoading ? (
+    <LoadingOverlay />
+  ) : (
     <div className="relative min-h-screen overflow-hidden bg-slate-950">
       {/* Subtle gradient background */}
       <div className="absolute inset-0 z-0 bg-gradient-to-br from-slate-950 to-slate-900">
@@ -141,8 +232,8 @@ const BlogPage = () => {
             key={i}
             className="absolute h-1 w-1 rounded-full bg-white"
             initial={{
-              x: Math.random() * window.innerWidth,
-              y: Math.random() * window.innerHeight,
+              x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1200),
+              y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
               scale: Math.random() * 0.3 + 0.2,
               opacity: Math.random() * 0.3 + 0.1
             }}
@@ -213,6 +304,8 @@ const BlogPage = () => {
               <input
                 type="text"
                 placeholder="Search articles..."
+                value={searchInput}
+                onChange={handleSearchChange}
                 className="w-full rounded-md border border-indigo-500/30 bg-slate-900/80 px-4 py-2 pl-10 text-white placeholder-gray-400 backdrop-blur-sm focus:border-indigo-500/50 focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
               />
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -225,12 +318,15 @@ const BlogPage = () => {
               className="flex items-center"
             >
               <Filter className="mr-2 h-4 w-4 text-indigo-400" />
-              <span className="mr-2 text-sm text-gray-300">Filter:</span>
+              <span className="mr-2 text-sm text-gray-300">Sort:</span>
               <div className="relative inline-block">
-                <select className="appearance-none rounded-md border border-indigo-500/30 bg-slate-900/80 px-6 py-2 pl-2 text-white placeholder-gray-400 backdrop-blur-sm focus:border-indigo-500/50 focus:outline-none focus:ring-1 focus:ring-indigo-500/50">
-                  <option>Latest</option>
-                  <option>Popular</option>
-                  <option>Oldest</option>
+                <select
+                  value={sort}
+                  onChange={handleSortChange}
+                  className="appearance-none rounded-md border border-indigo-500/30 bg-slate-900/80 px-6 py-2 pl-2 text-white placeholder-gray-400 backdrop-blur-sm focus:border-indigo-500/50 focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
+                >
+                  <option value="DESC">Latest</option>
+                  <option value="ASC">Oldest</option>
                 </select>
 
                 <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-indigo-400">
@@ -252,7 +348,7 @@ const BlogPage = () => {
             {categories.map((category, index) => (
               <motion.button
                 key={category}
-                onClick={() => setActiveCategory(category)}
+                onClick={() => handleCategoryChange(category)}
                 className={`rounded-full px-4 py-1 text-sm font-medium transition-all cursor-pointer ${
                   activeCategory === category
                     ? 'bg-indigo-500/20 text-indigo-300'
@@ -268,26 +364,65 @@ const BlogPage = () => {
               </motion.button>
             ))}
           </motion.div>
+
+          {/* Results count */}
+          {query && (
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 text-sm text-gray-400">
+              {filteredPosts.length > 0
+                ? `Found ${filteredPosts.length} article${filteredPosts.length !== 1 ? 's' : ''} for "${query}"`
+                : `No articles found for "${query}"`}
+            </motion.p>
+          )}
         </header>
 
         {/* Blog Posts */}
-        <div className="grid gap-8 md:grid-cols-2">
-          {filteredPosts.map((post, index) => (
-            <BlogPostCard key={post.id} post={post} index={index} />
-          ))}
-        </div>
+        {filteredPosts.length > 0 ? (
+          <div className="grid gap-8 md:grid-cols-2">
+            {filteredPosts.map((post, index) => (
+              <BlogPostCard key={`${post.id}-${index}`} post={post} index={index} />
+            ))}
+          </div>
+        ) : (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-12">
+            <div className="text-gray-400 mb-4">
+              <Search className="mx-auto h-12 w-12 mb-4 opacity-50" />
+              <h3 className="text-xl font-semibold mb-2">No articles found</h3>
+              <p>Try adjusting your search terms or browse different categories.</p>
+            </div>
+          </motion.div>
+        )}
 
-        {/* Pagination */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
-          className="mt-12 flex justify-center"
-        >
-          <button className="rounded-md border border-indigo-500/30 bg-indigo-500/10 px-6 py-2 text-sm font-medium text-white transition-all hover:bg-indigo-500/20">
-            Load More
-          </button>
-        </motion.div>
+        {/* Load More Button */}
+        {filteredPosts.length > 0 && hasMore && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+            className="mt-12 flex justify-center"
+          >
+            <button
+              onClick={handleLoadMore}
+              disabled={isLoadingMore}
+              className="rounded-md border border-indigo-500/30 bg-indigo-500/10 px-6 py-2 text-sm font-medium text-white transition-all hover:bg-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isLoadingMore ? (
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent"></div>
+                  Loading...
+                </>
+              ) : (
+                'Load More'
+              )}
+            </button>
+          </motion.div>
+        )}
+
+        {/* Posts count info */}
+        {filteredPosts.length > 0 && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-8 text-center text-sm text-gray-400">
+            Showing {filteredPosts.length} of {totalPosts} articles
+          </motion.div>
+        )}
       </div>
     </div>
   )

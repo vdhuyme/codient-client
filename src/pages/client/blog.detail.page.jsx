@@ -2,13 +2,25 @@ import useEmblaCarousel from 'embla-carousel-react'
 import './css/blog.detail.css'
 
 import { motion } from 'framer-motion'
-import { Calendar, User, Clock, Facebook, Twitter, Linkedin, LinkIcon, ChevronLeft, MessageCircle, ThumbsUp, Bookmark } from 'lucide-react'
-import { Link, useParams } from 'react-router-dom'
+import { Calendar, User, Clock, Facebook, Twitter, Linkedin, LinkIcon, ChevronLeft, Loader, SendHorizonal } from 'lucide-react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { getPublishedPost } from '@/api/published.post'
+import { getPublishedPost, getPublishedRelatedPost } from '@/api/published.post'
 import { format } from 'date-fns'
+import { createComment, getPublishedCommentsByPost } from '@/api/published.comments'
+import { useAuth } from '@/contexts/auth'
+import toast from 'react-hot-toast'
+import { TextareaField } from '@/components/customs/form.field'
+import { FormProvider, useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Button } from '@/components/customs/button'
+import NotFoundPage from '@/pages/error/not.found.page'
+import LoadingOverlay from '@/components/customs/loading.overlay'
 
 const BlogDetailPage = () => {
+  const [relatedPostCarouselRef] = useEmblaCarousel()
+
   const defaultPost = {
     title: 'Building Responsive Interfaces with Tailwind CSS',
     excerpt:
@@ -75,7 +87,7 @@ module.exports = {
       email: 'voduchuy2001@gmail.com'
     },
     readTime: '5 min read',
-    thumbnail: 'https://placehold.co/1920x1080/1c2d61/ffffff?text=AIGenerative',
+    thumbnail: 'https://placehold.co/1920x1080/1c2d61/ffffff?text=tailwindcss',
     tags: [
       { id: 1, name: 'Tailwind CSS' },
       { id: 2, name: 'CSS' },
@@ -87,25 +99,7 @@ module.exports = {
     updatedAt: '2025-05-21T20:25:56.063Z'
   }
 
-  const [post, setPost] = useState(null)
-  const { slug } = useParams()
-
-  useEffect(() => {
-    const fetchPost = async () => {
-      try {
-        const { post } = await getPublishedPost(slug)
-        setPost(post ? post : defaultPost)
-      } catch (error) {
-        setPost(defaultPost)
-        console.log('Failed to fetch post', error)
-      }
-    }
-
-    fetchPost()
-  }, [])
-
-  // Related posts
-  const relatedPosts = [
+  const defaultRelatedPosts = [
     {
       id: 1,
       title: 'Building Responsive Interfaces with Tailwind CSS',
@@ -193,9 +187,77 @@ module.exports = {
     }
   ]
 
-  const [relatedPostCarouselRef] = useEmblaCarousel()
+  const [post, setPost] = useState(null)
+  const [relatedPosts, setRelatedPosts] = useState([])
+  const [comments, setComments] = useState([])
 
-  return (
+  const { slug } = useParams()
+  const { isAuthenticated } = useAuth()
+  const navigate = useNavigate()
+  const [isLoading, setIsLoading] = useState(false)
+
+  const schema = z.object({
+    content: z.string().min(3, 'Content at least 3 characters')
+  })
+
+  const methods = useForm({
+    resolver: zodResolver(schema)
+  })
+  const { reset } = methods
+
+  const fetchComments = async () => {
+    try {
+      const { comments } = await getPublishedCommentsByPost(slug)
+      setComments(comments)
+    } catch (error) {
+      console.error('Failed to fetch comments:', error)
+    }
+  }
+
+  const fetchPostAndRelated = async () => {
+    setIsLoading(true)
+    try {
+      const [postResult, relatedPostsResult] = await Promise.all([getPublishedPost(slug), getPublishedRelatedPost(slug)])
+
+      setPost(postResult.post || defaultPost)
+      setRelatedPosts(relatedPostsResult.relatedPosts.length > 0 ? relatedPostsResult.relatedPosts : defaultRelatedPosts)
+    } catch (error) {
+      setPost(defaultPost)
+      setRelatedPosts(defaultRelatedPosts)
+      console.error('Failed to fetch post or related posts:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchPostAndRelated()
+    fetchComments()
+  }, [slug])
+
+  const onSubmit = async (data) => {
+    setIsLoading(true)
+    if (!isAuthenticated) {
+      toast.error('Login to comment')
+      return navigate('/login')
+    }
+
+    try {
+      await createComment({ content: data.content, slug })
+      toast.success('Your comment has been posted')
+
+      await fetchComments()
+    } catch (error) {
+      console.error('Failed to comment:', error)
+    } finally {
+      reset()
+      setIsLoading(false)
+    }
+  }
+
+  return isLoading ? (
+    <LoadingOverlay />
+  ) : post ? (
     <div className="relative min-h-screen overflow-hidden bg-slate-950">
       {/* Subtle gradient background */}
       <div className="absolute inset-0 z-0 bg-gradient-to-br from-slate-950 to-slate-900">
@@ -307,22 +369,6 @@ module.exports = {
             transition={{ duration: 0.5, delay: 0.6 }}
             className="overflow-hidden rounded-lg border border-indigo-500/20 bg-slate-900/50 backdrop-blur-sm"
           >
-            {/* Article Actions */}
-            <div className="flex justify-between border-b border-indigo-500/10 p-4">
-              <button className="flex items-center text-sm text-gray-400 transition-colors hover:text-indigo-300">
-                <ThumbsUp className="mr-1 h-4 w-4" />
-                <span>Like</span>
-              </button>
-              <button className="flex items-center text-sm text-gray-400 transition-colors hover:text-indigo-300">
-                <MessageCircle className="mr-1 h-4 w-4" />
-                <span>Comment</span>
-              </button>
-              <button className="flex items-center text-sm text-gray-400 transition-colors hover:text-indigo-300">
-                <Bookmark className="mr-1 h-4 w-4" />
-                <span>Save</span>
-              </button>
-            </div>
-
             {/* Tags */}
             <div className="border-b border-indigo-500/10 p-6">
               <h3 className="mb-4 text-lg font-medium text-white">Tags</h3>
@@ -375,7 +421,7 @@ module.exports = {
           <div className="relative">
             <div ref={relatedPostCarouselRef} className="overflow-x-auto pb-4 scrollbar-hide">
               <div className="flex min-w-[20rem] space-x-6">
-                {relatedPosts.map((post, index) => (
+                {relatedPosts?.map((post, index) => (
                   <div key={`${post.id}-${index}`} className="w-72 flex-none">
                     <RelatedPostCard post={post} index={index} />
                   </div>
@@ -393,45 +439,48 @@ module.exports = {
           transition={{ duration: 0.5, delay: 1.1 }}
           className="mt-12 rounded-lg border border-indigo-500/20 bg-slate-900/50 p-6 backdrop-blur-sm"
         >
-          <h2 className="mb-6 text-2xl font-bold text-white">Comments (3)</h2>
+          <h2 className="mb-6 text-2xl font-bold text-white">Comments</h2>
           <div className="space-y-6">
-            <CommentCard
-              author="Alex Johnson"
-              date="May 16, 2023"
-              content="Great article! I've been using Tailwind CSS for a few months now and it has significantly improved my workflow. The utility-first approach makes so much sense once you get used to it."
-              avatar="/placeholder.svg?height=50&width=50"
-            />
-            <CommentCard
-              author="Sarah Miller"
-              date="May 17, 2023"
-              content="Thanks for the detailed explanation. I was skeptical about Tailwind at first, but after reading this I'm going to give it a try on my next project."
-              avatar="/placeholder.svg?height=50&width=50"
-            />
-            <CommentCard
-              author="David Chen"
-              date="May 18, 2023"
-              content="I'd love to see a follow-up article about integrating Tailwind with component libraries like Headless UI or Radix. That combination is really powerful for building accessible interfaces quickly."
-              avatar="/placeholder.svg?height=50&width=50"
-            />
+            {comments?.map((comment, index) => (
+              <CommentCard
+                key={`comment-${index}`}
+                user={comment?.user?.name}
+                date={comment.createdAt}
+                content={comment.content}
+                avatar={comment?.user?.avatar ?? 'https://ui-avatars.com/api/?background=0D8ABC&color=fff'}
+              />
+            ))}
           </div>
 
           {/* Comment Form */}
           <div className="mt-8">
             <h3 className="mb-4 text-lg font-medium text-white">Leave a comment</h3>
-            <div className="mb-4">
-              <textarea
-                className="w-full rounded-md border border-indigo-500/30 bg-slate-900/80 p-3 text-white placeholder-gray-400 focus:border-indigo-500/50 focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
-                rows="4"
-                placeholder="Share your thoughts..."
-              ></textarea>
-            </div>
-            <button className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700">
-              Post Comment
-            </button>
+            <FormProvider {...methods}>
+              <form onSubmit={methods.handleSubmit(onSubmit)}>
+                <div className="mb-4">
+                  <TextareaField name="content" label="Your Comment" placeholder={isAuthenticated ? 'Share your thoughts...' : 'Login to comment'} />
+                </div>
+                <Button
+                  disabled={isLoading}
+                  icon={
+                    isLoading ? (
+                      <Loader className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <SendHorizonal className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    )
+                  }
+                  type="submit"
+                >
+                  Post Comment
+                </Button>
+              </form>
+            </FormProvider>
           </div>
         </motion.div>
       </div>
     </div>
+  ) : (
+    <NotFoundPage />
   )
 }
 
@@ -452,7 +501,7 @@ const RelatedPostCard = ({ post, index }) => (
     transition={{ duration: 0.5, delay: 0.2 + (index % 3) * 0.1 }}
     className="group h-full overflow-hidden rounded-lg border border-indigo-500/20 bg-slate-900/50 backdrop-blur-sm transition-all hover:border-indigo-500/40"
   >
-    <Link to={`/blog/${post.slug}`}>
+    <Link to={`/posts/${post.slug}`}>
       <div className="relative h-40 overflow-hidden">
         <motion.div className="absolute inset-0 bg-indigo-900/20" whileHover={{ opacity: 0 }} transition={{ duration: 0.3 }} />
         <motion.img
@@ -484,19 +533,20 @@ const RelatedPostCard = ({ post, index }) => (
   </motion.article>
 )
 
-const CommentCard = ({ author, date, content, avatar }) => (
+const CommentCard = ({ user, date, content, avatar }) => (
   <div className="border-b border-slate-800 pb-6 last:border-0 last:pb-0">
     <div className="mb-2 flex items-start">
-      <img src={'https://ui-avatars.com/api/?background=0D8ABC&color=fff' || avatar} alt={author} className="mr-3 h-10 w-10 rounded-full" />
+      <img src={avatar} alt={user} className="mr-3 h-10 w-10 rounded-full" />
       <div>
-        <h4 className="font-medium text-white">{author}</h4>
-        <p className="text-xs text-gray-400">{date}</p>
+        <h4 className="font-medium text-white">{user}</h4>
+        <p className="text-xs text-gray-400">{format(date, 'PPP')}</p>
       </div>
     </div>
     <p className="text-sm text-gray-300">{content}</p>
     <div className="mt-2 flex space-x-4">
-      <button className="text-xs text-gray-400 hover:text-indigo-300">Reply</button>
-      <button className="text-xs text-gray-400 hover:text-indigo-300">Like</button>
+      <button className="text-xs text-gray-400 hover:text-indigo-300" role="button">
+        Report
+      </button>
     </div>
   </div>
 )
