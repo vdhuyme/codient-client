@@ -2,7 +2,6 @@ import { motion } from 'framer-motion'
 import { Github, Linkedin, Mail, Phone, MapPin, Plane, Book, Music, Coffee, Code, Volleyball, Download, Loader, ChevronLeft } from 'lucide-react'
 import avatar from '@/assets/profile.png'
 import html2canvas from 'html2canvas-pro'
-import jsPDF from 'jspdf'
 import React, { useRef, useState } from 'react'
 import { format } from 'date-fns'
 import ResumeViewExporter from '@/components/customs/resume.view.exporter'
@@ -19,44 +18,27 @@ const ResumePage = () => {
   ]
 
   const [isLoading, setIsLoading] = useState(false)
-  const pdfExporterRef = useRef(null)
+  const cvExporterRef = useRef(null)
   const handleDownload = async () => {
     setIsLoading(true)
-    const filename = `${format(new Date(), 'yyyy-MM-dd H:i:s')} - Vo Duc Huy - Software Engineer`
+    const filename = `Vo_Duc_Huy_Software_Engineer_${format(new Date(), 'dd-MM-yyyy_HH-mm')}.png`
 
     try {
-      const element = pdfExporterRef.current
-      if (!element) throw new Error('Element not found')
-
+      const element = cvExporterRef.current
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true
       })
 
-      const imgData = canvas.toDataURL('image/png')
-      const pdf = new jsPDF('p', 'mm', 'a4')
+      const imageData = canvas.toDataURL('image/png')
 
-      const pdfWidth = pdf.internal.pageSize.getWidth() // 210mm
-      const pdfHeight = pdf.internal.pageSize.getHeight() // 297mm
-
-      const imgWidth = canvas.width
-      const imgHeight = canvas.height
-
-      // Tính tỉ lệ scale để ảnh fit vào trang A4
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight)
-
-      // Scale ảnh
-      const finalWidth = imgWidth * ratio
-      const finalHeight = imgHeight * ratio
-
-      // Căn giữa ảnh trong PDF
-      const x = (pdfWidth - finalWidth) / 2
-      const y = (pdfHeight - finalHeight) / 2
-
-      pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight)
-      pdf.save(filename)
+      // Make link and auto download
+      const link = document.createElement('a')
+      link.href = imageData
+      link.download = filename
+      link.click()
     } catch (err) {
-      console.error('Error generating PDF:', err)
+      console.error('Error exporting image:', err)
     } finally {
       setIsLoading(false)
     }
@@ -193,7 +175,7 @@ const ResumePage = () => {
                   whileHover={{ scale: 1.03 }}
                 >
                   {isLoading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                  {isLoading ? 'Downloading...' : 'Download CV'}
+                  {isLoading ? 'Downloading' : 'Download CV'}
                 </motion.button>
               </motion.div>
             </div>
@@ -208,13 +190,15 @@ const ResumePage = () => {
                   title="Software Engineer"
                   company="CAN THO WATER SUPPLY - SEWERAGE JOINT STOCK COMPANY"
                   period="03/2025 - Present"
-                  location="Can Tho City, Vietnam"
+                  location="On site / Can Tho City, Vietnam"
                   description="Led the development of full-stack web and geospatial applications using modern frameworks and databases. Focused on building scalable backend services, intelligent search systems, and rich data visualizations."
+                  techStack={['Node.js', 'FastAPI (Python)', '.NET', 'MSSQL', 'MongoDB', 'Redis', 'WebGIS']}
                   achievements={[
-                    'Developed and maintained web applications using React, Node.js, FastAPI (Python), and MongoDB',
-                    'Built and optimized RESTful APIs and backend services using Node.js, FastAPI, .NET, and MSSQL',
-                    'Designed and implemented Retrieval-Augmented Generation (RAG) systems to improve intelligent search and knowledge access',
-                    'Created WebGIS applications for geospatial data visualization, analysis, and interactive mapping'
+                    'Designed and maintained scalable backend systems using FastAPI (Python), .NET, and Node.js,',
+                    'Developed robust RESTful APIs and microservices for internal and external system integration',
+                    'Implemented RAG-based backend services to enhance semantic search and knowledge retrieval',
+                    'Worked with relational and NoSQL databases (MSSQL, MongoDB, Redis), focusing on data modeling and query optimization',
+                    'Built WebGIS backend services to handle spatial data processing, tile serving, and API endpoints for frontend mapping layers'
                   ]}
                 />
 
@@ -222,21 +206,48 @@ const ResumePage = () => {
                   title="NodeJs Backend Developer"
                   company="KATEC TECHNOLOGY JOIN STOCK COMPANY"
                   period="03/2024 - 04/2025"
-                  location="Can Tho City, Vietnam"
+                  location="On site / Can Tho City, Vietnam"
                   description="Contributed to the full-stack development of scalable web applications using modern JavaScript technologies. Focused on designing robust backend services, optimizing API performance, and delivering responsive frontend experiences."
+                  techStack={[
+                    'Node.js',
+                    'Express.js',
+                    'MySQL',
+                    'MongoDB',
+                    'WebSocket',
+                    'Firebase',
+                    'JWT',
+                    'Redis',
+                    'Docker',
+                    'React.js',
+                    'Payment gateways'
+                  ]}
                   achievements={[
                     'Designed and developed scalable backend services using Node.js, Express.js, and MySQL',
-                    'Architected and optimized RESTful APIs with integration of MySQL and MongoDB for both mobile and web applications',
-                    'Implemented real-time features using WebSocket for chat and notification systems',
-                    'Integrated Firebase services for push notifications and cloud data management',
-                    'Built secure authentication and authorization flows with JWT and role-based access control',
-                    'Applied caching strategies (Redis, in-memory) to significantly improve API response times and reduce load',
-                    'Utilized Docker for consistent development environments and streamlined deployment processes',
-                    'Built reusable and responsive UI components with React.js to ensure smooth user experience across devices',
-                    'Integrated multiple payment gateways (e.g., VietinBank, HDBank, VNPay) to enable secure and seamless payment processing',
-                    'Developed and maintained electronic invoicing systems compliant with local regulations and standards',
-                    'Collaborated closely with cross-functional teams to improve user experience and system reliability',
-                    'Participated in code reviews, design discussions to maintain code quality and promote best practices'
+                    'Architected and optimized RESTful APIs integrated with MySQL and MongoDB for mobile and web platforms',
+                    'Implemented real-time communication using WebSocket for chat and notification systems',
+                    'Integrated Firebase services for push notifications and backend event handling',
+                    'Built secure authentication and authorization systems using JWT and role-based access control',
+                    'Applied Redis and in-memory caching strategies to reduce latency and improve API performance',
+                    'Containerized backend services using Docker for consistent development and deployment environments',
+                    'Integrated multiple payment gateways (e.g., VietinBank, HDBank, VNPay) with transaction validation and error handling',
+                    'Developed and maintained electronic invoicing systems compliant with Viettel e-invoice regulations',
+                    'Collaborated with frontend teams to deliver reliable, secure, and performant systems',
+                    'Conducted code reviews, wrote technical documentation, and enforced backend coding standards and best practices'
+                  ]}
+                />
+
+                <ExperienceItem
+                  title="Freelance Full-Stack Developer"
+                  company="Self-employed"
+                  period="2023 - Present"
+                  location="Remote / Can Tho City, Vietnam"
+                  description="Worked independently with clients to design, develop, and deploy full-stack web applications using Laravel, React.js, and MySQL. Delivered user-centric solutions with a strong focus on performance, scalability, and usability."
+                  techStack={['Laravel', 'Inertia.js', 'React.js', 'Tailwind CSS', 'MySQL', 'Git', 'CI/CD']}
+                  achievements={[
+                    'Built and maintained full-stack web applications using Laravel, Inertia.js, and React, enabling seamless server-driven SPA architecture',
+                    'Designed interactive and responsive frontend with React.js and Tailwind CSS, following component-based best practices',
+                    'Implemented authentication, form validation, and flash messaging using Laravel’s backend logic and Inertia-based frontend rendering',
+                    'Deployed and maintained applications on shared and VPS hosting environments with Git-based CI/CD pipelines'
                   ]}
                 />
 
@@ -244,13 +255,13 @@ const ResumePage = () => {
                   title="Intern/Fresher"
                   company="ARCHI ELITE TECHNOLOGY JOINT STOCK COMPANY"
                   period="05/2023 - 07/2023"
-                  location="Ho Chi Minh City, Vietnam"
+                  location="On site / Ho Chi Minh City, Vietnam"
                   description="Developed and maintained web applications using the Laravel PHP framework with a focus on clean architecture and maintainability. Collaborated with cross-functional teams to deliver responsive and performant solutions."
+                  techStack={['Laravel', 'MySQL', 'Botble CMS', 'Git']}
                   achievements={[
-                    'Built and maintained backend features using Laravel, ensuring scalable and secure codebases',
-                    'Worked with MySQL databases for efficient data storage, retrieval, and optimization',
-                    'Integrated and customized Botble CMS to streamline content management workflows',
-                    'Used Git for version control, supporting team collaboration and continuous integration'
+                    'Developed and maintained backend services using Laravel, focusing on scalability, maintainability, and security',
+                    'Designed and optimized MySQL database schemas for high-performance data access and consistency',
+                    'Integrated and extended Botble CMS to support custom content workflows and admin features'
                   ]}
                 />
               </div>
@@ -259,18 +270,6 @@ const ResumePage = () => {
             {/* Skills Section */}
             <Section title="Skills">
               <div className="space-y-6">
-                <SkillCategory
-                  title="Frontend Development"
-                  skills={[
-                    { name: 'React' },
-                    { name: 'Vue.js' },
-                    { name: 'JavaScript/TypeScript' },
-                    { name: 'HTML/CSS' },
-                    { name: 'Tailwind CSS' },
-                    { name: 'Bootstrap 5' }
-                  ]}
-                />
-
                 <SkillCategory
                   title="Backend Development"
                   skills={[
@@ -285,6 +284,18 @@ const ResumePage = () => {
                     { name: 'MongoDB' },
                     { name: 'PostgreSQL' },
                     { name: 'SQL Server' }
+                  ]}
+                />
+
+                <SkillCategory
+                  title="Frontend Development"
+                  skills={[
+                    { name: 'React' },
+                    { name: 'Vue.js' },
+                    { name: 'JavaScript/TypeScript' },
+                    { name: 'HTML/CSS' },
+                    { name: 'Tailwind CSS' },
+                    { name: 'Bootstrap 5' }
                   ]}
                 />
 
@@ -375,7 +386,7 @@ const ResumePage = () => {
       </div>
 
       <div
-        ref={pdfExporterRef}
+        ref={cvExporterRef}
         style={{
           width: '1440px',
           height: 'auto',
@@ -425,19 +436,42 @@ const Section = ({ title, children }) => (
   </motion.section>
 )
 
-const ExperienceItem = ({ title, company, period, location, description, achievements }) => (
+const ExperienceItem = ({ title, company, period, location, description, achievements, techStack }) => (
   <div className="border-l-2 border-indigo-500/20 pl-4">
-    <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+    <div className="mb-2 flex flex-col md:flex-row md:items-baseline md:justify-between gap-2">
       <div>
         <h3 className="text-xl font-medium text-white">{title}</h3>
         <div className="text-indigo-400">{company}</div>
       </div>
-      <div className="text-right">
+
+      <div className="text-start md:text-end">
         <div className="text-sm text-gray-400">{period}</div>
         <div className="text-xs text-gray-500">{location}</div>
       </div>
     </div>
-    <p className="mb-3 text-gray-300">{description}</p>
+
+    <p className="mb-2 text-gray-300">{description}</p>
+
+    {/* Tech Stack */}
+    {techStack && techStack.length > 0 && (
+      <div className="mb-4">
+        <h4 className="mb-1 text-sm font-medium text-white">Tech Stack:</h4>
+        <div className="flex flex-wrap gap-2">
+          {techStack.map((tech, index) => (
+            <motion.span
+              key={`skill-${tech}-${index}`}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, delay: index * 0.03 }}
+              className="inline-flex cursor-context-menu items-center rounded-full border border-indigo-500/30 bg-indigo-500/5 px-3 py-1 text-sm font-medium text-indigo-200 backdrop-blur-sm"
+            >
+              {tech}
+            </motion.span>
+          ))}
+        </div>
+      </div>
+    )}
+
     <div>
       <h4 className="mb-2 text-sm font-medium text-white">Key Achievements:</h4>
       <ul className="space-y-1 text-sm text-gray-300">

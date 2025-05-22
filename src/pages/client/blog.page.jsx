@@ -1,131 +1,109 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Search, Calendar, User, Clock, ChevronRight, Filter, ChevronLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
 import { getPublishedCategories } from '@/api/published.categories'
 import { getPublishedPosts } from '@/api/published.post'
 import { format } from 'date-fns'
+import { useDebounce } from '@/hooks/use.debounce'
 
 const BlogPage = () => {
   const [activeCategory, setActiveCategory] = useState('All')
-  const [categories, setCategories] = useState([])
-  const [posts, setPosts] = useState([])
-  const defaultPosts = [
-    {
-      id: 1,
-      title: 'Building Responsive Interfaces with Tailwind CSS',
-      excerpt:
-        'Learn how to create beautiful, responsive user interfaces using Tailwind CSS, a utility-first CSS framework that can speed up your development workflow.',
-      category: {
-        name: 'Design'
-      },
-      author: {
-        name: 'Vo Duc Huy'
-      },
-      readTime: '10 min read',
-      thumbnail: 'https://placehold.co/600x400/1c2d61/ffffff?text=tailwindcss',
-      slug: 'building-responsive-interfaces-with-tailwind-css',
-      createdAt: '2025-05-21T20:25:56.063Z',
-      updatedAt: '2025-05-21T20:25:56.063Z'
-    },
-    {
-      id: 2,
-      title: 'Getting Started with Next.js and Server Components',
-      excerpt:
-        'Explore the power of Next.js 13 with Server Components and learn how to build faster, more efficient React applications with improved SEO.',
-      category: {
-        name: 'Development'
-      },
-      author: {
-        name: 'Vo Duc Huy'
-      },
-      readTime: '8 min read',
-      thumbnail: 'https://placehold.co/600x400/1c2d61/ffffff?text=nextjs',
-      slug: 'getting-started-with-nextjs-and-server-components',
-      createdAt: '2025-05-21T20:25:56.063Z',
-      updatedAt: '2025-05-21T20:25:56.063Z'
-    },
-    {
-      id: 3,
-      title: 'The Future of Web Development: AI-Assisted Coding',
-      excerpt:
-        'Discover how AI tools are transforming the way developers write code, from intelligent code completion to automated testing and debugging.',
-      category: {
-        name: 'Technology'
-      },
-      author: {
-        name: 'Vo Duc Huy'
-      },
-      readTime: '10 min read',
-      thumbnail: 'https://placehold.co/600x400/1c2d61/ffffff?text=AI',
-      slug: 'the-future-of-web-development-ai-assisted-coding',
-      createdAt: '2025-05-21T20:25:56.063Z',
-      updatedAt: '2025-05-21T20:25:56.063Z'
-    },
-    {
-      id: 4,
-      title: 'Mastering TypeScript: Tips and Best Practices',
-      excerpt:
-        'Take your TypeScript skills to the next level with advanced techniques, best practices, and patterns that will make your code more robust and maintainable.',
-      category: {
-        name: 'Development'
-      },
-      author: {
-        name: 'Vo Duc Huy'
-      },
-      readTime: '7 min read',
-      thumbnail: 'https://placehold.co/600x400/1c2d61/ffffff?text=typescript',
-      slug: 'mastering-typescript-tips-and-best-practices',
-      createdAt: '2025-05-21T20:25:56.063Z',
-      updatedAt: '2025-05-21T20:25:56.063Z'
-    },
-    {
-      id: 5,
-      title: 'From Junior to Senior Developer: A Career Roadmap',
-      excerpt:
-        'Navigate your career path from junior to senior developer with this comprehensive guide covering technical skills, soft skills, and career strategies.',
-      category: {
-        name: 'Career'
-      },
-      author: {
-        name: 'Vo Duc Huy'
-      },
-      readTime: '10 min read',
-      thumbnail: 'https://placehold.co/600x400/1c2d61/ffffff?text=roadmap',
-      slug: 'from-junior-to-senior-developer-a-career-roadmap',
-      createdAt: '2025-05-21T20:25:56.063Z',
-      updatedAt: '2025-05-21T20:25:56.063Z'
-    }
-  ]
+  const [searchInput, setSearchInput] = useState('')
+  const [sort, setSort] = useState('DESC')
+  const [limit] = useState(5)
+  const observerRef = useRef()
 
-  const defaultCategories = ['All', 'Technology', 'Design', 'Development', 'Career']
+  const debouncedSearch = useDebounce(searchInput, 750)
+
+  const handleSearchChange = (e) => setSearchInput(e.target.value)
+  const handleSortChange = (e) => setSort(e.target.value)
+  const handleCategoryChange = (categoryName) => setActiveCategory(categoryName)
+
+  const { data: categoriesData } = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const { categories } = await getPublishedCategories({
+        page: 1,
+        limit: 100,
+        query: '',
+        sort: 'ASC'
+      })
+      return [{ id: null, name: 'All' }, ...categories]
+    },
+    staleTime: 5 * 60 * 1000
+  })
+
+  const getCategoryId = useCallback(
+    (name) => {
+      if (name === 'All') {
+        return undefined
+      }
+      return categoriesData?.find((cat) => cat.name === name)?.id
+    },
+    [categoriesData]
+  )
+
+  const {
+    data: postsData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: isPostsLoading,
+    isError: isPostsError
+  } = useInfiniteQuery({
+    queryKey: ['posts', debouncedSearch, sort, activeCategory],
+    queryFn: async ({ pageParam = 1 }) => {
+      return await getPublishedPosts({
+        page: pageParam,
+        limit,
+        query: debouncedSearch.trim(),
+        sort,
+        categoryId: getCategoryId(activeCategory)
+      })
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.hasMore !== undefined) {
+        return lastPage.hasMore ? allPages.length + 1 : undefined
+      }
+      if (lastPage.posts?.length < limit) {
+        return undefined
+      }
+      return allPages.length + 1
+    },
+    enabled: !!categoriesData,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000
+  })
+
+  const posts = postsData?.pages?.flatMap((page) => page.posts || []) || []
+  const totalPosts = postsData?.pages?.[0]?.total || posts.length
 
   useEffect(() => {
-    const fetchPublishedCategories = async () => {
-      try {
-        const { categories } = await getPublishedCategories()
-        setCategories(categories.length > 0 ? ['All', ...categories.map((category) => category.name)] : defaultCategories)
-      } catch (error) {
-        setCategories(defaultCategories)
-        console.log('Failed to fetch categories')
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage()
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '500px'
       }
+    )
+
+    const current = observerRef.current
+    if (current) {
+      observer.observe(current)
     }
 
-    const fetchPublishedPosts = async () => {
-      try {
-        const { posts } = await getPublishedPosts()
-        setPosts(posts.length > 0 ? posts : defaultPosts)
-      } catch (error) {
-        setPosts(defaultPosts)
-        console.log('Failed to fetch categories')
+    return () => {
+      if (current) {
+        observer.unobserve(current)
       }
     }
-
-    fetchPublishedPosts()
-    fetchPublishedCategories()
-  }, [])
-
-  const filteredPosts = activeCategory === 'All' ? posts : posts.filter((post) => post.category.name === activeCategory)
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950">
@@ -141,8 +119,8 @@ const BlogPage = () => {
             key={i}
             className="absolute h-1 w-1 rounded-full bg-white"
             initial={{
-              x: Math.random() * window.innerWidth,
-              y: Math.random() * window.innerHeight,
+              x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1200),
+              y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
               scale: Math.random() * 0.3 + 0.2,
               opacity: Math.random() * 0.3 + 0.1
             }}
@@ -213,6 +191,8 @@ const BlogPage = () => {
               <input
                 type="text"
                 placeholder="Search articles..."
+                value={searchInput}
+                onChange={handleSearchChange}
                 className="w-full rounded-md border border-indigo-500/30 bg-slate-900/80 px-4 py-2 pl-10 text-white placeholder-gray-400 backdrop-blur-sm focus:border-indigo-500/50 focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
               />
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -225,16 +205,19 @@ const BlogPage = () => {
               className="flex items-center"
             >
               <Filter className="mr-2 h-4 w-4 text-indigo-400" />
-              <span className="mr-2 text-sm text-gray-300">Filter:</span>
+              <span className="mr-2 text-sm text-gray-300">Sort:</span>
               <div className="relative inline-block">
-                <select className="appearance-none rounded-md border border-indigo-500/30 bg-slate-900/80 px-6 py-2 pl-2 text-white placeholder-gray-400 backdrop-blur-sm focus:border-indigo-500/50 focus:outline-none focus:ring-1 focus:ring-indigo-500/50">
-                  <option>Latest</option>
-                  <option>Popular</option>
-                  <option>Oldest</option>
+                <select
+                  value={sort}
+                  onChange={handleSortChange}
+                  className="appearance-none rounded-md border border-indigo-500/30 bg-slate-900/80 px-10 py-2 pl-6 text-white placeholder-gray-400 backdrop-blur-sm focus:border-indigo-500/50 focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
+                >
+                  <option value="DESC">Latest</option>
+                  <option value="ASC">Oldest</option>
                 </select>
 
                 <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-indigo-400">
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
@@ -243,51 +226,103 @@ const BlogPage = () => {
           </div>
 
           {/* Categories */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="flex flex-wrap justify-center gap-2"
-          >
-            {categories.map((category, index) => (
-              <motion.button
-                key={category}
-                onClick={() => setActiveCategory(category)}
-                className={`rounded-full px-4 py-1 text-sm font-medium transition-all cursor-pointer ${
-                  activeCategory === category
-                    ? 'bg-indigo-500/20 text-indigo-300'
-                    : 'bg-slate-800/50 text-gray-400 hover:bg-slate-800 hover:text-gray-300'
-                }`}
-                whileHover={{ y: -2 }}
-                whileTap={{ y: 0 }}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.5 + index * 0.1 }}
-              >
-                {category}
-              </motion.button>
-            ))}
-          </motion.div>
+          {categoriesData && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className="flex flex-wrap justify-center gap-2"
+            >
+              {categoriesData.map((category, index) => (
+                <motion.button
+                  key={category.id || category.name}
+                  onClick={() => handleCategoryChange(category.name)}
+                  className={`rounded-full px-4 py-1 text-sm font-medium transition-all cursor-pointer ${
+                    activeCategory === category.name
+                      ? 'bg-indigo-500/20 text-indigo-300'
+                      : 'bg-slate-800/50 text-gray-400 hover:bg-slate-800 hover:text-gray-300'
+                  }`}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ y: 0 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.5 + index * 0.1 }}
+                >
+                  {category.name}
+                </motion.button>
+              ))}
+            </motion.div>
+          )}
+
+          {/* Results count */}
+          {debouncedSearch && (
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 text-sm text-gray-400">
+              {posts.length > 0
+                ? `Found ${posts.length} article${posts.length !== 1 ? 's' : ''} for "${debouncedSearch}"`
+                : `No articles found for "${debouncedSearch}"`}
+            </motion.p>
+          )}
+
+          {/* Loading indicator for initial load */}
+          {isPostsLoading && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 flex justify-center">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent"></div>
+            </motion.div>
+          )}
         </header>
 
         {/* Blog Posts */}
-        <div className="grid gap-8 md:grid-cols-2">
-          {filteredPosts.map((post, index) => (
-            <BlogPostCard key={post.id} post={post} index={index} />
-          ))}
-        </div>
+        {posts.length > 0 ? (
+          <>
+            <div className="grid gap-8 md:grid-cols-2">
+              {posts.map((post, index) => (
+                <BlogPostCard key={`${post.id}-${index}`} post={post} index={index} />
+              ))}
+            </div>
 
-        {/* Pagination */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
-          className="mt-12 flex justify-center"
-        >
-          <button className="rounded-md border border-indigo-500/30 bg-indigo-500/10 px-6 py-2 text-sm font-medium text-white transition-all hover:bg-indigo-500/20">
-            Load More
-          </button>
-        </motion.div>
+            {/* Infinite scroll trigger */}
+            <div ref={observerRef} className="mt-8 flex justify-center">
+              {isFetchingNextPage && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 text-indigo-400">
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent"></div>
+                  <span className="text-sm">Loading more articles...</span>
+                </motion.div>
+              )}
+              {!hasNextPage && posts.length > limit && (
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-gray-400">
+                  You've reached the end of articles
+                </motion.p>
+              )}
+            </div>
+          </>
+        ) : (
+          !isPostsLoading && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-12">
+              <div className="text-gray-400 mb-4">
+                <Search className="mx-auto h-12 w-12 mb-4 opacity-50" />
+                <h3 className="text-xl font-semibold mb-2">No articles found</h3>
+                <p>Try adjusting your search terms or browse different categories.</p>
+              </div>
+            </motion.div>
+          )
+        )}
+
+        {/* Posts count info */}
+        {posts.length > 0 && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-8 text-center text-sm text-gray-400">
+            Showing {posts.length} of {totalPosts} articles
+          </motion.div>
+        )}
+
+        {/* Error handling */}
+        {isPostsError && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-12">
+            <div className="text-red-400 mb-4">
+              <h3 className="text-xl font-semibold mb-2">Failed to load articles</h3>
+              <p>Please try again later or check your connection.</p>
+            </div>
+          </motion.div>
+        )}
       </div>
     </div>
   )
