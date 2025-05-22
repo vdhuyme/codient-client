@@ -1,6 +1,16 @@
 import { motion } from 'framer-motion'
+import { LoaderCircle } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
-const LoadingOverlay = ({ dominantColor }) => {
+const LoadingOverlay = () => {
+  const [dominantColor, setDominantColor] = useState('rgba(79, 70, 229, 0.3)') // Default indigo color
+
+  useEffect(() => {
+    // This would normally use a color extraction library
+    // For demo purposes, we'll just use a preset color
+    setDominantColor('rgba(79, 70, 229, 0.3)')
+  }, [])
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-sm">
       {/* Gradient overlay */}
@@ -40,10 +50,7 @@ const LoadingOverlay = ({ dominantColor }) => {
       </div>
 
       {/* Loading indicator */}
-      <motion.div
-        className="relative z-10 rounded-full border-4 border-indigo-500 border-t-transparent w-16 h-16 animate-spin"
-        aria-label="Loading"
-      />
+      <LoaderCircle className="relative z-10 w-16 h-16 animate-spin text-white" aria-label="Loading" />
     </div>
   )
 }

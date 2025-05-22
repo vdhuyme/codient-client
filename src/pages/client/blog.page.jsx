@@ -1,307 +1,111 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Search, Calendar, User, Clock, ChevronRight, Filter, ChevronLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
 import { getPublishedCategories } from '@/api/published.categories'
 import { getPublishedPosts } from '@/api/published.post'
 import { format } from 'date-fns'
-import LoadingOverlay from '@/components/customs/loading.overlay'
 import { useDebounce } from '@/hooks/use.debounce'
-
-const defaultPosts = [
-  {
-    id: 1,
-    title: 'Building Responsive Interfaces with Tailwind CSS',
-    excerpt:
-      'Learn how to create beautiful, responsive user interfaces using Tailwind CSS, a utility-first CSS framework that can speed up your development workflow.',
-    category: {
-      name: 'Design'
-    },
-    author: {
-      name: 'Vo Duc Huy'
-    },
-    readTime: '10 min read',
-    thumbnail: 'https://placehold.co/600x400/1c2d61/ffffff?text=tailwindcss',
-    slug: 'building-responsive-interfaces-with-tailwind-css',
-    createdAt: '2025-05-21T20:25:56.063Z',
-    updatedAt: '2025-05-21T20:25:56.063Z'
-  },
-  {
-    id: 2,
-    title: 'Getting Started with Next.js and Server Components',
-    excerpt:
-      'Explore the power of Next.js 13 with Server Components and learn how to build faster, more efficient React applications with improved SEO.',
-    category: {
-      name: 'Development'
-    },
-    author: {
-      name: 'Vo Duc Huy'
-    },
-    readTime: '8 min read',
-    thumbnail: 'https://placehold.co/600x400/1c2d61/ffffff?text=nextjs',
-    slug: 'getting-started-with-nextjs-and-server-components',
-    createdAt: '2025-05-21T20:25:56.063Z',
-    updatedAt: '2025-05-21T20:25:56.063Z'
-  },
-  {
-    id: 3,
-    title: 'The Future of Web Development: AI-Assisted Coding',
-    excerpt:
-      'Discover how AI tools are transforming the way developers write code, from intelligent code completion to automated testing and debugging.',
-    category: {
-      name: 'Technology'
-    },
-    author: {
-      name: 'Vo Duc Huy'
-    },
-    readTime: '10 min read',
-    thumbnail: 'https://placehold.co/600x400/1c2d61/ffffff?text=AI',
-    slug: 'the-future-of-web-development-ai-assisted-coding',
-    createdAt: '2025-05-21T20:25:56.063Z',
-    updatedAt: '2025-05-21T20:25:56.063Z'
-  },
-  {
-    id: 4,
-    title: 'Mastering TypeScript: Tips and Best Practices',
-    excerpt:
-      'Take your TypeScript skills to the next level with advanced techniques, best practices, and patterns that will make your code more robust and maintainable.',
-    category: {
-      name: 'Development'
-    },
-    author: {
-      name: 'Vo Duc Huy'
-    },
-    readTime: '7 min read',
-    thumbnail: 'https://placehold.co/600x400/1c2d61/ffffff?text=typescript',
-    slug: 'mastering-typescript-tips-and-best-practices',
-    createdAt: '2025-05-21T20:25:56.063Z',
-    updatedAt: '2025-05-21T20:25:56.063Z'
-  },
-  {
-    id: 5,
-    title: 'From Junior to Senior Developer: A Career Roadmap',
-    excerpt:
-      'Navigate your career path from junior to senior developer with this comprehensive guide covering technical skills, soft skills, and career strategies.',
-    category: {
-      name: 'Career'
-    },
-    author: {
-      name: 'Vo Duc Huy'
-    },
-    readTime: '10 min read',
-    thumbnail: 'https://placehold.co/600x400/1c2d61/ffffff?text=roadmap',
-    slug: 'from-junior-to-senior-developer-a-career-roadmap',
-    createdAt: '2025-05-21T20:25:56.063Z',
-    updatedAt: '2025-05-21T20:25:56.063Z'
-  }
-]
 
 const BlogPage = () => {
   const [activeCategory, setActiveCategory] = useState('All')
-  const [categories, setCategories] = useState([])
-  const [posts, setPosts] = useState([])
-  const [page, setPage] = useState(1)
-  const [limit] = useState(2)
-  const [query, setQuery] = useState('')
   const [searchInput, setSearchInput] = useState('')
   const [sort, setSort] = useState('DESC')
-  const [isLoading, setIsLoading] = useState(false)
-  const [isLoadingMore, setIsLoadingMore] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
-  const [totalPosts, setTotalPosts] = useState(0)
-  const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const [limit] = useState(5)
+  const observerRef = useRef()
 
   const debouncedSearch = useDebounce(searchInput, 750)
 
-  // Handle search input change
-  const handleSearchChange = (e) => {
-    setSearchInput(e.target.value)
-  }
+  const handleSearchChange = (e) => setSearchInput(e.target.value)
+  const handleSortChange = (e) => setSort(e.target.value)
+  const handleCategoryChange = (categoryName) => setActiveCategory(categoryName)
 
-  useEffect(() => {
-    setQuery(debouncedSearch)
-  }, [debouncedSearch])
-
-  // Handle sort change
-  const handleSortChange = (e) => {
-    const newSort = e.target.value
-    setSort(newSort)
-  }
-
-  // Handle category change
-  const handleCategoryChange = (categoryName) => {
-    setActiveCategory(categoryName)
-  }
-
-  // Get category ID from category name
-  const getCategoryId = useCallback(
-    (categoryName) => {
-      if (categoryName === 'All') return undefined
-      const category = categories.find((cat) => cat.name === categoryName)
-      return category?.id
-    },
-    [categories]
-  )
-
-  // Fetch categories
-  const fetchCategories = useCallback(async () => {
-    try {
-      const { categories: fetchedCategories } = await getPublishedCategories({
+  const { data: categoriesData } = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const { categories } = await getPublishedCategories({
         page: 1,
         limit: 100,
         query: '',
         sort: 'ASC'
       })
-
-      if (fetchedCategories && fetchedCategories.length > 0) {
-        setCategories([{ id: null, name: 'All' }, ...fetchedCategories])
-      } else {
-        // Fallback categories with mock IDs
-        setCategories([
-          { id: null, name: 'All' },
-          { id: 1, name: 'Technology' },
-          { id: 2, name: 'Design' },
-          { id: 3, name: 'Development' },
-          { id: 4, name: 'Career' }
-        ])
-      }
-    } catch (error) {
-      // Fallback categories with mock IDs
-      setCategories([
-        { id: null, name: 'All' },
-        { id: 1, name: 'Technology' },
-        { id: 2, name: 'Design' },
-        { id: 3, name: 'Development' },
-        { id: 4, name: 'Career' }
-      ])
-      console.log('Failed to fetch categories')
-    }
-  }, [])
-
-  // Fetch posts with parameters
-  const fetchPosts = useCallback(
-    async (pageNum = 1, isLoadMore = false) => {
-      if (isLoadMore) {
-        setIsLoadingMore(true)
-      } else {
-        setIsLoading(true)
-      }
-
-      try {
-        const params = {
-          page: pageNum,
-          limit,
-          query: query.trim(),
-          sort,
-          categoryId: getCategoryId(activeCategory)
-        }
-
-        console.log('Fetching posts with params:', params) // Debug log
-
-        const response = await getPublishedPosts(params)
-        console.log('API response:', response) // Debug log
-
-        const { posts: newPosts, total, hasMore: moreAvailable } = response
-
-        if (newPosts && Array.isArray(newPosts) && newPosts.length > 0) {
-          if (isLoadMore) {
-            // Append new posts to existing ones
-            setPosts((prevPosts) => {
-              const combinedPosts = [...prevPosts, ...newPosts]
-              console.log('Updated posts (load more):', combinedPosts) // Debug log
-              return combinedPosts
-            })
-          } else {
-            // Replace posts with new results
-            console.log('Setting new posts:', newPosts) // Debug log
-            setPosts(newPosts)
-          }
-
-          setTotalPosts(total || newPosts.length)
-
-          // Update hasMore based on API response or fallback logic
-          if (moreAvailable !== undefined) {
-            setHasMore(moreAvailable)
-          } else {
-            // Fallback: if we got fewer posts than limit, no more posts available
-            setHasMore(newPosts.length === limit)
-          }
-        } else {
-          if (!isLoadMore) {
-            // If no posts from API and it's not a load more operation
-            if (isInitialLoad) {
-              // Use default posts only on initial load if API fails
-              console.log('Using default posts on initial load')
-              setPosts(defaultPosts)
-              setTotalPosts(defaultPosts.length)
-              setHasMore(false)
-            } else {
-              // For filter operations, show empty array
-              console.log('No posts found for current filters')
-              setPosts([])
-              setTotalPosts(0)
-              setHasMore(false)
-            }
-          } else {
-            // If loading more but no posts returned, no more posts available
-            setHasMore(false)
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch posts:', error)
-
-        if (!isLoadMore) {
-          if (isInitialLoad) {
-            // Use default posts only on initial load if API fails
-            setPosts(defaultPosts)
-            setTotalPosts(defaultPosts.length)
-            setHasMore(false)
-          } else {
-            // For filter operations, show empty array
-            setPosts([])
-            setTotalPosts(0)
-            setHasMore(false)
-          }
-        } else {
-          // If error while loading more, assume no more posts
-          setHasMore(false)
-        }
-      } finally {
-        setIsLoading(false)
-        setIsLoadingMore(false)
-        if (isInitialLoad) {
-          setIsInitialLoad(false)
-        }
-      }
+      return [{ id: null, name: 'All' }, ...categories]
     },
-    [limit, query, sort, activeCategory, getCategoryId, isInitialLoad]
+    staleTime: 5 * 60 * 1000
+  })
+
+  const getCategoryId = useCallback(
+    (name) => {
+      if (name === 'All') {
+        return undefined
+      }
+      return categoriesData?.find((cat) => cat.name === name)?.id
+    },
+    [categoriesData]
   )
 
-  // Load more posts
-  const handleLoadMore = () => {
-    if (!isLoadingMore && hasMore) {
-      const nextPage = page + 1
-      setPage(nextPage)
-      fetchPosts(nextPage, true)
+  const {
+    data: postsData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: isPostsLoading,
+    isError: isPostsError
+  } = useInfiniteQuery({
+    queryKey: ['posts', debouncedSearch, sort, activeCategory],
+    queryFn: async ({ pageParam = 1 }) => {
+      return await getPublishedPosts({
+        page: pageParam,
+        limit,
+        query: debouncedSearch.trim(),
+        sort,
+        categoryId: getCategoryId(activeCategory)
+      })
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.hasMore !== undefined) {
+        return lastPage.hasMore ? allPages.length + 1 : undefined
+      }
+      if (lastPage.posts?.length < limit) {
+        return undefined
+      }
+      return allPages.length + 1
+    },
+    enabled: !!categoriesData,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000
+  })
+
+  const posts = postsData?.pages?.flatMap((page) => page.posts || []) || []
+  const totalPosts = postsData?.pages?.[0]?.total || posts.length
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage()
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '500px'
+      }
+    )
+
+    const current = observerRef.current
+    if (current) {
+      observer.observe(current)
     }
-  }
 
-  // Initial load
-  useEffect(() => {
-    fetchCategories()
-  }, [fetchCategories])
+    return () => {
+      if (current) {
+        observer.unobserve(current)
+      }
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
-  // Fetch posts when dependencies change (reset pagination)
-  useEffect(() => {
-    console.log('Dependencies changed, fetching posts...', { query, sort, activeCategory })
-    setPage(1) // Reset page to 1
-    setHasMore(true) // Reset hasMore when filters change
-    fetchPosts(1, false)
-  }, [query, sort, activeCategory, fetchPosts])
-
-  return isLoading && isInitialLoad ? (
-    <LoadingOverlay />
-  ) : (
+  return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950">
       {/* Subtle gradient background */}
       <div className="absolute inset-0 z-0 bg-gradient-to-br from-slate-950 to-slate-900">
@@ -406,14 +210,14 @@ const BlogPage = () => {
                 <select
                   value={sort}
                   onChange={handleSortChange}
-                  className="appearance-none rounded-md border border-indigo-500/30 bg-slate-900/80 px-6 py-2 pl-2 text-white placeholder-gray-400 backdrop-blur-sm focus:border-indigo-500/50 focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
+                  className="appearance-none rounded-md border border-indigo-500/30 bg-slate-900/80 px-10 py-2 pl-6 text-white placeholder-gray-400 backdrop-blur-sm focus:border-indigo-500/50 focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
                 >
                   <option value="DESC">Latest</option>
                   <option value="ASC">Oldest</option>
                 </select>
 
                 <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-indigo-400">
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
@@ -422,41 +226,45 @@ const BlogPage = () => {
           </div>
 
           {/* Categories */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="flex flex-wrap justify-center gap-2"
-          >
-            {categories.map((category, index) => (
-              <motion.button
-                key={category.id || category.name}
-                onClick={() => handleCategoryChange(category.name)}
-                className={`rounded-full px-4 py-1 text-sm font-medium transition-all cursor-pointer ${
-                  activeCategory === category.name
-                    ? 'bg-indigo-500/20 text-indigo-300'
-                    : 'bg-slate-800/50 text-gray-400 hover:bg-slate-800 hover:text-gray-300'
-                }`}
-                whileHover={{ y: -2 }}
-                whileTap={{ y: 0 }}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.5 + index * 0.1 }}
-              >
-                {category.name}
-              </motion.button>
-            ))}
-          </motion.div>
+          {categoriesData && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className="flex flex-wrap justify-center gap-2"
+            >
+              {categoriesData.map((category, index) => (
+                <motion.button
+                  key={category.id || category.name}
+                  onClick={() => handleCategoryChange(category.name)}
+                  className={`rounded-full px-4 py-1 text-sm font-medium transition-all cursor-pointer ${
+                    activeCategory === category.name
+                      ? 'bg-indigo-500/20 text-indigo-300'
+                      : 'bg-slate-800/50 text-gray-400 hover:bg-slate-800 hover:text-gray-300'
+                  }`}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ y: 0 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.5 + index * 0.1 }}
+                >
+                  {category.name}
+                </motion.button>
+              ))}
+            </motion.div>
+          )}
 
           {/* Results count */}
-          {query && (
+          {debouncedSearch && (
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 text-sm text-gray-400">
-              {posts.length > 0 ? `Found ${posts.length} article${posts.length !== 1 ? 's' : ''} for "${query}"` : `No articles found for "${query}"`}
+              {posts.length > 0
+                ? `Found ${posts.length} article${posts.length !== 1 ? 's' : ''} for "${debouncedSearch}"`
+                : `No articles found for "${debouncedSearch}"`}
             </motion.p>
           )}
 
-          {/* Loading indicator for filtering */}
-          {isLoading && !isInitialLoad && (
+          {/* Loading indicator for initial load */}
+          {isPostsLoading && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 flex justify-center">
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent"></div>
             </motion.div>
@@ -465,13 +273,30 @@ const BlogPage = () => {
 
         {/* Blog Posts */}
         {posts.length > 0 ? (
-          <div className="grid gap-8 md:grid-cols-2">
-            {posts.map((post, index) => (
-              <BlogPostCard key={`${post.id}-${index}`} post={post} index={index} />
-            ))}
-          </div>
+          <>
+            <div className="grid gap-8 md:grid-cols-2">
+              {posts.map((post, index) => (
+                <BlogPostCard key={`${post.id}-${index}`} post={post} index={index} />
+              ))}
+            </div>
+
+            {/* Infinite scroll trigger */}
+            <div ref={observerRef} className="mt-8 flex justify-center">
+              {isFetchingNextPage && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 text-indigo-400">
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent"></div>
+                  <span className="text-sm">Loading more articles...</span>
+                </motion.div>
+              )}
+              {!hasNextPage && posts.length > limit && (
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-gray-400">
+                  You've reached the end of articles
+                </motion.p>
+              )}
+            </div>
+          </>
         ) : (
-          !isLoading && (
+          !isPostsLoading && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-12">
               <div className="text-gray-400 mb-4">
                 <Search className="mx-auto h-12 w-12 mb-4 opacity-50" />
@@ -482,35 +307,20 @@ const BlogPage = () => {
           )
         )}
 
-        {/* Load More Button */}
-        {posts.length > 0 && hasMore && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            className="mt-12 flex justify-center"
-          >
-            <button
-              onClick={handleLoadMore}
-              disabled={isLoadingMore}
-              className="rounded-md border border-indigo-500/30 bg-indigo-500/10 px-6 py-2 text-sm font-medium text-white transition-all hover:bg-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              {isLoadingMore ? (
-                <>
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent"></div>
-                  Loading...
-                </>
-              ) : (
-                'Load More'
-              )}
-            </button>
-          </motion.div>
-        )}
-
         {/* Posts count info */}
         {posts.length > 0 && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-8 text-center text-sm text-gray-400">
             Showing {posts.length} of {totalPosts} articles
+          </motion.div>
+        )}
+
+        {/* Error handling */}
+        {isPostsError && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-12">
+            <div className="text-red-400 mb-4">
+              <h3 className="text-xl font-semibold mb-2">Failed to load articles</h3>
+              <p>Please try again later or check your connection.</p>
+            </div>
           </motion.div>
         )}
       </div>
