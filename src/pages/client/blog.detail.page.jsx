@@ -3,10 +3,13 @@ import './css/blog.detail.css'
 
 import { motion } from 'framer-motion'
 import { Calendar, User, Clock, Facebook, Twitter, Linkedin, LinkIcon, ChevronLeft, MessageCircle, ThumbsUp, Bookmark } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { getPublishedPost } from '@/api/published.post'
+import { format } from 'date-fns'
 
 const BlogDetailPage = () => {
-  const post = {
+  const defaultPost = {
     title: 'Building Responsive Interfaces with Tailwind CSS',
     excerpt:
       'Learn how to create beautiful, responsive user interfaces using Tailwind CSS, a utility-first CSS framework that can speed up your development workflow.',
@@ -63,41 +66,130 @@ module.exports = {
       
       <p>Whether you're building a simple landing page or a complex web application, Tailwind's utility-first approach can help you create responsive, maintainable interfaces with ease.</p>
     `,
-    category: 'Design',
-    author: 'Vo Duc Huy',
-    authorImage: '/placeholder.svg?height=100&width=100',
-    authorBio: 'Vo Duc Huy is a senior frontend developer with over 5 years of experience in building responsive web applications.',
-    date: 'May 15, 2023',
+    category: {
+      name: 'Design'
+    },
+    author: {
+      name: 'Vo Duc Huy',
+      avatar: 'https://ui-avatars.com/api/?background=0D8ABC&color=fff',
+      email: 'voduchuy2001@gmail.com'
+    },
     readTime: '5 min read',
-    image: '/placeholder.svg?height=600&width=1200',
-    tags: ['Tailwind CSS', 'CSS', 'Frontend', 'Responsive Design', 'Web Development']
+    thumbnail: 'https://placehold.co/1920x1080/1c2d61/ffffff?text=AIGenerative',
+    tags: [
+      { id: 1, name: 'Tailwind CSS' },
+      { id: 2, name: 'CSS' },
+      { id: 3, name: 'Frontend' },
+      { id: 4, name: 'Responsive Design' },
+      { id: 5, name: 'Web Development' }
+    ],
+    createdAt: '2025-05-21T20:25:56.063Z',
+    updatedAt: '2025-05-21T20:25:56.063Z'
   }
+
+  const [post, setPost] = useState(null)
+  const { slug } = useParams()
+
+  useEffect(() => {
+    const fetchPost = async () => {
+      try {
+        const { post } = await getPublishedPost(slug)
+        setPost(post ? post : defaultPost)
+      } catch (error) {
+        setPost(defaultPost)
+        console.log('Failed to fetch post', error)
+      }
+    }
+
+    fetchPost()
+  }, [])
 
   // Related posts
   const relatedPosts = [
+    {
+      id: 1,
+      title: 'Building Responsive Interfaces with Tailwind CSS',
+      excerpt:
+        'Learn how to create beautiful, responsive user interfaces using Tailwind CSS, a utility-first CSS framework that can speed up your development workflow.',
+      category: {
+        name: 'Design'
+      },
+      author: {
+        name: 'Vo Duc Huy'
+      },
+      readTime: '10 min read',
+      thumbnail: 'https://placehold.co/600x400/1c2d61/ffffff?text=tailwindcss',
+      slug: 'building-responsive-interfaces-with-tailwind-css',
+      createdAt: '2025-05-21T20:25:56.063Z',
+      updatedAt: '2025-05-21T20:25:56.063Z'
+    },
     {
       id: 2,
       title: 'Getting Started with Next.js and Server Components',
       excerpt:
         'Explore the power of Next.js 13 with Server Components and learn how to build faster, more efficient React applications with improved SEO.',
-      category: 'Development',
-      author: 'Vo Duc Huy',
-      date: 'April 28, 2023',
+      category: {
+        name: 'Development'
+      },
+      author: {
+        name: 'Vo Duc Huy'
+      },
       readTime: '8 min read',
-      image: '/placeholder.svg?height=400&width=600',
-      slug: 'getting-started-with-nextjs-and-server-components'
+      thumbnail: 'https://placehold.co/600x400/1c2d61/ffffff?text=nextjs',
+      slug: 'getting-started-with-nextjs-and-server-components',
+      createdAt: '2025-05-21T20:25:56.063Z',
+      updatedAt: '2025-05-21T20:25:56.063Z'
     },
     {
       id: 3,
       title: 'The Future of Web Development: AI-Assisted Coding',
       excerpt:
         'Discover how AI tools are transforming the way developers write code, from intelligent code completion to automated testing and debugging.',
-      category: 'Technology',
-      author: 'Vo Duc Huy',
-      date: 'April 10, 2023',
-      readTime: '6 min read',
-      image: '/placeholder.svg?height=400&width=600',
-      slug: 'the-future-of-web-development-ai-assisted-coding'
+      category: {
+        name: 'Technology'
+      },
+      author: {
+        name: 'Vo Duc Huy'
+      },
+      readTime: '10 min read',
+      thumbnail: 'https://placehold.co/600x400/1c2d61/ffffff?text=AI',
+      slug: 'the-future-of-web-development-ai-assisted-coding',
+      createdAt: '2025-05-21T20:25:56.063Z',
+      updatedAt: '2025-05-21T20:25:56.063Z'
+    },
+    {
+      id: 4,
+      title: 'Mastering TypeScript: Tips and Best Practices',
+      excerpt:
+        'Take your TypeScript skills to the next level with advanced techniques, best practices, and patterns that will make your code more robust and maintainable.',
+      category: {
+        name: 'Development'
+      },
+      author: {
+        name: 'Vo Duc Huy'
+      },
+      readTime: '7 min read',
+      thumbnail: 'https://placehold.co/600x400/1c2d61/ffffff?text=typescript',
+      slug: 'mastering-typescript-tips-and-best-practices',
+      createdAt: '2025-05-21T20:25:56.063Z',
+      updatedAt: '2025-05-21T20:25:56.063Z'
+    },
+    {
+      id: 5,
+      title: 'From Junior to Senior Developer: A Career Roadmap',
+      excerpt:
+        'Navigate your career path from junior to senior developer with this comprehensive guide covering technical skills, soft skills, and career strategies.',
+      category: {
+        name: 'Career'
+      },
+      author: {
+        name: 'Vo Duc Huy'
+      },
+      readTime: '10 min read',
+      thumbnail: 'https://placehold.co/600x400/1c2d61/ffffff?text=roadmap',
+      slug: 'from-junior-to-senior-developer-a-career-roadmap',
+      createdAt: '2025-05-21T20:25:56.063Z',
+      updatedAt: '2025-05-21T20:25:56.063Z'
     }
   ]
 
@@ -150,7 +242,7 @@ module.exports = {
         {/* Article Header */}
         <header className="mb-8">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }} className="mb-4">
-            <span className="rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-medium text-indigo-300">{post.category}</span>
+            <span className="rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-medium text-indigo-300">{post?.category.name}</span>
           </motion.div>
 
           <motion.h1
@@ -159,7 +251,7 @@ module.exports = {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="mb-4 text-3xl font-bold text-white md:text-4xl lg:text-5xl"
           >
-            {post.title}
+            {post?.title}
           </motion.h1>
 
           <motion.div
@@ -170,15 +262,15 @@ module.exports = {
           >
             <div className="flex items-center">
               <User className="mr-1 h-4 w-4 text-indigo-400" />
-              <span>{post.author}</span>
+              <span>{post?.author.name}</span>
             </div>
             <div className="flex items-center">
               <Calendar className="mr-1 h-4 w-4 text-indigo-400" />
-              <span>{post.date}</span>
+              <span>{format(post?.createdAt || new Date(), 'PPP')}</span>
             </div>
             <div className="flex items-center">
               <Clock className="mr-1 h-4 w-4 text-indigo-400" />
-              <span>{post.readTime}</span>
+              <span>{post?.readTime}</span>
             </div>
           </motion.div>
 
@@ -188,7 +280,11 @@ module.exports = {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="relative mb-8 h-64 overflow-hidden rounded-lg sm:h-96"
           >
-            <img src={post.image || '/placeholder.svg'} alt={post.title} className="h-full w-full object-cover" />
+            <img
+              src={post?.thumbnail || 'https://placehold.co/1920x1080/1c2d61/ffffff?text=AIGenerative'}
+              alt={post?.title}
+              className="h-full w-full object-cover"
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 to-transparent" />
           </motion.div>
         </header>
@@ -200,8 +296,8 @@ module.exports = {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
-            className="prose prose-invert prose-indigo rounded-lg border border-indigo-500/20 bg-slate-900/50 p-6 backdrop-blur-sm text-gray-400 max-w-full overflow-x-auto break-words [&_img]:max-w-full [&_pre]:break-words [&_table]:block [&_table]:overflow-x-auto"
-            dangerouslySetInnerHTML={{ __html: post.content }}
+            className="prose prose-invert prose-indigo rounded-lg border border-indigo-500/20 bg-slate-900/50 p-6 backdrop-blur-sm text-gray-400 max-w-full overflow-x-auto break-words [&_img]:max-w-full [&_pre]:break-words [&_table]:block [&_table]:overflow-x-auto scrollbar-hide"
+            dangerouslySetInnerHTML={{ __html: post?.content }}
           />
 
           {/* Additional Info Container */}
@@ -231,9 +327,12 @@ module.exports = {
             <div className="border-b border-indigo-500/10 p-6">
               <h3 className="mb-4 text-lg font-medium text-white">Tags</h3>
               <div className="flex flex-wrap gap-2">
-                {post.tags.map((tag) => (
-                  <span key={tag} className="rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-1 text-xs font-medium text-indigo-300">
-                    {tag}
+                {post?.tags.map((tag, index) => (
+                  <span
+                    key={`tag-${index}`}
+                    className="rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-1 text-xs font-medium text-indigo-300"
+                  >
+                    {tag?.name}
                   </span>
                 ))}
               </div>
@@ -256,14 +355,14 @@ module.exports = {
               <div className="flex items-center">
                 <div className="w-16 h-16 mr-2">
                   <img
-                    src={post.authorImage || '/placeholder.svg'}
-                    alt={post.author}
+                    src={post?.author.avatar || 'https://ui-avatars.com/api/?background=0D8ABC&color=fff'}
+                    alt={post?.author.name}
                     className="mr-4 h-16 w-16 rounded-full border border-indigo-500/20"
                   />
                 </div>
                 <div>
-                  <h4 className="font-medium text-indigo-300">{post.author}</h4>
-                  <p className="text-sm text-gray-400">{post.authorBio}</p>
+                  <h4 className="font-medium text-indigo-300">{post?.author.name}</h4>
+                  <p className="text-sm text-gray-400">{post?.author.email}</p>
                 </div>
               </div>
             </div>
@@ -276,7 +375,7 @@ module.exports = {
           <div className="relative">
             <div ref={relatedPostCarouselRef} className="overflow-x-auto pb-4 scrollbar-hide">
               <div className="flex min-w-[20rem] space-x-6">
-                {[...relatedPosts, ...relatedPosts, ...relatedPosts].map((post, index) => (
+                {relatedPosts.map((post, index) => (
                   <div key={`${post.id}-${index}`} className="w-72 flex-none">
                     <RelatedPostCard post={post} index={index} />
                   </div>
@@ -357,14 +456,14 @@ const RelatedPostCard = ({ post, index }) => (
       <div className="relative h-40 overflow-hidden">
         <motion.div className="absolute inset-0 bg-indigo-900/20" whileHover={{ opacity: 0 }} transition={{ duration: 0.3 }} />
         <motion.img
-          src={post.image}
+          src={post.thumbnail}
           alt={post.title}
           className="h-full w-full object-cover transition-transform"
           whileHover={{ scale: 1.05 }}
           transition={{ duration: 0.5 }}
         />
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900 to-transparent p-3">
-          <span className="rounded-full bg-indigo-500/20 px-2 py-0.5 text-xs font-medium text-indigo-300">{post.category}</span>
+          <span className="rounded-full bg-indigo-500/20 px-2 py-0.5 text-xs font-medium text-indigo-300">{post.category.name}</span>
         </div>
       </div>
 
@@ -373,7 +472,7 @@ const RelatedPostCard = ({ post, index }) => (
         <div className="flex items-center justify-between text-xs text-gray-400">
           <div className="flex items-center">
             <Calendar className="mr-1 h-3 w-3" />
-            <span>{post.date}</span>
+            <span>{format(post.createdAt, 'PPP')}</span>
           </div>
           <div className="flex items-center">
             <Clock className="mr-1 h-3 w-3" />
@@ -388,7 +487,7 @@ const RelatedPostCard = ({ post, index }) => (
 const CommentCard = ({ author, date, content, avatar }) => (
   <div className="border-b border-slate-800 pb-6 last:border-0 last:pb-0">
     <div className="mb-2 flex items-start">
-      <img src={avatar || '/placeholder.svg'} alt={author} className="mr-3 h-10 w-10 rounded-full" />
+      <img src={'https://ui-avatars.com/api/?background=0D8ABC&color=fff' || avatar} alt={author} className="mr-3 h-10 w-10 rounded-full" />
       <div>
         <h4 className="font-medium text-white">{author}</h4>
         <p className="text-xs text-gray-400">{date}</p>
