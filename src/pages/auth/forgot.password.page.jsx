@@ -1,17 +1,40 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Mail, ArrowRight, ChevronLeft } from 'lucide-react'
+import { Mail, ArrowRight, ChevronLeft, Loader } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { FormProvider, useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { forgotPassword } from '@/api/auth'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { InputField } from '@/components/customs/form.field'
+import { Button } from '@/components/customs/button'
+import toast from 'react-hot-toast'
 
 const ForgotPasswordPage = () => {
-  const [email, setEmail] = useState('')
+  const schema = z.object({
+    email: z.string().min(1, 'Email is required').email('Invalid email')
+  })
+
+  const methods = useForm({
+    resolver: zodResolver(schema)
+  })
+  const { reset } = methods
+
+  const [isLoading, setIsLoading] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    // Handle forgot password logic here
-    console.log('Reset password for:', email)
-    setIsSubmitted(true)
+  const onSubmit = async (data) => {
+    setIsLoading(true)
+    try {
+      await forgotPassword(data)
+    } catch (error) {
+      toast.error(error.data.message ?? 'An error when handle forgot password')
+      console.log('Fail to reset password: ', error)
+    } finally {
+      reset()
+      setIsSubmitted(true)
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -99,43 +122,39 @@ const ForgotPasswordPage = () => {
           </div>
 
           {!isSubmitted ? (
-            <motion.form
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              onSubmit={handleSubmit}
-              className="space-y-6"
-            >
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium text-gray-300">
-                  Email
-                </label>
-                <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <Mail className="h-5 w-5 text-indigo-400" />
-                  </div>
-                  <input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full rounded-lg border border-indigo-500/30 bg-slate-800/50 px-4 py-3 pl-10 text-white placeholder-gray-500 transition-colors focus:border-indigo-500/50 focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
-                    placeholder="your.email@example.com"
-                  />
-                </div>
-              </div>
-
-              <motion.button
-                whileHover={{ y: -2 }}
-                whileTap={{ y: 0 }}
-                type="submit"
-                className="group relative flex w-full items-center justify-center rounded-lg bg-indigo-600 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-800"
+            <FormProvider {...methods}>
+              <motion.form
+                onSubmit={methods.handleSubmit(onSubmit)}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                className="space-y-6"
               >
-                Send Reset Link
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </motion.button>
-            </motion.form>
+                <InputField
+                  name="email"
+                  label="Email"
+                  type="text"
+                  placeholder="johndoe@example.com"
+                  icon={<Mail className="h-5 w-5 text-indigo-400" />}
+                  autoFocus
+                  tabIndex={1}
+                />
+
+                <Button
+                  disabled={isLoading}
+                  icon={
+                    isLoading ? (
+                      <Loader className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    )
+                  }
+                  type="submit"
+                >
+                  Send Reset Link
+                </Button>
+              </motion.form>
+            </FormProvider>
           ) : (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -158,9 +177,7 @@ const ForgotPasswordPage = () => {
                 />
               </svg>
               <h3 className="mb-2 text-xl font-medium text-white">Check Your Email</h3>
-              <p className="text-gray-300">
-                We&apos;ve sent a password reset link to <span className="font-medium text-indigo-300">{email}</span>
-              </p>
+              <p className="text-gray-300">We&apos;ve sent a password reset link to your email</p>
               <p className="mt-4 text-sm text-gray-400">
                 Didn&apos;t receive the email? Check your spam folder or{' '}
                 <button onClick={() => setIsSubmitted(false)} className="font-medium text-indigo-400 hover:text-indigo-300">

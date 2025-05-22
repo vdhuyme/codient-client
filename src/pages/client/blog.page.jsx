@@ -1,76 +1,132 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Search, Calendar, User, Clock, ChevronRight, Filter, ChevronLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { getPublishedCategories } from '@/api/published.categories'
+import { getPublishedPosts } from '@/api/published.post'
+import { format } from 'date-fns'
 
 const BlogPage = () => {
   const [activeCategory, setActiveCategory] = useState('All')
-
-  const categories = ['All', 'Technology', 'Design', 'Development', 'Career']
-  const blogPosts = [
-    {
-      id: 1,
-      title: 'Building Responsive Interfaces with Tailwind CSS',
-      excerpt:
-        'Learn how to create beautiful, responsive user interfaces using Tailwind CSS, a utility-first CSS framework that can speed up your development workflow.',
-      category: 'Design',
-      author: 'Vo Duc Huy',
-      date: 'May 15, 2023',
-      readTime: '5 min read',
-      image: '/placeholder.svg?height=400&width=600',
-      slug: 'building-responsive-interfaces-with-tailwind-css'
-    },
-    {
-      id: 2,
-      title: 'Getting Started with Next.js and Server Components',
-      excerpt:
-        'Explore the power of Next.js 13 with Server Components and learn how to build faster, more efficient React applications with improved SEO.',
-      category: 'Development',
-      author: 'Vo Duc Huy',
-      date: 'April 28, 2023',
-      readTime: '8 min read',
-      image: '/placeholder.svg?height=400&width=600',
-      slug: 'getting-started-with-nextjs-and-server-components'
-    },
-    {
-      id: 3,
-      title: 'The Future of Web Development: AI-Assisted Coding',
-      excerpt:
-        'Discover how AI tools are transforming the way developers write code, from intelligent code completion to automated testing and debugging.',
-      category: 'Technology',
-      author: 'Vo Duc Huy',
-      date: 'April 10, 2023',
-      readTime: '6 min read',
-      image: '/placeholder.svg?height=400&width=600',
-      slug: 'the-future-of-web-development-ai-assisted-coding'
-    },
-    {
-      id: 4,
-      title: 'Mastering TypeScript: Tips and Best Practices',
-      excerpt:
-        'Take your TypeScript skills to the next level with advanced techniques, best practices, and patterns that will make your code more robust and maintainable.',
-      category: 'Development',
-      author: 'Vo Duc Huy',
-      date: 'March 22, 2023',
-      readTime: '7 min read',
-      image: '/placeholder.svg?height=400&width=600',
-      slug: 'mastering-typescript-tips-and-best-practices'
-    },
-    {
-      id: 5,
-      title: 'From Junior to Senior Developer: A Career Roadmap',
-      excerpt:
-        'Navigate your career path from junior to senior developer with this comprehensive guide covering technical skills, soft skills, and career strategies.',
-      category: 'Career',
-      author: 'Vo Duc Huy',
-      date: 'March 5, 2023',
-      readTime: '10 min read',
-      image: '/placeholder.svg?height=400&width=600',
-      slug: 'from-junior-to-senior-developer-a-career-roadmap'
+  const [categories, setCategories] = useState([])
+  useEffect(() => {
+    const fetchPublishedCategories = async () => {
+      try {
+        const { categories } = await getPublishedCategories()
+        setCategories(
+          categories.length > 0 ? ['All', ...categories.map((category) => category.name)] : ['All', 'Technology', 'Design', 'Development', 'Career']
+        )
+      } catch (error) {
+        console.log('Failed to fetch categories')
+      }
     }
-  ]
 
-  const filteredPosts = activeCategory === 'All' ? blogPosts : blogPosts.filter((post) => post.category === activeCategory)
+    const fetchPublishedPosts = async () => {
+      try {
+        const { posts } = await getPublishedPosts()
+        setPosts(
+          posts.length > 0
+            ? posts
+            : [
+                {
+                  id: 1,
+                  title: 'Building Responsive Interfaces with Tailwind CSS',
+                  excerpt:
+                    'Learn how to create beautiful, responsive user interfaces using Tailwind CSS, a utility-first CSS framework that can speed up your development workflow.',
+                  category: {
+                    name: 'Design'
+                  },
+                  author: {
+                    name: 'Vo Duc Huy'
+                  },
+                  readTime: '10 min read',
+                  thumbnail: 'https://placehold.co/600x400/1c2d61/ffffff?text=tailwindcss',
+                  slug: 'building-responsive-interfaces-with-tailwind-css',
+                  createdAt: '2025-05-21T20:25:56.063Z',
+                  updatedAt: '2025-05-21T20:25:56.063Z'
+                },
+                {
+                  id: 2,
+                  title: 'Getting Started with Next.js and Server Components',
+                  excerpt:
+                    'Explore the power of Next.js 13 with Server Components and learn how to build faster, more efficient React applications with improved SEO.',
+                  category: {
+                    name: 'Development'
+                  },
+                  author: {
+                    name: 'Vo Duc Huy'
+                  },
+                  readTime: '8 min read',
+                  thumbnail: 'https://placehold.co/600x400/1c2d61/ffffff?text=nextjs',
+                  slug: 'getting-started-with-nextjs-and-server-components',
+                  createdAt: '2025-05-21T20:25:56.063Z',
+                  updatedAt: '2025-05-21T20:25:56.063Z'
+                },
+                {
+                  id: 3,
+                  title: 'The Future of Web Development: AI-Assisted Coding',
+                  excerpt:
+                    'Discover how AI tools are transforming the way developers write code, from intelligent code completion to automated testing and debugging.',
+                  category: {
+                    name: 'Technology'
+                  },
+                  author: {
+                    name: 'Vo Duc Huy'
+                  },
+                  readTime: '10 min read',
+                  thumbnail: 'https://placehold.co/600x400/1c2d61/ffffff?text=AI',
+                  slug: 'the-future-of-web-development-ai-assisted-coding',
+                  createdAt: '2025-05-21T20:25:56.063Z',
+                  updatedAt: '2025-05-21T20:25:56.063Z'
+                },
+                {
+                  id: 4,
+                  title: 'Mastering TypeScript: Tips and Best Practices',
+                  excerpt:
+                    'Take your TypeScript skills to the next level with advanced techniques, best practices, and patterns that will make your code more robust and maintainable.',
+                  category: {
+                    name: 'Development'
+                  },
+                  author: {
+                    name: 'Vo Duc Huy'
+                  },
+                  readTime: '7 min read',
+                  thumbnail: 'https://placehold.co/600x400/1c2d61/ffffff?text=typescript',
+                  slug: 'mastering-typescript-tips-and-best-practices',
+                  createdAt: '2025-05-21T20:25:56.063Z',
+                  updatedAt: '2025-05-21T20:25:56.063Z'
+                },
+                {
+                  id: 5,
+                  title: 'From Junior to Senior Developer: A Career Roadmap',
+                  excerpt:
+                    'Navigate your career path from junior to senior developer with this comprehensive guide covering technical skills, soft skills, and career strategies.',
+                  category: {
+                    name: 'Career'
+                  },
+                  author: {
+                    name: 'Vo Duc Huy'
+                  },
+                  readTime: '10 min read',
+                  thumbnail: 'https://placehold.co/600x400/1c2d61/ffffff?text=roadmap',
+                  slug: 'from-junior-to-senior-developer-a-career-roadmap',
+                  createdAt: '2025-05-21T20:25:56.063Z',
+                  updatedAt: '2025-05-21T20:25:56.063Z'
+                }
+              ]
+        )
+      } catch (error) {
+        console.log('Failed to fetch categories')
+      }
+    }
+
+    fetchPublishedPosts()
+    fetchPublishedCategories()
+  }, [])
+
+  const [posts, setPosts] = useState([])
+
+  const filteredPosts = activeCategory === 'All' ? posts : posts.filter((post) => post.category.name === activeCategory)
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950">
@@ -249,14 +305,14 @@ const BlogPostCard = ({ post, index }) => (
       <div className="relative h-48 overflow-hidden">
         <motion.div className="absolute inset-0 bg-indigo-900/20" whileHover={{ opacity: 0 }} transition={{ duration: 0.3 }} />
         <motion.img
-          src={post.image}
+          src={post.thumbnail}
           alt={post.title}
           className="h-full w-full object-cover transition-transform"
           whileHover={{ scale: 1.05 }}
           transition={{ duration: 0.5 }}
         />
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900 to-transparent p-4">
-          <span className="rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-medium text-indigo-300">{post.category}</span>
+          <span className="rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-medium text-indigo-300">{post.category.name}</span>
         </div>
       </div>
 
@@ -266,11 +322,11 @@ const BlogPostCard = ({ post, index }) => (
         <div className="flex items-center justify-between text-xs text-gray-400">
           <div className="flex items-center">
             <User className="mr-1 h-3 w-3" />
-            <span>{post.author}</span>
+            <span>{post.author.name}</span>
           </div>
           <div className="flex items-center">
             <Calendar className="mr-1 h-3 w-3" />
-            <span>{post.date}</span>
+            <span>{format(post.createdAt, 'PPP')}</span>
           </div>
           <div className="flex items-center">
             <Clock className="mr-1 h-3 w-3" />
