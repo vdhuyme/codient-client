@@ -77,7 +77,7 @@ const ForgotPasswordPage = () => {
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
-        className="absolute left-4 top-4 z-20"
+        className="absolute top-4 left-4 z-20"
       >
         <Link to="/login" className="inline-flex items-center text-sm font-medium text-indigo-400 transition-colors hover:text-indigo-300">
           <ChevronLeft className="mr-1 h-4 w-4" />
@@ -85,7 +85,7 @@ const ForgotPasswordPage = () => {
         </Link>
       </motion.div>
 
-      <div className="container relative z-10 mx-auto flex min-h-screen max-w-screen-xl items-center justify-center px-4 py-12">
+      <div className="relative z-10 container mx-auto flex min-h-screen max-w-screen-xl items-center justify-center px-4 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

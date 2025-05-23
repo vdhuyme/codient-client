@@ -122,7 +122,7 @@ const BlogDetailPage = () => {
         ))}
       </div>
 
-      <div className="container relative z-10 mx-auto max-w-4xl px-4 py-12">
+      <div className="relative z-10 container mx-auto max-w-4xl px-4 py-12">
         {/* Back to blog */}
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} className="mb-8">
           <Link to={'/posts'} className="inline-flex items-center text-sm font-medium text-indigo-400 transition-colors hover:text-indigo-300">
@@ -174,7 +174,7 @@ const BlogDetailPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
-            className="prose prose-invert prose-indigo rounded-lg border border-indigo-500/20 bg-slate-900/50 p-6 backdrop-blur-sm text-gray-400 max-w-full overflow-x-auto break-words [&_img]:max-w-full [&_pre]:break-words [&_table]:block [&_table]:overflow-x-auto scrollbar-hide"
+            className="prose prose-invert prose-indigo scrollbar-hide max-w-full overflow-x-auto rounded-lg border border-indigo-500/20 bg-slate-900/50 p-6 break-words text-gray-400 backdrop-blur-sm [&_img]:max-w-full [&_pre]:break-words [&_table]:block [&_table]:overflow-x-auto"
             dangerouslySetInnerHTML={{ __html: post?.content }}
           />
 
@@ -215,7 +215,7 @@ const BlogDetailPage = () => {
             <div className="p-6">
               <h3 className="mb-4 text-lg font-medium text-white">About the Author</h3>
               <div className="flex items-center">
-                <div className="w-16 h-16 mr-2">
+                <div className="mr-2 h-16 w-16">
                   <img
                     src={
                       post?.author.avatar ||
@@ -238,7 +238,7 @@ const BlogDetailPage = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 1 }} className="mt-12">
           <h2 className="mb-6 text-2xl font-bold text-white">Related Articles</h2>
           <div className="relative">
-            <div ref={relatedPostCarouselRef} className="overflow-x-auto pb-4 scrollbar-hide">
+            <div ref={relatedPostCarouselRef} className="scrollbar-hide overflow-x-auto pb-4">
               <div className="flex min-w-[20rem] space-x-6">
                 {relatedPosts?.map((post, index) => (
                   <div key={`${post.id}-${index}`} className="w-72 flex-none">
@@ -247,7 +247,7 @@ const BlogDetailPage = () => {
                 ))}
               </div>
             </div>
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent"></div>
+            <div className="absolute right-0 bottom-0 left-0 h-1 bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent"></div>
           </div>
         </motion.div>
 
@@ -351,7 +351,7 @@ const RelatedPostCard = ({ post, index }) => (
           whileHover={{ scale: 1.05 }}
           transition={{ duration: 0.5 }}
         />
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900 to-transparent p-3">
+        <div className="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-slate-900 to-transparent p-3">
           <span className="rounded-full bg-indigo-500/20 px-2 py-0.5 text-xs font-medium text-indigo-300">{post.category.name}</span>
         </div>
       </div>
@@ -386,7 +386,7 @@ const CommentCard = ({ user, date, content, avatar }) => (
     <div className="mt-2 flex space-x-4">
       <button className="text-xs text-red-700 hover:text-red-300" role="button">
         <div className="flex items-center">
-          Report <FlagIcon className="w-3 h-3 mx-2" />
+          Report <FlagIcon className="mx-2 h-3 w-3" />
         </div>
       </button>
     </div>

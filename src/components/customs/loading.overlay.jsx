@@ -50,7 +50,7 @@ const LoadingOverlay = () => {
       </div>
 
       {/* Loading indicator */}
-      <LoaderCircle className="relative z-10 w-16 h-16 animate-spin text-white" aria-label="Loading" />
+      <LoaderCircle className="relative z-10 h-16 w-16 animate-spin text-white" aria-label="Loading" />
     </div>
   )
 }

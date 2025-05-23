@@ -38,12 +38,12 @@ const NotFoundPage = () => {
         ))}
       </div>
 
-      <div className="container relative z-10 mx-auto flex min-h-screen max-w-4xl flex-col items-center justify-center px-4 py-12 text-center">
+      <div className="relative z-10 container mx-auto flex min-h-screen max-w-4xl flex-col items-center justify-center px-4 py-12 text-center">
         {/* 404 Content */}
         <div className="relative">
           {/* Glowing background for 404 */}
           <motion.div
-            className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 transform rounded-full bg-indigo-500/20 blur-3xl"
+            className="absolute top-1/2 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 transform rounded-full bg-indigo-500/20 blur-3xl"
             animate={{
               scale: [1, 1.2, 1],
               opacity: [0.2, 0.3, 0.2]
@@ -97,7 +97,7 @@ const NotFoundPage = () => {
           </motion.p>
 
           {/* Action Buttons */}
-          <div className="flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
+          <div className="flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.6 }}>
               <Link to="/">
                 <motion.button
@@ -114,7 +114,7 @@ const NotFoundPage = () => {
         </div>
 
         {/* Animated Elements */}
-        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
           {/* Animated circles */}
           {[...Array(3)].map((_, i) => (
             <motion.div

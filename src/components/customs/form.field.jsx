@@ -24,7 +24,7 @@ export const InputField = ({ name, label, type = 'text', placeholder, icon, ...p
           type={type}
           placeholder={placeholder}
           className={cn(
-            'w-full rounded-lg border border-indigo-500/30 bg-slate-800/50 px-4 py-3 pl-10 text-white placeholder-gray-500 transition-colors focus:border-indigo-500/50 focus:outline-none focus:ring-1 focus:ring-indigo-500/50',
+            'w-full rounded-lg border border-indigo-500/30 bg-slate-800/50 px-4 py-3 pl-10 text-white placeholder-gray-500 transition-colors focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 focus:outline-none',
             error && 'border-red-500 ring-red-500 focus:ring-1'
           )}
           {...register(name)}
@@ -62,7 +62,7 @@ export const PasswordField = ({ name, label = 'Password', placeholder = '••�
           type={showPassword ? 'text' : 'password'}
           placeholder={placeholder}
           className={cn(
-            'w-full rounded-lg border border-indigo-500/30 bg-slate-800/50 px-4 py-3 pl-10 text-white placeholder-gray-500 transition-colors focus:border-indigo-500/50 focus:outline-none focus:ring-1 focus:ring-indigo-500/50',
+            'w-full rounded-lg border border-indigo-500/30 bg-slate-800/50 px-4 py-3 pl-10 text-white placeholder-gray-500 transition-colors focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 focus:outline-none',
             error && 'border-red-500 ring-red-500 focus:ring-1'
           )}
           {...register(name)}
@@ -103,7 +103,7 @@ export const TextareaField = ({ name, label, placeholder, rows = 4, ...props }) 
         rows={rows}
         placeholder={placeholder}
         className={cn(
-          'w-full rounded-md border border-indigo-500/30 bg-slate-900/80 p-3 text-white placeholder-gray-400 focus:border-indigo-500/50 focus:outline-none focus:ring-1 focus:ring-indigo-500/50',
+          'w-full rounded-md border border-indigo-500/30 bg-slate-900/80 p-3 text-white placeholder-gray-400 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 focus:outline-none',
           error && 'border-red-500 ring-red-500 focus:ring-1'
         )}
         {...register(name)}

@@ -80,7 +80,7 @@ const ResumePage = () => {
           ))}
         </div>
 
-        <div className="container relative z-10 mx-auto max-w-4xl px-4 py-12">
+        <div className="relative z-10 container mx-auto max-w-4xl px-4 py-12">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} className="mb-8">
             <Link to={'/'} className="inline-flex items-center text-sm font-medium text-indigo-400 transition-colors hover:text-indigo-300">
               <ChevronLeft className="mr-1 h-4 w-4" />
@@ -147,7 +147,7 @@ const ResumePage = () => {
 
                   {/* Avatar image with slight float */}
                   <motion.div
-                    className="absolute inset-0 rounded-full overflow-hidden border border-white/10"
+                    className="absolute inset-0 overflow-hidden rounded-full border border-white/10"
                     animate={{
                       y: ['0%', '-2%', '0%', '2%', '0%'],
                       x: ['0%', '1%', '0%', '-1%', '0%']
@@ -438,7 +438,7 @@ const Section = ({ title, children }) => (
 
 const ExperienceItem = ({ title, company, period, location, description, achievements, techStack }) => (
   <div className="border-l-2 border-indigo-500/20 pl-4">
-    <div className="mb-2 flex flex-col md:flex-row md:items-baseline md:justify-between gap-2">
+    <div className="mb-2 flex flex-col gap-2 md:flex-row md:items-baseline md:justify-between">
       <div>
         <h3 className="text-xl font-medium text-white">{title}</h3>
         <div className="text-indigo-400">{company}</div>

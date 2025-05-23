@@ -79,7 +79,7 @@ const LoginPage = () => {
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
-        className="absolute left-4 top-4 z-20"
+        className="absolute top-4 left-4 z-20"
       >
         <Link to="/" className="inline-flex items-center text-sm font-medium text-indigo-400 transition-colors hover:text-indigo-300">
           <ChevronLeft className="mr-1 h-4 w-4" />
@@ -87,7 +87,7 @@ const LoginPage = () => {
         </Link>
       </motion.div>
 
-      <div className="container relative z-10 mx-auto flex min-h-screen max-w-screen-xl items-center justify-center px-4 py-12">
+      <div className="relative z-10 container mx-auto flex min-h-screen max-w-screen-xl items-center justify-center px-4 py-12">
         <div className="flex w-full max-w-6xl flex-col-reverse overflow-hidden rounded-2xl border border-indigo-500/20 bg-slate-900/50 shadow-xl backdrop-blur-sm md:flex-row">
           {/* Left side - Login Form */}
           <motion.div
@@ -229,11 +229,11 @@ const LoginPage = () => {
 
             <div className="relative flex h-full flex-col items-center justify-center p-12">
               {/* Animated circles */}
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                 {[...Array(3)].map((_, i) => (
                   <motion.div
                     key={i}
-                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-indigo-500/20"
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-indigo-500/20"
                     initial={{
                       width: 100 + i * 100,
                       height: 100 + i * 100,

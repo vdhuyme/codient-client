@@ -56,7 +56,7 @@ const HomePage = () => {
       </div>
 
       {/* Main content */}
-      <div className="container relative z-10 mx-auto flex min-h-screen flex-col items-center justify-center px-4 py-20 md:flex-row md:items-center md:justify-between md:gap-12 lg:px-8">
+      <div className="relative z-10 container mx-auto flex min-h-screen flex-col items-center justify-center px-4 py-20 md:flex-row md:items-center md:justify-between md:gap-12 lg:px-8">
         {/* Profile image section with automatic elegant effect */}
         <motion.div
           className="mb-10 md:mb-0 md:w-2/5"
@@ -69,7 +69,7 @@ const HomePage = () => {
             <div className="relative mx-auto h-48 w-48 md:h-72 md:w-72">
               {/* Subtle background glow with automatic animation */}
               <motion.div
-                className="absolute left-1/2 top-1/2 h-40 w-40 md:h-64 md:w-64 -translate-x-1/2 -translate-y-1/2 transform rounded-full bg-indigo-500/10 blur-2xl"
+                className="absolute top-1/2 left-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 transform rounded-full bg-indigo-500/10 blur-2xl md:h-64 md:w-64"
                 animate={{
                   scale: [1, 1.1, 1],
                   opacity: [0.2, 0.3, 0.2]
@@ -82,7 +82,7 @@ const HomePage = () => {
               />
 
               {/* Elegant rotating border */}
-              <div className="absolute left-1/2 top-1/2 h-40 w-40 md:h-64 md:w-64 -translate-x-1/2 -translate-y-1/2 transform overflow-hidden rounded-full">
+              <div className="absolute top-1/2 left-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 transform overflow-hidden rounded-full md:h-64 md:w-64">
                 <motion.div
                   className="absolute inset-0 rounded-full border border-indigo-300/20"
                   animate={{ rotate: 360 }}
@@ -112,7 +112,7 @@ const HomePage = () => {
 
               {/* Animated border light effect */}
               <motion.div
-                className="absolute left-1/2 top-1/2 h-40 w-40 md:h-64 md:w-64 -translate-x-1/2 -translate-y-1/2 transform rounded-full border border-indigo-400/30"
+                className="absolute top-1/2 left-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 transform rounded-full border border-indigo-400/30 md:h-64 md:w-64"
                 animate={{
                   boxShadow: ['0 0 0 0px rgba(79, 70, 229, 0)', '0 0 0 2px rgba(79, 70, 229, 0.2)', '0 0 0 0px rgba(79, 70, 229, 0)']
                 }}
@@ -125,7 +125,7 @@ const HomePage = () => {
 
               {/* Avatar image with automatic subtle movement */}
               <motion.div
-                className="absolute inset-0 rounded-full overflow-hidden border border-white/10"
+                className="absolute inset-0 overflow-hidden rounded-full border border-white/10"
                 animate={{
                   y: ['0%', '-2%', '0%', '2%', '0%'],
                   x: ['0%', '1%', '0%', '-1%', '0%']
@@ -381,15 +381,15 @@ const SocialButton = ({ icon, label, href, activeTooltip, setActiveTooltip }) =>
       <AnimatePresence>
         {activeTooltip === label && (
           <motion.div
-            className="absolute left-1/2 top-full mt-2 -translate-x-1/2 transform"
+            className="absolute top-full left-1/2 mt-2 -translate-x-1/2 transform"
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
             transition={{ duration: 0.2 }}
           >
-            <div className="relative whitespace-nowrap rounded-md bg-indigo-500/90 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
+            <div className="relative rounded-md bg-indigo-500/90 px-2.5 py-1 text-xs font-medium whitespace-nowrap text-white backdrop-blur-sm">
               {label}
-              <div className="absolute left-1/2 top-0 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rotate-45 transform bg-indigo-500/90" />
+              <div className="absolute top-0 left-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rotate-45 transform bg-indigo-500/90" />
             </div>
           </motion.div>
         )}
