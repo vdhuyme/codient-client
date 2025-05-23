@@ -230,7 +230,7 @@ const ResumePage = () => {
                     'Applied Redis and in-memory caching strategies to reduce latency and improve API performance',
                     'Containerized backend services using Docker for consistent development and deployment environments',
                     'Integrated multiple payment gateways (e.g., VietinBank, HDBank, VNPay) with transaction validation and error handling',
-                    'Developed and maintained electronic invoicing systems compliant with Viettel e-invoice regulations',
+                    'Integrated and maintained e-invoicing systems in compliance with Vietnamese government regulations, including successful implementation with Viettel and VNPT platforms',
                     'Collaborated with frontend teams to deliver reliable, secure, and performant systems',
                     'Conducted code reviews, wrote technical documentation, and enforced backend coding standards and best practices'
                   ]}
@@ -455,7 +455,7 @@ const ExperienceItem = ({ title, company, period, location, description, achieve
     {/* Tech Stack */}
     {techStack && techStack.length > 0 && (
       <div className="mb-4">
-        <h4 className="mb-1 text-sm font-medium text-white">Tech Stack:</h4>
+        <h4 className="mb-2 text-sm font-medium text-white">Tech Stack:</h4>
         <div className="flex flex-wrap gap-2">
           {techStack.map((tech, index) => (
             <motion.span
