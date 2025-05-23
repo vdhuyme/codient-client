@@ -13,8 +13,9 @@ import BlogPage from '@/pages/client/blog.page'
 import BlogDetailPage from '@/pages/client/blog.detail.page'
 import RegisterPage from '@/pages/auth/register.page'
 import ForgotPasswordPage from '@/pages/auth/forgot.password.page'
+import ScrollToTop from '@/components/customs/scroll.to.top'
 
-function App() {
+const App = () => {
   return (
     <Router>
       <Routes>
@@ -39,6 +40,8 @@ function App() {
 
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+
+      <ScrollToTop />
 
       <Toaster position="top-right" />
     </Router>
