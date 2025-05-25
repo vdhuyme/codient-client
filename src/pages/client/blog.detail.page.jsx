@@ -1,5 +1,3 @@
-import './css/blog.detail.css'
-
 import useEmblaCarousel from 'embla-carousel-react'
 import { motion } from 'framer-motion'
 import { Calendar, User, Clock, Facebook, Linkedin, LinkIcon, ChevronLeft, Loader, SendHorizonal, FlagIcon, Twitter } from 'lucide-react'
@@ -16,7 +14,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/customs/button'
 import NotFoundPage from '@/pages/error/not.found.page'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import LoadingOverlay from '@/components/customs/loading.overlay'
 
 const schema = z.object({
   content: z.string().min(3, 'Content at least 3 characters')
@@ -35,17 +32,17 @@ const BlogDetailPage = () => {
   const { reset } = methods
 
   // Post
-  const { data: postData, isLoading: isPostLoading } = useQuery({
+  const { data: postData, isLoading } = useQuery({
     queryKey: ['post', slug],
     queryFn: () => getPublishedPost(slug),
-    select: (res) => res.post
+    select: (data) => data
   })
 
   // Related posts
   const { data: relatedPosts } = useQuery({
     queryKey: ['relatedPosts', slug],
     queryFn: () => getPublishedRelatedPost(slug),
-    select: (res) => res.relatedPosts
+    select: (data) => data
   })
 
   // Comments
@@ -76,18 +73,12 @@ const BlogDetailPage = () => {
     commentMutation.mutate(data)
   }
 
-  if (isPostLoading) {
-    return <LoadingOverlay />
-  }
-
-  if (!postData) {
-    return <NotFoundPage />
-  }
-
   const post = postData
   const postUrl = typeof window !== 'undefined' ? window.location.href : ''
 
-  return post ? (
+  return !isLoading && !post ? (
+    <NotFoundPage />
+  ) : (
     <div className="relative min-h-screen overflow-hidden bg-slate-950">
       {/* Subtle gradient background */}
       <div className="absolute inset-0 z-0 bg-gradient-to-br from-slate-950 to-slate-900">
@@ -162,7 +153,7 @@ const BlogDetailPage = () => {
             </div>
             <div className="flex items-center">
               <Clock className="mr-1 h-4 w-4 text-indigo-400" />
-              <span>{post?.readTime}</span>
+              <span>{post?.readTime} minute(s)</span>
             </div>
           </motion.div>
         </header>
@@ -301,8 +292,6 @@ const BlogDetailPage = () => {
         </motion.div>
       </div>
     </div>
-  ) : (
-    <NotFoundPage />
   )
 }
 
@@ -365,7 +354,7 @@ const RelatedPostCard = ({ post, index }) => (
           </div>
           <div className="flex items-center">
             <Clock className="mr-1 h-3 w-3" />
-            <span>{post.readTime}</span>
+            <span>{post.readTime} minute(s)</span>
           </div>
         </div>
       </div>
@@ -384,7 +373,7 @@ const CommentCard = ({ user, date, content, avatar }) => (
     </div>
     <p className="text-sm text-gray-300">{content}</p>
     <div className="mt-2 flex space-x-4">
-      <button className="text-xs text-red-700 hover:text-red-300" role="button">
+      <button className="text-xs text-red-500 hover:text-red-300" role="button" onClick={() => toast.error('This feature is under development')}>
         <div className="flex items-center">
           Report <FlagIcon className="mx-2 h-3 w-3" />
         </div>

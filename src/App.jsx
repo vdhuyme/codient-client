@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import PrivateRoute from './routes/private'
 import PublicRoute from './routes/public'
 import AuthLayout from '@/components/layouts/auth.layout'
-import DashboardLayout from '@/components/layouts/dashboard.layout'
+import AdminLayout from '@/components/layouts/admin.layout'
 import ClientLayout from '@/components/layouts/client.layout'
 import NotFoundPage from '@/pages/error/not.found.page'
 import HomePage from '@/pages/client/home.page'
@@ -14,6 +14,8 @@ import BlogDetailPage from '@/pages/client/blog.detail.page'
 import RegisterPage from '@/pages/auth/register.page'
 import ForgotPasswordPage from '@/pages/auth/forgot.password.page'
 import ScrollToTop from '@/components/customs/scroll.to.top'
+import StatsPage from '@/pages/dashboard/stats.page'
+import PostsPage from '@/pages/dashboard/posts.page'
 
 const App = () => {
   return (
@@ -28,7 +30,10 @@ const App = () => {
         </Route>
 
         <Route element={<PrivateRoute />}>
-          <Route element={<DashboardLayout />}></Route>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route path="dashboard" element={<StatsPage />} />
+            <Route path="posts" element={<PostsPage />} />
+          </Route>
         </Route>
 
         <Route element={<ClientLayout />}>

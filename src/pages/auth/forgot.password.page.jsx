@@ -4,7 +4,6 @@ import { Mail, ArrowRight, ChevronLeft, Loader } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { FormProvider, useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { forgotPassword } from '@/api/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { InputField } from '@/components/customs/form.field'
 import { Button } from '@/components/customs/button'
@@ -24,17 +23,8 @@ const ForgotPasswordPage = () => {
   const [isSubmitted, setIsSubmitted] = useState(false)
 
   const onSubmit = async (data) => {
-    setIsLoading(true)
-    try {
-      await forgotPassword(data)
-    } catch (error) {
-      toast.error(error.data.message ?? 'An error when handle forgot password')
-      console.log('Fail to reset password: ', error)
-    } finally {
-      reset()
-      setIsSubmitted(true)
-      setIsLoading(false)
-    }
+    toast.error('This feature is under development')
+    setIsSubmitted(true)
   }
 
   return (
@@ -180,7 +170,13 @@ const ForgotPasswordPage = () => {
               <p className="text-gray-300">We&apos;ve sent a password reset link to your email</p>
               <p className="mt-4 text-sm text-gray-400">
                 Didn&apos;t receive the email? Check your spam folder or{' '}
-                <button onClick={() => setIsSubmitted(false)} className="font-medium text-indigo-400 hover:text-indigo-300">
+                <button
+                  onClick={() => {
+                    setIsSubmitted(false)
+                    reset()
+                  }}
+                  className="font-medium text-indigo-400 hover:text-indigo-300"
+                >
                   try again
                 </button>
               </p>

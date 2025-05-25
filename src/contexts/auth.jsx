@@ -6,8 +6,8 @@ const AuthContext = createContext()
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('access_token'))
 
-  const setAuthToken = (token) => {
-    localStorage.setItem('access_token', token)
+  const setAuthToken = (token, key = 'access_token') => {
+    localStorage.setItem(key, token)
     setToken(token)
     toast.success('Login success')
   }

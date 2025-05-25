@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Search, Calendar, User, Clock, ChevronRight, Filter, ChevronLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -9,41 +9,32 @@ import { format } from 'date-fns'
 import { useDebounce } from '@/hooks/use.debounce'
 
 const BlogPage = () => {
-  const [activeCategory, setActiveCategory] = useState('All')
+  const [activeCategoryId, setActiveCategoryId] = useState(null)
   const [searchInput, setSearchInput] = useState('')
   const [sort, setSort] = useState('DESC')
-  const [limit] = useState(5)
+  const [limit] = useState(15)
   const observerRef = useRef()
 
   const debouncedSearch = useDebounce(searchInput, 750)
 
   const handleSearchChange = (e) => setSearchInput(e.target.value)
   const handleSortChange = (e) => setSort(e.target.value)
-  const handleCategoryChange = (categoryName) => setActiveCategory(categoryName)
+  const handleCategoryChange = (categoryId) => setActiveCategoryId(categoryId)
 
   const { data: categoriesData } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
-      const { categories } = await getPublishedCategories({
+      const data = await getPublishedCategories({
         page: 1,
         limit: 100,
         query: '',
         sort: 'ASC'
       })
-      return [{ id: null, name: 'All' }, ...categories]
-    },
-    staleTime: 5 * 60 * 1000
-  })
 
-  const getCategoryId = useCallback(
-    (name) => {
-      if (name === 'All') {
-        return undefined
-      }
-      return categoriesData?.find((cat) => cat.name === name)?.id
+      return [{ id: null, name: 'All' }, ...data.categories]
     },
-    [categoriesData]
-  )
+    staleTime: 1 * 60 * 1000
+  })
 
   const {
     data: postsData,
@@ -53,14 +44,14 @@ const BlogPage = () => {
     isLoading: isPostsLoading,
     isError: isPostsError
   } = useInfiniteQuery({
-    queryKey: ['posts', debouncedSearch, sort, activeCategory],
+    queryKey: ['posts', debouncedSearch, sort, activeCategoryId],
     queryFn: async ({ pageParam = 1 }) => {
       return await getPublishedPosts({
         page: pageParam,
         limit,
         query: debouncedSearch.trim(),
         sort,
-        categoryId: getCategoryId(activeCategory)
+        categoryId: activeCategoryId
       })
     },
     getNextPageParam: (lastPage, allPages) => {
@@ -73,8 +64,8 @@ const BlogPage = () => {
       return allPages.length + 1
     },
     enabled: !!categoriesData,
-    staleTime: 2 * 60 * 1000,
-    gcTime: 5 * 60 * 1000
+    staleTime: 1 * 60 * 1000,
+    gcTime: 1 * 60 * 1000
   })
 
   const posts = postsData?.pages?.flatMap((page) => page.posts || []) || []
@@ -189,7 +180,7 @@ const BlogPage = () => {
               className="relative w-full max-w-md"
             >
               <input
-                type="text"
+                type="search"
                 placeholder="Search articles..."
                 value={searchInput}
                 onChange={handleSearchChange}
@@ -235,10 +226,10 @@ const BlogPage = () => {
             >
               {categoriesData.map((category, index) => (
                 <motion.button
-                  key={category.id || category.name}
-                  onClick={() => handleCategoryChange(category.name)}
+                  key={`${category.id}-${category.name}-${index}`}
+                  onClick={() => handleCategoryChange(category.id)}
                   className={`cursor-pointer rounded-full px-4 py-1 text-sm font-medium transition-all ${
-                    activeCategory === category.name
+                    activeCategoryId === category.id
                       ? 'bg-indigo-500/20 text-indigo-300'
                       : 'bg-slate-800/50 text-gray-400 hover:bg-slate-800 hover:text-gray-300'
                   }`}
@@ -248,12 +239,12 @@ const BlogPage = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: 0.5 + index * 0.1 }}
                 >
+                  {category.icon && <span className="mr-1">{category.icon}</span>}
                   {category.name}
                 </motion.button>
               ))}
             </motion.div>
           )}
-
           {/* Results count */}
           {debouncedSearch && (
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 text-sm text-gray-400">
@@ -352,7 +343,7 @@ const BlogPostCard = ({ post, index }) => (
 
       <div className="p-6">
         <h2 className="mb-2 text-xl font-bold text-white transition-colors group-hover:text-indigo-300">{post.title}</h2>
-        <p className="mb-4 text-sm text-gray-300">{post.excerpt}</p>
+        <p className="mb-4 line-clamp-4 text-sm text-gray-300">{post.excerpt}</p>
         <div className="flex items-center justify-between text-xs text-gray-400">
           <div className="flex items-center">
             <User className="mr-1 h-3 w-3" />
@@ -364,7 +355,7 @@ const BlogPostCard = ({ post, index }) => (
           </div>
           <div className="flex items-center">
             <Clock className="mr-1 h-3 w-3" />
-            <span>{post.readTime}</span>
+            <span>{post.readTime} minute(s)</span>
           </div>
         </div>
         <div className="mt-4 flex items-center text-sm font-medium text-indigo-400 transition-colors group-hover:text-indigo-300">

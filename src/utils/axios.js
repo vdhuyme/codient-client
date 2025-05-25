@@ -26,7 +26,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => {
     NProgress.done()
-    return response
+    return response.data
   },
   async (error) => {
     NProgress.done()
