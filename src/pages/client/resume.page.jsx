@@ -3,9 +3,9 @@ import { Github, Linkedin, Mail, Phone, MapPin, Plane, Book, Music, Coffee, Code
 import avatar from '@/assets/profile.png'
 import html2canvas from 'html2canvas-pro'
 import React, { useRef, useState } from 'react'
-import { format } from 'date-fns'
 import ResumeViewExporter from '@/components/customs/resume.view.exporter'
 import { Link } from 'react-router-dom'
+import { dateFormat } from '@/utils/date'
 
 const ResumePage = () => {
   const interests = [
@@ -21,7 +21,7 @@ const ResumePage = () => {
   const cvExporterRef = useRef(null)
   const handleDownload = async () => {
     setIsLoading(true)
-    const filename = `Vo_Duc_Huy_Software_Engineer_${format(new Date(), 'dd-MM-yyyy_HH-mm')}.png`
+    const filename = `Vo_Duc_Huy_Software_Engineer_${dateFormat(new Date(), 'dd-MM-yyyy_HH-mm')}.png`
 
     try {
       const element = cvExporterRef.current

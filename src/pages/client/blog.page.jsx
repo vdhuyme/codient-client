@@ -5,8 +5,8 @@ import { Link } from 'react-router-dom'
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
 import { getPublishedCategories } from '@/api/published.categories'
 import { getPublishedPosts } from '@/api/published.post'
-import { format } from 'date-fns'
 import { useDebounce } from '@/hooks/use.debounce'
+import { dateFormat } from '@/utils/date'
 
 const BlogPage = () => {
   const [activeCategoryId, setActiveCategoryId] = useState(null)
@@ -351,7 +351,7 @@ const BlogPostCard = ({ post, index }) => (
           </div>
           <div className="flex items-center">
             <Calendar className="mr-1 h-3 w-3" />
-            <span>{format(post.createdAt, 'PPP')}</span>
+            <span>{dateFormat(post.createdAt)}</span>
           </div>
           <div className="flex items-center">
             <Clock className="mr-1 h-3 w-3" />

@@ -3,7 +3,6 @@ import { motion } from 'framer-motion'
 import { Calendar, User, Clock, Facebook, Linkedin, LinkIcon, ChevronLeft, Loader, SendHorizonal, FlagIcon, Twitter } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getPublishedPost, getPublishedRelatedPost } from '@/api/published.post'
-import { format } from 'date-fns'
 import { createComment, getPublishedCommentsByPost } from '@/api/published.comments'
 import { useAuth } from '@/contexts/auth'
 import toast from 'react-hot-toast'
@@ -14,6 +13,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/customs/button'
 import NotFoundPage from '@/pages/error/not.found.page'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { dateFormat } from '@/utils/date'
 
 const schema = z.object({
   content: z.string().min(3, 'Content at least 3 characters')
@@ -149,7 +149,7 @@ const BlogDetailPage = () => {
             </div>
             <div className="flex items-center">
               <Calendar className="mr-1 h-4 w-4 text-indigo-400" />
-              <span>{format(post?.createdAt || new Date(), 'PPP')}</span>
+              <span>{dateFormat(post?.createdAt || new Date())}</span>
             </div>
             <div className="flex items-center">
               <Clock className="mr-1 h-4 w-4 text-indigo-400" />
@@ -350,7 +350,7 @@ const RelatedPostCard = ({ post, index }) => (
         <div className="flex items-center justify-between text-xs text-gray-400">
           <div className="flex items-center">
             <Calendar className="mr-1 h-3 w-3" />
-            <span>{format(post.createdAt, 'PPP')}</span>
+            <span>{dateFormat(post.createdAt)}</span>
           </div>
           <div className="flex items-center">
             <Clock className="mr-1 h-3 w-3" />
@@ -368,7 +368,7 @@ const CommentCard = ({ user, date, content, avatar }) => (
       <img src={avatar} alt={user} className="mr-3 h-10 w-10 rounded-full" />
       <div>
         <h4 className="font-medium text-white">{user}</h4>
-        <p className="text-xs text-gray-400">{format(date, 'PPP')}</p>
+        <p className="text-xs text-gray-400">{dateFormat(date)}</p>
       </div>
     </div>
     <p className="text-sm text-gray-300">{content}</p>
