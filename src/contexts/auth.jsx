@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('refresh_token', refreshToken)
       setRefreshToken(refreshToken)
     }
-    toast.success('Đăng nhập thành công')
+    toast.success('Login success')
   }
 
   const logout = () => {
@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('auth_user')
     setAccessToken(null)
     setRefreshToken(null)
-    toast.success('Đăng xuất thành công')
+    toast.success('Logout success')
   }
 
   const isAuthenticated = !!accessToken

@@ -4,7 +4,6 @@ import { Calendar, User, Clock, Facebook, Linkedin, LinkIcon, ChevronLeft, Loade
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getPublishedPost, getPublishedRelatedPost } from '@/api/published.post'
 import { createComment, getPublishedCommentsByPost } from '@/api/published.comments'
-import { useAuth } from '@/contexts/auth'
 import toast from 'react-hot-toast'
 import { TextareaField } from '@/components/customs/form.field'
 import { FormProvider, useForm } from 'react-hook-form'
@@ -14,6 +13,7 @@ import { Button } from '@/components/customs/button'
 import NotFoundPage from '@/pages/error/not.found.page'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { dateFormat } from '@/utils/date'
+import { useAuthorize } from '@/contexts/authorize'
 
 const schema = z.object({
   content: z.string().min(3, 'Content at least 3 characters')
@@ -22,7 +22,6 @@ const schema = z.object({
 const BlogDetailPage = () => {
   const { slug } = useParams()
   const navigate = useNavigate()
-  const { isAuthenticated } = useAuth()
   const queryClient = useQueryClient()
   const [relatedPostCarouselRef] = useEmblaCarousel()
 
@@ -66,7 +65,8 @@ const BlogDetailPage = () => {
   })
 
   const onSubmit = (data) => {
-    if (!isAuthenticated) {
+    const isLoggedIn = localStorage.getItem('access_token')
+    if (!isLoggedIn) {
       toast.error('Login to comment')
       return navigate('/login')
     }
@@ -271,7 +271,7 @@ const BlogDetailPage = () => {
             <FormProvider {...methods}>
               <form onSubmit={methods.handleSubmit(onSubmit)}>
                 <div className="mb-4">
-                  <TextareaField name="content" label="Your Comment" placeholder={isAuthenticated ? 'Share your thoughts...' : 'Login to comment'} />
+                  <TextareaField name="content" label="Your Comment" placeholder={'Share your thoughts...'} />
                 </div>
                 <Button
                   disabled={commentMutation.isPending}

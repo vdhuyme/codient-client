@@ -1,13 +1,25 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { me } from '@/api/auth'
 
-const AuthorizeContext = createContext()
+const AuthorizeContext = createContext({
+  user: null,
+  isLoading: true,
+  isLoggedIn: false,
+  hasPermission: () => false
+})
 
 export const AuthorizeProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
   const fetchAuthUser = async () => {
+    const accessToken = localStorage.getItem('access_token')
+    if (!accessToken) {
+      setUser(null)
+      setIsLoading(false)
+      return
+    }
+
     try {
       const data = await me()
       setUser(data)
@@ -24,16 +36,18 @@ export const AuthorizeProvider = ({ children }) => {
   }, [])
 
   const hasPermission = (permission, mode = 'every') => {
-    if (!user?.permissions) {
-      return false
-    }
+    if (!user?.permissions) return false
+
     if (Array.isArray(permission)) {
       return mode === 'every' ? permission.every((p) => user.permissions.includes(p)) : permission.some((p) => user.permissions.includes(p))
     }
+
     return user.permissions.includes(permission)
   }
 
-  return <AuthorizeContext.Provider value={{ user, hasPermission, isLoading }}>{children}</AuthorizeContext.Provider>
+  const isLoggedIn = Boolean(user)
+
+  return <AuthorizeContext.Provider value={{ user, hasPermission, isLoading, isLoggedIn }}>{children}</AuthorizeContext.Provider>
 }
 
 export const useAuthorize = () => {

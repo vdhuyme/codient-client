@@ -1,6 +1,22 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, Home, Users, Settings, Bell, Search, User, LogOut, Sparkles, Tag, ChartColumnStacked, Notebook, MessageCircle } from 'lucide-react'
+import {
+  Menu,
+  X,
+  Home,
+  Users,
+  Settings,
+  Bell,
+  Search,
+  User,
+  LogOut,
+  Sparkles,
+  Tag,
+  ChartColumnStacked,
+  Notebook,
+  MessageCircle,
+  Globe
+} from 'lucide-react'
 import { Outlet, Link, NavLink } from 'react-router-dom'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog'
 import { useAuth } from '@/contexts/auth'
@@ -130,9 +146,12 @@ const AdminLayout = () => {
                 >
                   <Sparkles className="h-4 w-4 text-white" />
                 </motion.div>
-                <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-xl font-bold text-transparent uppercase">
+                <Link
+                  to={'/admin/stats'}
+                  className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-xl font-bold text-transparent uppercase"
+                >
                   Huy D. Vo
-                </span>
+                </Link>
               </div>
             </motion.div>
 
@@ -248,8 +267,21 @@ const AdminLayout = () => {
 
             {/* Right side actions */}
             <div className="flex items-center space-x-4">
+              {/* Go to resume */}
+              <motion.button
+                title="View website"
+                className="relative rounded-lg p-2 text-gray-400 hover:bg-indigo-500/10 hover:text-indigo-300"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link to={'/'}>
+                  <Globe className="h-6 w-6" />
+                </Link>
+              </motion.button>
+
               {/* Notifications */}
               <motion.button
+                title="Notification"
                 className="relative rounded-lg p-2 text-gray-400 hover:bg-indigo-500/10 hover:text-indigo-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -261,6 +293,7 @@ const AdminLayout = () => {
               {/* User menu */}
               <div className="relative" ref={userMenuRef}>
                 <motion.button
+                  title="User actions"
                   className="flex items-center space-x-2 rounded-lg p-2 text-gray-400 hover:bg-indigo-500/10 hover:text-indigo-300"
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   whileHover={{ scale: 1.05 }}
