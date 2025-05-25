@@ -266,16 +266,16 @@ const AdminLayout = () => {
             </div>
 
             {/* Right side actions */}
-            <div className="flex items-center space-x-4">
-              {/* Go to resume */}
+            <div className="flex items-center space-x-0 md:space-x-3">
+              {/* Go to posts */}
               <motion.button
                 title="View website"
                 className="relative rounded-lg p-2 text-gray-400 hover:bg-indigo-500/10 hover:text-indigo-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Link to={'/'}>
-                  <Globe className="h-6 w-6" />
+                <Link to={'/posts'}>
+                  <Globe className="h-6 w-6 text-indigo-300" />
                 </Link>
               </motion.button>
 
@@ -286,7 +286,7 @@ const AdminLayout = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Bell className="h-6 w-6" />
+                <Bell className="h-6 w-6 text-indigo-300" />
                 <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
               </motion.button>
 

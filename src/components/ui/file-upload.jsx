@@ -1,174 +1,182 @@
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useState } from 'react'
-import { Upload, X, Image, Link2, Plus } from 'lucide-react'
+import { Upload, X, Image, Plus } from 'lucide-react'
+import { authenticator } from '@/api/imagekit'
+import { upload } from '@imagekit/react'
 
 const FileUpload = ({
-  value,
-  onChange,
+  value, // URLs hoặc mảng URLs
+  onChange, // Callback trả về URLs
   accept = 'image/*',
   disabled = false,
   multiple = false,
   className = '',
   placeholder = 'Click to upload or drag and drop',
-  allowUrlUpload = true,
   maxFiles = 5,
   ...props
 }) => {
   const [dragOver, setDragOver] = useState(false)
-  const [showUrlInput, setShowUrlInput] = useState(false)
-  const [urlValue, setUrlValue] = useState('')
-  const [urlError, setUrlError] = useState('')
+  const [uploadProgress, setUploadProgress] = useState({})
+  const [previewFiles, setPreviewFiles] = useState([]) // Files đang preview/upload
 
-  // Normalize value to always be an array for consistent handling
-  const files = multiple ? (Array.isArray(value) ? value : value ? [value] : []) : value ? [value] : []
+  // Parse value thành URLs
+  const urls = multiple ? (Array.isArray(value) ? value : value ? [value] : []) : value ? [value] : []
 
   const handleDrop = (e) => {
     e.preventDefault()
     setDragOver(false)
-
     if (disabled) return
-
     const droppedFiles = Array.from(e.dataTransfer.files)
     processFiles(droppedFiles)
   }
 
   const handleFileSelect = (e) => {
     if (disabled) return
-
     const selectedFiles = Array.from(e.target.files || [])
     processFiles(selectedFiles)
-
-    // Reset input
     e.target.value = ''
   }
 
-  const processFiles = (newFiles) => {
-    const validFiles = newFiles.filter((file) => {
-      if (accept === 'image/*') {
-        return file.type.startsWith('image/')
-      }
-      return true
-    })
+  const processFiles = async (newFiles) => {
+    const validFiles = newFiles.filter((file) => (accept === 'image/*' ? file.type.startsWith('image/') : true))
 
     if (validFiles.length === 0) return
 
-    const filesToProcess = multiple ? validFiles.slice(0, maxFiles - files.length) : [validFiles[0]]
+    const filesToUpload = multiple ? validFiles.slice(0, maxFiles - (urls.length + previewFiles.length)) : [validFiles[0]]
 
-    const promises = filesToProcess.map((file) => {
-      return new Promise((resolve) => {
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          resolve({
-            url: e.target.result,
-            name: file.name,
-            size: file.size,
-            type: file.type,
-            id: Math.random().toString(36).substr(2, 9)
-          })
-        }
-        reader.readAsDataURL(file)
-      })
-    })
+    if (filesToUpload.length === 0) return
 
-    Promise.all(promises).then((fileObjects) => {
-      if (multiple) {
-        const newFiles = [...files, ...fileObjects]
-        onChange?.(newFiles)
-      } else {
-        onChange?.(fileObjects[0])
+    // Tạo preview files ngay lập tức
+    const newPreviewFiles = filesToUpload.map((file) => {
+      const fileId = `${file.name}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      return {
+        id: fileId,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        previewUrl: URL.createObjectURL(file),
+        uploading: true,
+        originalFile: file
       }
     })
+
+    // Nếu single file, reset preview files
+    if (!multiple) {
+      setPreviewFiles(newPreviewFiles)
+    } else {
+      setPreviewFiles((prev) => [...prev, ...newPreviewFiles])
+    }
+
+    // Upload từng file
+    for (const previewFile of newPreviewFiles) {
+      const originalFile = previewFile.originalFile
+
+      // Set progress ban đầu
+      setUploadProgress((prev) => ({
+        ...prev,
+        [previewFile.id]: 0
+      }))
+
+      try {
+        const authParams = await authenticator()
+        const { signature, expire, token, publicKey } = authParams
+
+        const result = await upload({
+          file: originalFile,
+          fileName: originalFile.name,
+          expire,
+          token,
+          signature,
+          publicKey,
+          onProgress: (event) => {
+            const progress = Math.round((event.loaded / event.total) * 100)
+            setUploadProgress((prev) => ({
+              ...prev,
+              [previewFile.id]: progress
+            }))
+          }
+        })
+
+        // Upload thành công - cập nhật URLs
+        if (multiple) {
+          const newUrls = [...urls, result.url]
+          onChange?.(newUrls)
+        } else {
+          onChange?.(result.url)
+        }
+
+        // Remove preview file và progress
+        setPreviewFiles((prev) => prev.filter((f) => f.id !== previewFile.id))
+        setTimeout(() => {
+          setUploadProgress((prev) => {
+            const newProgress = { ...prev }
+            delete newProgress[previewFile.id]
+            return newProgress
+          })
+        }, 300)
+      } catch (error) {
+        console.error(`Error uploading ${originalFile.name}:`, error)
+
+        // Remove preview file bị lỗi
+        setPreviewFiles((prev) => prev.filter((f) => f.id !== previewFile.id))
+        setUploadProgress((prev) => {
+          const newProgress = { ...prev }
+          delete newProgress[previewFile.id]
+          return newProgress
+        })
+      }
+    }
   }
 
-  const removeFile = (indexOrId) => {
+  const removeUrl = (index) => {
     if (multiple) {
-      const newFiles = files.filter((_, index) => index !== indexOrId)
-      onChange?.(newFiles.length > 0 ? newFiles : null)
+      const newUrls = urls.filter((_, i) => i !== index)
+      onChange?.(newUrls.length > 0 ? newUrls : null)
     } else {
       onChange?.(null)
     }
   }
 
-  const handleUrlSubmit = () => {
-    if (!urlValue.trim()) return
-
-    setUrlError('')
-
-    try {
-      new URL(urlValue)
-    } catch {
-      setUrlError('Please enter a valid URL')
-      return
-    }
-
-    if (multiple && files.length >= maxFiles) {
-      setUrlError(`You can only upload up to ${maxFiles} files`)
-      return
-    }
-
-    const img = document.createElement('img')
-
-    img.onload = () => {
-      const fileObject = {
-        url: urlValue,
-        name: urlValue.split('/').pop() || 'image-from-url',
-        size: 0,
-        type: 'image/url',
-        id: Math.random().toString(36).substr(2, 9),
-        isUrl: true
-      }
-
-      if (multiple) {
-        const newFiles = [...files, fileObject]
-        onChange?.(newFiles)
-      } else {
-        onChange?.(fileObject)
-      }
-
-      setUrlValue('')
-      setShowUrlInput(false)
-    }
-
-    img.onerror = () => {
-      setUrlError('Unable to load image from this URL')
-    }
-
-    img.src = urlValue
+  const removePreviewFile = (fileId) => {
+    setPreviewFiles((prev) => prev.filter((f) => f.id !== fileId))
+    setUploadProgress((prev) => {
+      const newProgress = { ...prev }
+      delete newProgress[fileId]
+      return newProgress
+    })
   }
 
-  const canAddMore = multiple ? files.length < maxFiles : files.length === 0
+  const totalFiles = urls.length + previewFiles.length
+  const canAddMore = multiple ? totalFiles < maxFiles : totalFiles === 0
 
   return (
     <div className={`relative ${className}`} {...props}>
-      {files.length > 0 && (
+      {/* Hiển thị URLs đã upload thành công */}
+      {urls.length > 0 && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4 space-y-3">
-          {files.map((file, index) => (
+          {urls.map((url, index) => (
             <motion.div
-              key={file.id || index}
+              key={`url-${index}`}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative rounded-lg border border-indigo-500/20 bg-slate-800/50 p-4"
+              className="relative rounded-lg border border-green-500/20 bg-slate-800/50 p-4"
             >
               <button
                 type="button"
-                onClick={() => removeFile(index)}
+                onClick={() => removeUrl(index)}
                 disabled={disabled}
                 className="absolute top-2 right-2 rounded-full bg-red-500/20 p-1 text-red-400 hover:bg-red-500/30 disabled:opacity-50"
               >
-                <X className="h-4 w-4 cursor-pointer" />
+                <X className="h-4 w-4" />
               </button>
 
               <div className="flex items-center space-x-3">
                 <div className="h-16 w-16 overflow-hidden rounded-lg bg-slate-700">
-                  <img src={file.url || file} alt={file.name || 'Preview'} className="h-full w-full object-cover" />
+                  <img src={url} alt="Uploaded" className="h-full w-full object-cover" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-white">
-                    {file.name || 'Image'}
-                    {file.isUrl && <span className="ml-2 text-xs text-blue-400">(URL)</span>}
-                  </p>
-                  <p className="text-xs text-gray-400">{file.size > 0 ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : 'External image'}</p>
+                  <p className="text-sm font-medium text-green-400">✓ Uploaded successfully</p>
+                  <p className="truncate text-xs text-gray-400">{url}</p>
                 </div>
               </div>
             </motion.div>
@@ -176,6 +184,62 @@ const FileUpload = ({
         </motion.div>
       )}
 
+      {/* Hiển thị files đang upload */}
+      {previewFiles.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4 space-y-3">
+          {previewFiles.map((file) => {
+            const currentProgress = uploadProgress[file.id]
+
+            return (
+              <motion.div
+                key={file.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="relative rounded-lg border border-indigo-500/20 bg-slate-800/50 p-4"
+              >
+                <button
+                  type="button"
+                  onClick={() => removePreviewFile(file.id)}
+                  disabled={disabled}
+                  className="absolute top-2 right-2 rounded-full bg-red-500/20 p-1 text-red-400 hover:bg-red-500/30 disabled:opacity-50"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+
+                <div className="flex items-center space-x-3">
+                  <div className="relative h-16 w-16 overflow-hidden rounded-lg bg-slate-700">
+                    <img src={file.previewUrl} alt={file.name} className="h-full w-full object-cover" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent"></div>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-white">{file.name}</p>
+                    <p className="text-xs text-gray-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    <div className="mt-2">
+                      <div className="mb-1 flex items-center justify-between">
+                        <span className="text-xs text-indigo-400">{currentProgress !== undefined ? 'Uploading...' : 'Processing...'}</span>
+                        {currentProgress !== undefined && <span className="text-xs text-indigo-400">{currentProgress}%</span>}
+                      </div>
+                      <div className="h-1.5 w-full rounded-full bg-slate-700">
+                        <div
+                          className="h-1.5 rounded-full bg-indigo-500 transition-all duration-300"
+                          style={{
+                            width: currentProgress !== undefined ? `${currentProgress}%` : '20%',
+                            animation: currentProgress === undefined ? 'pulse 1.5s ease-in-out infinite' : 'none'
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )
+          })}
+        </motion.div>
+      )}
+
+      {/* Upload area */}
       {canAddMore && (
         <motion.div
           className={`relative rounded-lg border-2 border-dashed transition-all duration-200 ${
@@ -203,7 +267,7 @@ const FileUpload = ({
               <div className="mb-4 rounded-full bg-indigo-500/10 p-3">
                 {dragOver ? (
                   <Upload className="h-6 w-6 text-indigo-400" />
-                ) : files.length > 0 ? (
+                ) : totalFiles > 0 ? (
                   <Plus className="h-6 w-6 text-indigo-400" />
                 ) : (
                   <Image className="h-6 w-6 text-indigo-400" />
@@ -213,8 +277,8 @@ const FileUpload = ({
               <p className="mb-1 text-sm font-medium text-white">
                 {dragOver
                   ? 'Drop to upload'
-                  : files.length > 0
-                    ? `Add more ${multiple ? `(${maxFiles - files.length} remaining)` : 'images'}`
+                  : totalFiles > 0
+                    ? `Add more ${multiple ? `(${maxFiles - totalFiles} remaining)` : 'images'}`
                     : placeholder}
               </p>
               <p className="text-xs text-gray-400">
@@ -226,77 +290,7 @@ const FileUpload = ({
         </motion.div>
       )}
 
-      {allowUrlUpload && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation()
-            setShowUrlInput(true)
-          }}
-          disabled={disabled}
-          className="mt-3 flex items-center space-x-2 rounded-md bg-slate-700/50 px-3 py-1.5 text-xs text-indigo-400 hover:bg-slate-700/70 disabled:opacity-50"
-        >
-          <Link2 className="h-3 w-3" />
-          <span>Or add from URL</span>
-        </button>
-      )}
-
-      <AnimatePresence>
-        {showUrlInput && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            className="mt-4 rounded-lg border border-slate-600 bg-slate-800/50 p-4"
-          >
-            <div className="flex items-center space-x-2">
-              <input
-                type="url"
-                value={urlValue}
-                onChange={(e) => {
-                  setUrlValue(e.target.value)
-                  setUrlError('')
-                }}
-                placeholder="Enter image URL..."
-                disabled={disabled}
-                className="flex-1 rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-gray-400 focus:border-indigo-500 focus:outline-none disabled:opacity-50"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleUrlSubmit()
-                  } else if (e.key === 'Escape') {
-                    setShowUrlInput(false)
-                    setUrlValue('')
-                    setUrlError('')
-                  }
-                }}
-              />
-              <button
-                type="button"
-                onClick={handleUrlSubmit}
-                disabled={disabled || !urlValue.trim()}
-                className={`rounded-md bg-indigo-600 px-3 py-2 text-sm text-white hover:bg-indigo-700 disabled:opacity-50 ${!urlValue.trim() ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-              >
-                Add
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowUrlInput(false)
-                  setUrlValue('')
-                  setUrlError('')
-                }}
-                disabled={disabled}
-                className="rounded-md bg-slate-600 px-3 py-2 text-sm text-white hover:bg-slate-700 disabled:opacity-50"
-              >
-                Cancel
-              </button>
-            </div>
-            {urlError && <p className="mt-2 text-xs text-red-400">{urlError}</p>}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {multiple && files.length >= maxFiles && (
+      {multiple && totalFiles >= maxFiles && (
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-2 text-xs text-amber-400">
           Maximum number of files reached ({maxFiles})
         </motion.p>

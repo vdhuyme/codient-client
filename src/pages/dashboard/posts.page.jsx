@@ -393,18 +393,12 @@ const PostsPage = () => {
   const handleFormSubmit = useCallback(
     async (data, isEdit = false) => {
       try {
-        const formattedData = {
-          ...data,
-          thumbnail: data.thumbnail.url,
-          readTime: parseInt(data.readTime)
-        }
-
         if (isEdit && selectedPost) {
-          await mutations.updatePost.mutateAsync({ slug: selectedPost.slug, data: formattedData })
+          await mutations.updatePost.mutateAsync({ slug: selectedPost.slug, data })
           setEditDialogOpen(false)
           toast.success('Post updated successfully')
         } else {
-          await mutations.createPost.mutateAsync(formattedData)
+          await mutations.createPost.mutateAsync(data)
           setCreateDialogOpen(false)
           toast.success('New post added successfully')
         }

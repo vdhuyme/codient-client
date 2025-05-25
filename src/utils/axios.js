@@ -39,8 +39,8 @@ api.interceptors.response.use(
       originalRequest._retry = true
       try {
         const refreshToken = localStorage.getItem('refresh_token')
-
         const response = await axios.post(`${config.baseUrl}/auth/refresh-token`, { refreshToken })
+
         const refreshAccessToken = response.data.data
 
         localStorage.setItem('access_token', refreshAccessToken)
@@ -49,6 +49,7 @@ api.interceptors.response.use(
         return api(originalRequest)
       } catch (err) {
         console.error('Token refresh failed:', err)
+
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
 

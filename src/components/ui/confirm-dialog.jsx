@@ -44,9 +44,9 @@ const ConfirmDialog = ({
                       <AlertTriangle className="h-5 w-5 text-red-400" />
                     </div>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">{title}</h3>
-                    <p className="mt-1 text-sm text-gray-400">{description}</p>
+                  <div className="w-full max-w-[300px] break-words">
+                    <h3 className="text-lg font-semibold break-words text-white">{title}</h3>
+                    <p className="mt-1 text-sm break-words text-gray-400">{description}</p>
                   </div>
                 </div>
 
