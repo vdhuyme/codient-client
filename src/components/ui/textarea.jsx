@@ -1,18 +1,21 @@
-import * as React from 'react'
-
-import { cn } from '@/lib/utils'
-
-function Textarea({ className, ...props }) {
+const Textarea = ({ placeholder, value, onChange, disabled = false, error = false, rows = 4, className = '', ...props }) => {
   return (
-    <textarea
-      data-slot="textarea"
-      className={cn(
-        'border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
-        className
-      )}
-      {...props}
-    />
+    <div className={`relative ${className}`}>
+      <textarea
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+        rows={rows}
+        className={`w-full resize-none rounded-lg border bg-slate-800/50 px-3 py-2 text-sm text-white placeholder-gray-400 backdrop-blur-sm transition-all duration-200 focus:ring-2 focus:outline-none ${
+          error
+            ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500/20'
+            : 'border-indigo-500/20 focus:border-indigo-500/40 focus:ring-indigo-500/20'
+        } ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
+        {...props}
+      />
+    </div>
   )
 }
 
-export { Textarea }
+export default Textarea

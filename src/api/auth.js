@@ -19,8 +19,8 @@ export const me = async () => {
   return response.data
 }
 
-export const redirect = async ({ provider }) => {
-  const response = await api.get(`/auth/${provider}/redirect`)
+export const redirect = async () => {
+  const response = await api.get('/auth/redirect/google')
   return response.data
 }
 

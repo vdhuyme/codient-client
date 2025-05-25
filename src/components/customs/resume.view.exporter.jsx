@@ -47,7 +47,7 @@ const ResumeViewExporter = forwardRef((_, ref) => (
       ))}
     </div>
 
-    <div className="container relative z-10 mx-auto max-w-4xl px-4 py-12">
+    <div className="relative z-10 container mx-auto max-w-4xl px-4 py-12">
       {/* Header Section */}
       <header className="mb-12 border-b border-slate-800/30 pb-8">
         <div className="flex items-center justify-between gap-8">
@@ -107,7 +107,7 @@ const ResumeViewExporter = forwardRef((_, ref) => (
 
               {/* Avatar image with slight float */}
               <motion.div
-                className="absolute inset-0 rounded-full overflow-hidden border border-white/10"
+                className="absolute inset-0 overflow-hidden rounded-full border border-white/10"
                 animate={{
                   y: ['0%', '-2%', '0%', '2%', '0%'],
                   x: ['0%', '1%', '0%', '-1%', '0%']

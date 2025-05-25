@@ -4,7 +4,6 @@ import { Mail, ArrowRight, ChevronLeft, Loader } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { FormProvider, useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { forgotPassword } from '@/api/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { InputField } from '@/components/customs/form.field'
 import { Button } from '@/components/customs/button'
@@ -18,23 +17,17 @@ const ForgotPasswordPage = () => {
   const methods = useForm({
     resolver: zodResolver(schema)
   })
-  const { reset } = methods
+  const {
+    reset,
+    formState: { isValid }
+  } = methods
 
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
 
   const onSubmit = async (data) => {
-    setIsLoading(true)
-    try {
-      await forgotPassword(data)
-    } catch (error) {
-      toast.error(error.data.message ?? 'An error when handle forgot password')
-      console.log('Fail to reset password: ', error)
-    } finally {
-      reset()
-      setIsSubmitted(true)
-      setIsLoading(false)
-    }
+    toast.error('This feature is under development')
+    return
   }
 
   return (
@@ -77,7 +70,7 @@ const ForgotPasswordPage = () => {
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
-        className="absolute left-4 top-4 z-20"
+        className="absolute top-4 left-4 z-20"
       >
         <Link to="/login" className="inline-flex items-center text-sm font-medium text-indigo-400 transition-colors hover:text-indigo-300">
           <ChevronLeft className="mr-1 h-4 w-4" />
@@ -85,7 +78,7 @@ const ForgotPasswordPage = () => {
         </Link>
       </motion.div>
 
-      <div className="container relative z-10 mx-auto flex min-h-screen max-w-screen-xl items-center justify-center px-4 py-12">
+      <div className="relative z-10 container mx-auto flex min-h-screen max-w-screen-xl items-center justify-center px-4 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -141,7 +134,7 @@ const ForgotPasswordPage = () => {
                 />
 
                 <Button
-                  disabled={isLoading}
+                  disabled={isLoading || !isValid}
                   icon={
                     isLoading ? (
                       <Loader className="mr-2 h-4 w-4 animate-spin" />
@@ -180,7 +173,13 @@ const ForgotPasswordPage = () => {
               <p className="text-gray-300">We&apos;ve sent a password reset link to your email</p>
               <p className="mt-4 text-sm text-gray-400">
                 Didn&apos;t receive the email? Check your spam folder or{' '}
-                <button onClick={() => setIsSubmitted(false)} className="font-medium text-indigo-400 hover:text-indigo-300">
+                <button
+                  onClick={() => {
+                    setIsSubmitted(false)
+                    reset()
+                  }}
+                  className="font-medium text-indigo-400 hover:text-indigo-300"
+                >
                   try again
                 </button>
               </p>

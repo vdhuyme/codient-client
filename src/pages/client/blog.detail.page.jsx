@@ -1,13 +1,9 @@
-import './css/blog.detail.css'
-
 import useEmblaCarousel from 'embla-carousel-react'
 import { motion } from 'framer-motion'
 import { Calendar, User, Clock, Facebook, Linkedin, LinkIcon, ChevronLeft, Loader, SendHorizonal, FlagIcon, Twitter } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getPublishedPost, getPublishedRelatedPost } from '@/api/published.post'
-import { format } from 'date-fns'
 import { createComment, getPublishedCommentsByPost } from '@/api/published.comments'
-import { useAuth } from '@/contexts/auth'
 import toast from 'react-hot-toast'
 import { TextareaField } from '@/components/customs/form.field'
 import { FormProvider, useForm } from 'react-hook-form'
@@ -16,7 +12,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/customs/button'
 import NotFoundPage from '@/pages/error/not.found.page'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import LoadingOverlay from '@/components/customs/loading.overlay'
+import { dateFormat } from '@/utils/date'
+import { useAuthorize } from '@/contexts/authorize'
 
 const schema = z.object({
   content: z.string().min(3, 'Content at least 3 characters')
@@ -25,7 +22,6 @@ const schema = z.object({
 const BlogDetailPage = () => {
   const { slug } = useParams()
   const navigate = useNavigate()
-  const { isAuthenticated } = useAuth()
   const queryClient = useQueryClient()
   const [relatedPostCarouselRef] = useEmblaCarousel()
 
@@ -35,17 +31,17 @@ const BlogDetailPage = () => {
   const { reset } = methods
 
   // Post
-  const { data: postData, isLoading: isPostLoading } = useQuery({
+  const { data: postData, isLoading } = useQuery({
     queryKey: ['post', slug],
     queryFn: () => getPublishedPost(slug),
-    select: (res) => res.post
+    select: (data) => data
   })
 
   // Related posts
   const { data: relatedPosts } = useQuery({
     queryKey: ['relatedPosts', slug],
     queryFn: () => getPublishedRelatedPost(slug),
-    select: (res) => res.relatedPosts
+    select: (data) => data
   })
 
   // Comments
@@ -69,25 +65,20 @@ const BlogDetailPage = () => {
   })
 
   const onSubmit = (data) => {
-    if (!isAuthenticated) {
+    const isLoggedIn = localStorage.getItem('access_token')
+    if (!isLoggedIn) {
       toast.error('Login to comment')
       return navigate('/login')
     }
     commentMutation.mutate(data)
   }
 
-  if (isPostLoading) {
-    return <LoadingOverlay />
-  }
-
-  if (!postData) {
-    return <NotFoundPage />
-  }
-
   const post = postData
   const postUrl = typeof window !== 'undefined' ? window.location.href : ''
 
-  return post ? (
+  return !isLoading && !post ? (
+    <NotFoundPage />
+  ) : (
     <div className="relative min-h-screen overflow-hidden bg-slate-950">
       {/* Subtle gradient background */}
       <div className="absolute inset-0 z-0 bg-gradient-to-br from-slate-950 to-slate-900">
@@ -122,7 +113,7 @@ const BlogDetailPage = () => {
         ))}
       </div>
 
-      <div className="container relative z-10 mx-auto max-w-4xl px-4 py-12">
+      <div className="relative z-10 container mx-auto max-w-4xl px-4 py-12">
         {/* Back to blog */}
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} className="mb-8">
           <Link to={'/posts'} className="inline-flex items-center text-sm font-medium text-indigo-400 transition-colors hover:text-indigo-300">
@@ -158,11 +149,11 @@ const BlogDetailPage = () => {
             </div>
             <div className="flex items-center">
               <Calendar className="mr-1 h-4 w-4 text-indigo-400" />
-              <span>{format(post?.createdAt || new Date(), 'PPP')}</span>
+              <span>{dateFormat(post?.createdAt || new Date())}</span>
             </div>
             <div className="flex items-center">
               <Clock className="mr-1 h-4 w-4 text-indigo-400" />
-              <span>{post?.readTime}</span>
+              <span>{post?.readTime} minute(s)</span>
             </div>
           </motion.div>
         </header>
@@ -174,7 +165,7 @@ const BlogDetailPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
-            className="prose prose-invert prose-indigo rounded-lg border border-indigo-500/20 bg-slate-900/50 p-6 backdrop-blur-sm text-gray-400 max-w-full overflow-x-auto break-words [&_img]:max-w-full [&_pre]:break-words [&_table]:block [&_table]:overflow-x-auto scrollbar-hide"
+            className="prose prose-invert prose-indigo scrollbar-hide max-w-full overflow-x-auto rounded-lg border border-indigo-500/20 bg-slate-900/50 p-6 break-words text-gray-400 backdrop-blur-sm [&_img]:max-w-full [&_pre]:break-words [&_table]:block [&_table]:overflow-x-auto"
             dangerouslySetInnerHTML={{ __html: post?.content }}
           />
 
@@ -215,7 +206,7 @@ const BlogDetailPage = () => {
             <div className="p-6">
               <h3 className="mb-4 text-lg font-medium text-white">About the Author</h3>
               <div className="flex items-center">
-                <div className="w-16 h-16 mr-2">
+                <div className="mr-2 h-16 w-16">
                   <img
                     src={
                       post?.author.avatar ||
@@ -238,7 +229,7 @@ const BlogDetailPage = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 1 }} className="mt-12">
           <h2 className="mb-6 text-2xl font-bold text-white">Related Articles</h2>
           <div className="relative">
-            <div ref={relatedPostCarouselRef} className="overflow-x-auto pb-4 scrollbar-hide">
+            <div ref={relatedPostCarouselRef} className="scrollbar-hide overflow-x-auto pb-4">
               <div className="flex min-w-[20rem] space-x-6">
                 {relatedPosts?.map((post, index) => (
                   <div key={`${post.id}-${index}`} className="w-72 flex-none">
@@ -247,7 +238,7 @@ const BlogDetailPage = () => {
                 ))}
               </div>
             </div>
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent"></div>
+            <div className="absolute right-0 bottom-0 left-0 h-1 bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent"></div>
           </div>
         </motion.div>
 
@@ -280,7 +271,7 @@ const BlogDetailPage = () => {
             <FormProvider {...methods}>
               <form onSubmit={methods.handleSubmit(onSubmit)}>
                 <div className="mb-4">
-                  <TextareaField name="content" label="Your Comment" placeholder={isAuthenticated ? 'Share your thoughts...' : 'Login to comment'} />
+                  <TextareaField name="content" label="Your Comment" placeholder={'Share your thoughts...'} />
                 </div>
                 <Button
                   disabled={commentMutation.isPending}
@@ -301,8 +292,6 @@ const BlogDetailPage = () => {
         </motion.div>
       </div>
     </div>
-  ) : (
-    <NotFoundPage />
   )
 }
 
@@ -351,7 +340,7 @@ const RelatedPostCard = ({ post, index }) => (
           whileHover={{ scale: 1.05 }}
           transition={{ duration: 0.5 }}
         />
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900 to-transparent p-3">
+        <div className="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-slate-900 to-transparent p-3">
           <span className="rounded-full bg-indigo-500/20 px-2 py-0.5 text-xs font-medium text-indigo-300">{post.category.name}</span>
         </div>
       </div>
@@ -361,11 +350,11 @@ const RelatedPostCard = ({ post, index }) => (
         <div className="flex items-center justify-between text-xs text-gray-400">
           <div className="flex items-center">
             <Calendar className="mr-1 h-3 w-3" />
-            <span>{format(post.createdAt, 'PPP')}</span>
+            <span>{dateFormat(post.createdAt)}</span>
           </div>
           <div className="flex items-center">
             <Clock className="mr-1 h-3 w-3" />
-            <span>{post.readTime}</span>
+            <span>{post.readTime} minute(s)</span>
           </div>
         </div>
       </div>
@@ -379,14 +368,14 @@ const CommentCard = ({ user, date, content, avatar }) => (
       <img src={avatar} alt={user} className="mr-3 h-10 w-10 rounded-full" />
       <div>
         <h4 className="font-medium text-white">{user}</h4>
-        <p className="text-xs text-gray-400">{format(date, 'PPP')}</p>
+        <p className="text-xs text-gray-400">{dateFormat(date)}</p>
       </div>
     </div>
     <p className="text-sm text-gray-300">{content}</p>
     <div className="mt-2 flex space-x-4">
-      <button className="text-xs text-red-700 hover:text-red-300" role="button">
+      <button className="text-xs text-red-500 hover:text-red-300" role="button" onClick={() => toast.error('This feature is under development')}>
         <div className="flex items-center">
-          Report <FlagIcon className="w-3 h-3 mx-2" />
+          Report <FlagIcon className="mx-2 h-3 w-3" />
         </div>
       </button>
     </div>

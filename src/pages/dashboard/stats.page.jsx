@@ -1,5 +1,7 @@
+import React from 'react'
+
 const StatsPage = () => {
-  return <div>StatsPage</div>
+  return <div></div>
 }
 
 export default StatsPage
