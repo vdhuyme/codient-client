@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Plus, Edit, Trash2, Calendar, Clock, Tag, Folder } from 'lucide-react'
+import { Plus, Edit, Trash2, Calendar, Clock, Tag, Folder, FileText, CheckCircle, FileClock, Eye } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { useForm, Controller } from 'react-hook-form'
@@ -569,11 +569,12 @@ const PostsPage = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-3xl font-bold text-white">Posts Management</h1>
           <p className="mt-2 text-gray-400">Create, edit, and manage your blog posts</p>
         </div>
+
         <Button onClick={handleCreate} disabled={mutations.createPost.isPending}>
           <Plus className="mr-2 h-4 w-4" />
           Create Post
@@ -583,27 +584,50 @@ const PostsPage = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
         {[
-          { label: 'Total Posts', value: totalCount, color: 'indigo' },
-          { label: 'Published', value: posts.filter((p) => p.status === 'published').length, color: 'green' },
-          { label: 'Drafts', value: posts.filter((p) => p.status === 'draft').length, color: 'yellow' },
-          { label: 'Views', value: '12.5K', color: 'red' }
-        ].map((stat, index) => (
-          <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
-            <Card hover>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="py-4">
-                    <p className="text-sm font-medium text-gray-400">{stat.label}</p>
-                    <p className="mt-1 text-2xl font-bold text-white">{stat.value}</p>
+          {
+            label: 'Total Posts',
+            value: totalCount,
+            color: 'indigo',
+            icon: FileText
+          },
+          {
+            label: 'Published',
+            value: posts.filter((p) => p.status === 'published').length,
+            color: 'green',
+            icon: CheckCircle
+          },
+          {
+            label: 'Drafts',
+            value: posts.filter((p) => p.status === 'draft').length,
+            color: 'yellow',
+            icon: FileClock
+          },
+          {
+            label: 'Views',
+            value: '12.5K',
+            color: 'red',
+            icon: Eye
+          }
+        ].map((stat, index) => {
+          const Icon = stat.icon
+          return (
+            <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
+              <Card hover>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="py-4">
+                      <p className="text-sm font-medium text-gray-400">{stat.label}</p>
+                      <p className="mt-1 text-2xl font-bold text-white">{stat.value}</p>
+                    </div>
+                    <div className={`h-12 w-12 rounded-lg bg-${stat.color}-500/20 flex items-center justify-center`}>
+                      <Icon className={`h-6 w-6 text-${stat.color}-500`} />
+                    </div>
                   </div>
-                  <div className={`h-12 w-12 rounded-lg bg-${stat.color}-500/20 flex items-center justify-center`}>
-                    <div className={`h-6 w-6 rounded bg-${stat.color}-500/30`} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
+                </CardContent>
+              </Card>
+            </motion.div>
+          )
+        })}
       </div>
 
       {/* Data Table */}

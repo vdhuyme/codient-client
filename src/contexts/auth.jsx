@@ -4,24 +4,45 @@ import toast from 'react-hot-toast'
 const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(localStorage.getItem('access_token'))
+  const [accessToken, setAccessToken] = useState(() => localStorage.getItem('access_token'))
+  const [refreshToken, setRefreshToken] = useState(() => localStorage.getItem('refresh_token'))
 
-  const setAuthToken = (token, key = 'access_token') => {
-    localStorage.setItem(key, token)
-    setToken(token)
-    toast.success('Login success')
+  const setAuthToken = ({ accessToken, refreshToken }) => {
+    if (accessToken) {
+      localStorage.setItem('access_token', accessToken)
+      setAccessToken(accessToken)
+    }
+    if (refreshToken) {
+      localStorage.setItem('refresh_token', refreshToken)
+      setRefreshToken(refreshToken)
+    }
+    toast.success('Đăng nhập thành công')
   }
 
   const logout = () => {
     localStorage.removeItem('access_token')
-    setToken(null)
-    toast.success('Logout success')
+    localStorage.removeItem('refresh_token')
+    localStorage.removeItem('auth_user')
+    setAccessToken(null)
+    setRefreshToken(null)
+    toast.success('Đăng xuất thành công')
   }
 
-  const isAuthenticated = !!token
-  const authUser = JSON.parse(localStorage.getItem('auth_user'))
+  const isAuthenticated = !!accessToken
 
-  return <AuthContext.Provider value={{ token, setAuthToken, logout, isAuthenticated, authUser }}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider
+      value={{
+        accessToken,
+        refreshToken,
+        isAuthenticated,
+        setAuthToken,
+        logout
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
 export const useAuth = () => useContext(AuthContext)

@@ -21,6 +21,10 @@ const RegisterPage = () => {
     resolver: zodResolver(schema)
   })
 
+  const {
+    formState: { isValid }
+  } = methods
+
   const [isLoading, setIsLoading] = useState(false)
   const [allowCondition, setAllowCondition] = useState(true)
 
@@ -161,7 +165,7 @@ const RegisterPage = () => {
 
                 <Button
                   tabIndex={5}
-                  disabled={isLoading || !allowCondition}
+                  disabled={isLoading || !allowCondition || !isValid}
                   icon={
                     isLoading ? (
                       <Loader className="mr-2 h-4 w-4 animate-spin" />

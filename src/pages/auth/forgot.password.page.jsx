@@ -17,14 +17,17 @@ const ForgotPasswordPage = () => {
   const methods = useForm({
     resolver: zodResolver(schema)
   })
-  const { reset } = methods
+  const {
+    reset,
+    formState: { isValid }
+  } = methods
 
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
 
   const onSubmit = async (data) => {
     toast.error('This feature is under development')
-    setIsSubmitted(true)
+    return
   }
 
   return (
@@ -131,7 +134,7 @@ const ForgotPasswordPage = () => {
                 />
 
                 <Button
-                  disabled={isLoading}
+                  disabled={isLoading || !isValid}
                   icon={
                     isLoading ? (
                       <Loader className="mr-2 h-4 w-4 animate-spin" />

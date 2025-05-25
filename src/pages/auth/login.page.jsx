@@ -22,6 +22,10 @@ const LoginPage = () => {
     resolver: zodResolver(schema)
   })
 
+  const {
+    formState: { isValid }
+  } = methods
+
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
   const { setAuthToken } = useAuth()
@@ -30,16 +34,17 @@ const LoginPage = () => {
     setIsLoading(true)
     try {
       const { accessToken, refreshToken } = await login(data)
-      if (!accessToken && !refreshToken) {
+
+      if (!accessToken || !refreshToken) {
         toast.error('The service has some errors')
         return
       }
-      setAuthToken(accessToken)
-      setAuthToken(refreshToken, 'refresh_token')
+
+      setAuthToken({ accessToken, refreshToken })
       navigate('/')
     } catch (error) {
-      toast.error(error.data.message ?? 'An error when handle login')
-      console.log('Fail to login: ', error)
+      toast.error(error?.data?.message || 'An error occurred during login')
+      console.error('Fail to login:', error)
     } finally {
       setIsLoading(false)
     }
@@ -148,7 +153,7 @@ const LoginPage = () => {
                 </div>
 
                 <Button
-                  disabled={isLoading}
+                  disabled={isLoading || !isValid}
                   icon={
                     isLoading ? (
                       <Loader className="mr-2 h-4 w-4 animate-spin" />
