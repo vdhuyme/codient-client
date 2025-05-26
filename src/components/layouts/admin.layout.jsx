@@ -28,11 +28,27 @@ const AdminLayout = () => {
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const userMenuRef = useRef(null)
 
+  // Handle responsive sidebar behavior
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        // On desktop, ensure sidebar is visible
+        setSidebarOpen(true)
+      }
+    }
+
+    // Set initial state based on screen size
+    handleResize()
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   // Close sidebar on mobile when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Close sidebar
-      if (sidebarOpen && !event.target.closest('.sidebar') && !event.target.closest('.menu-button')) {
+      // Close sidebar on mobile only
+      if (sidebarOpen && window.innerWidth < 1024 && !event.target.closest('.sidebar') && !event.target.closest('.menu-button')) {
         setSidebarOpen(false)
       }
 
@@ -119,21 +135,20 @@ const AdminLayout = () => {
         ))}
       </div>
 
-      {/* Sidebar - Reduced z-index to ensure dialog stays on top */}
+      {/* Sidebar */}
       <AnimatePresence>
-        <motion.aside
-          className="sidebar fixed top-0 left-0 z-30 h-full w-64 border-r border-indigo-500/20 bg-slate-900/95 backdrop-blur-xl"
-          initial={{ x: -256 }}
-          animate={{ x: sidebarOpen || (typeof window !== 'undefined' && window.innerWidth >= 1024) ? 0 : -256 }}
-          transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+        <aside
+          className={`sidebar fixed top-0 left-0 z-30 h-full w-64 transform border-r border-indigo-500/20 bg-slate-900/95 backdrop-blur-xl transition-transform duration-300 ease-in-out ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-64'
+          }`}
         >
           {/* Sidebar gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/5 via-transparent to-purple-500/5" />
 
           <div className="relative z-10 flex h-full flex-col">
-            {/* Logo section */}
+            {/* Logo section with close button on mobile */}
             <motion.div
-              className="flex h-16 items-center justify-center border-b border-indigo-500/20 px-6"
+              className="flex h-16 items-center justify-between border-b border-indigo-500/20 px-6"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 }}
@@ -153,6 +168,16 @@ const AdminLayout = () => {
                   Huy D. Vo
                 </Link>
               </div>
+
+              {/* Close button for mobile */}
+              <motion.button
+                className="rounded-lg p-1 text-gray-400 hover:bg-indigo-500/10 hover:text-indigo-300 lg:hidden"
+                onClick={() => setSidebarOpen(false)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <X className="h-5 w-5" />
+              </motion.button>
             </motion.div>
 
             {/* Navigation */}
@@ -212,12 +237,12 @@ const AdminLayout = () => {
               </div>
             </motion.div>
           </div>
-        </motion.aside>
+        </aside>
       </AnimatePresence>
 
-      {/* Mobile sidebar overlay - Reduced z-index */}
+      {/* Mobile sidebar overlay */}
       <AnimatePresence>
-        {sidebarOpen && (
+        {sidebarOpen && window.innerWidth < 1024 && (
           <motion.div
             className="fixed inset-0 z-20 bg-black/50 backdrop-blur-sm lg:hidden"
             initial={{ opacity: 0 }}
@@ -229,7 +254,7 @@ const AdminLayout = () => {
       </AnimatePresence>
 
       {/* Main content */}
-      <div className="relative lg:ml-64">
+      <div className={`relative transition-all duration-300 ${sidebarOpen && window.innerWidth >= 1024 ? 'lg:ml-64' : ''}`}>
         {/* Header */}
         <motion.header
           className="sticky top-0 z-20 border-b border-indigo-500/20 bg-slate-900/95 backdrop-blur-xl"
@@ -245,7 +270,7 @@ const AdminLayout = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              <Menu className="h-6 w-6" />
             </motion.button>
 
             {/* Search bar */}
@@ -275,7 +300,7 @@ const AdminLayout = () => {
                 whileTap={{ scale: 0.95 }}
               >
                 <Link to={'/posts'}>
-                  <Globe className="h-6 w-6 text-indigo-300" />
+                  <Globe className="h-6 w-6" />
                 </Link>
               </motion.button>
 
@@ -286,7 +311,7 @@ const AdminLayout = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Bell className="h-6 w-6 text-indigo-300" />
+                <Bell className="h-6 w-6" />
                 <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
               </motion.button>
 
@@ -300,7 +325,7 @@ const AdminLayout = () => {
                   whileTap={{ scale: 0.95 }}
                 >
                   <div className="flex h-full w-full items-center justify-center rounded-full bg-slate-900">
-                    <User className="h-6 w-6 text-indigo-300" />
+                    <User className="h-6 w-6" />
                   </div>
                 </motion.button>
 

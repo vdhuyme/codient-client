@@ -176,7 +176,7 @@ const FileUpload = ({
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-green-400">✓ Uploaded successfully</p>
-                  <p className="truncate text-xs text-gray-400">{url}</p>
+                  <p className="line-clamp-2 max-w-[200px] text-xs break-words text-gray-400">{url}</p>
                 </div>
               </div>
             </motion.div>
@@ -214,7 +214,7 @@ const FileUpload = ({
                     </div>
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-white">{file.name}</p>
+                    <p className="line-clamp-2 max-w-[200px] text-xs break-words text-gray-400">{file.name}</p>
                     <p className="text-xs text-gray-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                     <div className="mt-2">
                       <div className="mb-1 flex items-center justify-between">
