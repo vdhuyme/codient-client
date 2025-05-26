@@ -1,8 +1,6 @@
-'use client'
-
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
-import { ChevronRight, ChevronDown, MoreHorizontal, Plus, Edit, Trash2, Eye, EyeOff } from 'lucide-react'
+import { ChevronRight, GripHorizontal, Plus, Edit, Trash2, Eye, EyeOff, CopyMinus, ChevronsUpDown } from 'lucide-react'
 import Button from './button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from './dropdown-menu'
 import Badge from './badge'
@@ -74,9 +72,7 @@ const TreeNode = ({ node, level = 0, onSelect, onEdit, onDelete, onAddChild, onT
         <div className="opacity-0 transition-opacity group-hover:opacity-100">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                <MoreHorizontal className="h-3 w-3" />
-              </Button>
+              <GripHorizontal className="h-4 w-4 text-white" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem onClick={() => onEdit(node)}>
@@ -181,12 +177,12 @@ const TreeView = ({ data, onSelect, onEdit, onDelete, onAddChild, onToggleStatus
         <div className="flex items-center gap-2">
           <Tooltip content="Expand All">
             <Button variant="ghost" size="sm" onClick={expandAll}>
-              <ChevronDown className="h-4 w-4" />
+              <ChevronsUpDown className="h-4 w-4" />
             </Button>
           </Tooltip>
           <Tooltip content="Collapse All">
-            <Button variant="ghost" size="sm" onClick={collapseAll}>
-              <ChevronRight className="h-4 w-4" />
+            <Button variant="ghost" size="sm">
+              <CopyMinus className="h-4 w-4" onClick={collapseAll} />
             </Button>
           </Tooltip>
         </div>

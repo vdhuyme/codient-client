@@ -268,8 +268,8 @@ const CategoryForm = ({ category = null, parentCategory = null, categories = [],
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-between border-t border-indigo-500/20 pt-4">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col items-start justify-between gap-4 border-t border-indigo-500/20 pt-4 md:flex-row md:items-center">
+            <div className="flex gap-2">
               <Button type="button" variant="outline" onClick={handleReset} disabled={loading}>
                 Reset
               </Button>

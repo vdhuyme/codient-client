@@ -55,7 +55,6 @@ const Dialog = ({ open, onOpenChange, children, size = 'xl' }) => {
 
 const DialogContent = ({ children, className = '' }) => (
   <div className={`rounded-xl border border-indigo-500/20 bg-slate-900/95 shadow-xl backdrop-blur-xl ${className}`}>
-    <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-indigo-500/5 to-purple-500/5" />
     <div className="relative z-10 p-4">{children}</div>
   </div>
 )
