@@ -1,5 +1,3 @@
-'use client'
-
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { Search, Smile } from 'lucide-react'
@@ -68,11 +66,11 @@ const IconPicker = ({ value, onChange, className = '' }) => {
             />
 
             {/* Icon Grid */}
-            <div className="max-h-96 overflow-y-auto">
+            <div className="scrollbar-hide max-h-96 overflow-y-auto">
               {searchQuery ? (
                 <div className="space-y-4">
                   <h4 className="text-sm font-medium text-gray-300">Search Results</h4>
-                  <div className="grid grid-cols-10 gap-2">
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                     {filteredIcons.map((icon, index) => (
                       <motion.button
                         key={`${icon}-${index}`}
@@ -94,7 +92,7 @@ const IconPicker = ({ value, onChange, className = '' }) => {
                   {Object.entries(iconCategories).map(([category, icons]) => (
                     <div key={category}>
                       <h4 className="mb-3 text-sm font-medium text-gray-300">{category}</h4>
-                      <div className="grid grid-cols-10 gap-2">
+                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                         {icons.map((icon, index) => (
                           <motion.button
                             key={`${category}-${icon}-${index}`}

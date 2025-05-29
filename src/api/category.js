@@ -10,17 +10,22 @@ export const createCategory = async (data) => {
   return response.data
 }
 
-export const updateCategory = async (id, data) => {
-  const response = await api.put(`/categories/${id}`, data)
+export const updateCategory = async (slug, data) => {
+  const response = await api.put(`/categories/${slug}`, data)
   return response.data
 }
 
-export const deleteCategory = async (id) => {
-  const response = await api.delete(`/categories/${id}`)
+export const deleteCategory = async (slug) => {
+  const response = await api.delete(`/categories/${slug}`)
   return response.data
 }
 
 export const getCategory = async (id) => {
   const response = await api.get(`/categories/${id}`)
+  return response.data
+}
+
+export const getCategoryTrees = async () => {
+  const response = await api.get('/categories/trees')
   return response.data
 }

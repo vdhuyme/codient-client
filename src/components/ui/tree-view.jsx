@@ -1,10 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
-import { ChevronRight, GripHorizontal, Plus, Edit, Trash2, Eye, EyeOff, CopyMinus, ChevronsUpDown } from 'lucide-react'
-import Button from './button'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from './dropdown-menu'
+import { ChevronRight, ChevronsUpDown, ChevronsDownUp } from 'lucide-react'
 import Badge from './badge'
-import Tooltip from './tooltip'
 
 const TreeNode = ({ node, level = 0, onSelect, onEdit, onDelete, onAddChild, onToggleStatus, selectedId, expandedNodes, onToggleExpand }) => {
   const hasChildren = node.children && node.children.length > 0
@@ -29,7 +26,6 @@ const TreeNode = ({ node, level = 0, onSelect, onEdit, onDelete, onAddChild, onT
         } `}
         style={{ paddingLeft: `${level * 1.5 + 0.75}rem` }}
         onClick={handleSelect}
-        whileHover={{ x: 2 }}
         layout
       >
         {/* Expand/Collapse Button */}
@@ -53,9 +49,6 @@ const TreeNode = ({ node, level = 0, onSelect, onEdit, onDelete, onAddChild, onT
           )}
         </div>
 
-        {/* Icon */}
-        <div className="flex-shrink-0 text-lg">{node.icon || '📁'}</div>
-
         {/* Name and Info */}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
@@ -67,73 +60,34 @@ const TreeNode = ({ node, level = 0, onSelect, onEdit, onDelete, onAddChild, onT
           </div>
           {node.description && <p className="mt-0.5 truncate text-xs text-gray-400">{node.description}</p>}
         </div>
-
-        {/* Actions */}
-        <div className="opacity-0 transition-opacity group-hover:opacity-100">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <GripHorizontal className="h-4 w-4 text-white" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={() => onEdit(node)}>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit Category
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onAddChild(node)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Subcategory
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onToggleStatus(node)}>
-                {node.status === 'published' ? (
-                  <>
-                    <EyeOff className="mr-2 h-4 w-4" />
-                    Unpublish
-                  </>
-                ) : (
-                  <>
-                    <Eye className="mr-2 h-4 w-4" />
-                    Publish
-                  </>
-                )}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => onDelete(node)} className="text-red-400 focus:text-red-300">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
       </motion.div>
 
       {/* Children */}
-      <AnimatePresence>
-        {hasChildren && isExpanded && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            {node.children.map((child) => (
-              <TreeNode
-                key={child.id}
-                node={child}
-                level={level + 1}
-                onSelect={onSelect}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                onAddChild={onAddChild}
-                onToggleStatus={onToggleStatus}
-                selectedId={selectedId}
-                expandedNodes={expandedNodes}
-                onToggleExpand={onToggleExpand}
-              />
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {hasChildren && isExpanded && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.2 }}
+          className="overflow-hidden"
+        >
+          {node.children.map((child) => (
+            <TreeNode
+              key={child.id}
+              node={child}
+              level={level + 1}
+              onSelect={onSelect}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onAddChild={onAddChild}
+              onToggleStatus={onToggleStatus}
+              selectedId={selectedId}
+              expandedNodes={expandedNodes}
+              onToggleExpand={onToggleExpand}
+            />
+          ))}
+        </motion.div>
+      )}
     </div>
   )
 }
@@ -169,22 +123,25 @@ const TreeView = ({ data, onSelect, onEdit, onDelete, onAddChild, onToggleStatus
     setExpandedNodes(new Set())
   }
 
+  const [isExpanded, setIsExpanded] = useState(false)
+  const toggleExpandCollapse = () => {
+    if (isExpanded) {
+      collapseAll()
+    } else {
+      expandAll()
+    }
+    setIsExpanded(!isExpanded)
+  }
+
   return (
     <div className={`space-y-2 ${className}`}>
       {/* Tree Controls */}
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-sm font-medium text-gray-300">Category Tree</h3>
         <div className="flex items-center gap-2">
-          <Tooltip content="Expand All">
-            <Button variant="ghost" size="sm" onClick={expandAll}>
-              <ChevronsUpDown className="h-4 w-4" />
-            </Button>
-          </Tooltip>
-          <Tooltip content="Collapse All">
-            <Button variant="ghost" size="sm">
-              <CopyMinus className="h-4 w-4" onClick={collapseAll} />
-            </Button>
-          </Tooltip>
+          <button onClick={toggleExpandCollapse} className="hover:bg-muted text-muted-foreground rounded-md p-2 text-white transition-colors">
+            {isExpanded ? <ChevronsDownUp className="h-4 w-4" /> : <ChevronsUpDown className="h-4 w-4" />}
+          </button>
         </div>
       </div>
 

@@ -1,148 +1,384 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Plus, Search, Download, Upload, Trash2 } from 'lucide-react'
+import { Plus, Search, Download, Upload, Trash2, FolderPlus } from 'lucide-react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import Button from '@/components/ui/button'
 import Input from '@/components/ui/input'
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card'
 import TreeView from '@/components/ui/tree-view'
-import CategoryForm from '@/components/ui/category-form'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
 import Badge from '@/components/ui/badge'
 import Tooltip from '@/components/ui/tooltip'
+import Select from '@/components/ui/select'
+import Label from '@/components/ui/label'
+import IconPicker from '@/components/ui/icon-picker'
+import FileUpload from '@/components/ui/file-upload'
+import Textarea from '@/components/ui/textarea'
+import { createCategory, deleteCategory, getCategories, getCategoryTrees, updateCategory } from '@/api/category'
 
-// Mock data
-const mockCategories = [
-  {
-    id: 1,
-    name: 'Technology',
-    description: 'All things tech related',
-    icon: '💻',
-    thumbnail: '/placeholder.svg?height=100&width=100',
-    parentId: null,
-    status: 'published',
-    children: [
-      {
-        id: 2,
-        name: 'Frontend',
-        description: 'Everything about UI development and frameworks',
-        icon: '🖥️',
-        thumbnail: '',
-        parentId: 1,
-        status: 'published',
-        children: [
-          {
-            id: 3,
-            name: 'React',
-            description: 'React.js framework and ecosystem',
-            icon: '⚛️',
-            thumbnail: '',
-            parentId: 2,
-            status: 'published',
-            children: []
-          },
-          {
-            id: 4,
-            name: 'Vue.js',
-            description: 'Vue.js framework and tools',
-            icon: '💚',
-            thumbnail: '',
-            parentId: 2,
-            status: 'draft',
-            children: []
-          }
-        ]
-      },
-      {
-        id: 5,
-        name: 'Backend',
-        description: 'Server-side development and APIs',
-        icon: '⚙️',
-        thumbnail: '',
-        parentId: 1,
-        status: 'published',
-        children: [
-          {
-            id: 6,
-            name: 'Node.js',
-            description: 'JavaScript runtime for backend',
-            icon: '🟢',
-            thumbnail: '',
-            parentId: 5,
-            status: 'published',
-            children: []
-          }
-        ]
-      }
-    ]
-  },
-  {
-    id: 7,
-    name: 'Design',
-    description: 'UI/UX design and creative resources',
-    icon: '🎨',
-    thumbnail: '/placeholder.svg?height=100&width=100',
-    parentId: null,
-    status: 'published',
-    children: [
-      {
-        id: 8,
-        name: 'UI Design',
-        description: 'User interface design principles',
-        icon: '🖼️',
-        thumbnail: '',
-        parentId: 7,
-        status: 'published',
-        children: []
-      }
-    ]
-  },
-  {
-    id: 9,
-    name: 'Business',
-    description: 'Business strategy and management',
-    icon: '💼',
-    thumbnail: '',
-    parentId: null,
-    status: 'draft',
-    children: []
+const fetchCategories = async () => {
+  try {
+    const { categories } = await getCategories()
+    return categories
+  } catch (error) {
+    throw new Error(`Failed to fetch categories: ${error.message}`)
   }
-]
+}
+
+const fetchCategoryTrees = async () => {
+  try {
+    const data = await getCategoryTrees()
+    return data
+  } catch (error) {
+    throw new Error(`Failed to fetch categories: ${error.message}`)
+  }
+}
+
+// Custom Hooks
+const useCategories = () => {
+  return useQuery({
+    queryKey: ['categories'],
+    queryFn: fetchCategories,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000 // 10 minutes
+  })
+}
+
+const useCategoryTrees = () => {
+  return useQuery({
+    queryKey: ['categoryTrees'],
+    queryFn: fetchCategoryTrees,
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 10 * 60 * 1000
+  })
+}
+
+const useCreateCategory = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: createCategory,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] })
+      queryClient.invalidateQueries({ queryKey: ['categoryTrees'] })
+    },
+    onError: (error) => {
+      console.error('Error creating category:', error)
+      throw error // Re-throw để form có thể catch được
+    }
+  })
+}
+
+const useUpdateCategory = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, data }) => updateCategory(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] })
+      queryClient.invalidateQueries({ queryKey: ['categoryTrees'] })
+    },
+    onError: (error) => {
+      console.error('Error updating category:', error)
+      throw error // Re-throw để form có thể catch được
+    }
+  })
+}
+
+const useDeleteCategory = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: deleteCategory,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] })
+      queryClient.invalidateQueries({ queryKey: ['categoryTrees'] })
+    },
+    onError: (error) => {
+      console.error('Error deleting category:', error)
+      throw error
+    }
+  })
+}
+
+const useToggleCategoryStatus = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ category }) => {
+      const newStatus = category.status === 'published' ? 'draft' : 'published'
+      // Sử dụng ID thay vì toàn bộ object category
+      return updateCategory(category.id, { status: newStatus })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] })
+      queryClient.invalidateQueries({ queryKey: ['categoryTrees'] })
+    },
+    onError: (error) => {
+      console.error('Error toggling category status:', error)
+      throw error
+    }
+  })
+}
+
+// Zod Schema
+const categorySchema = z.object({
+  name: z.string().min(1, 'Category name is required').max(100, 'Name must be less than 100 characters'),
+  description: z.string().max(500, 'Description must be less than 500 characters').optional(),
+  icon: z.string().min(1, 'Icon is required'),
+  thumbnail: z.string().optional(),
+  parentId: z.string().nullable(),
+  status: z.enum(['published', 'draft'])
+})
+
+// Category Form Component
+const CategoryForm = ({ category = null, parentCategory = null, onCancel }) => {
+  // Custom hooks
+  const { data: allCategories = [] } = useCategories()
+  const createMutation = useCreateCategory()
+  const updateMutation = useUpdateCategory()
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting }
+  } = useForm({
+    resolver: zodResolver(categorySchema),
+    defaultValues: {
+      name: '',
+      description: '',
+      icon: '📁',
+      thumbnail: '',
+      parentId: parentCategory?.id || null,
+      status: 'published'
+    }
+  })
+
+  // Initialize form data
+  useEffect(() => {
+    if (category) {
+      reset({
+        name: category.name || '',
+        description: category.description || '',
+        icon: category.icon || '📁',
+        thumbnail: category.thumbnail || '',
+        parentId: category.parentId || null,
+        status: category.status || 'published'
+      })
+    } else if (parentCategory) {
+      reset({
+        name: '',
+        description: '',
+        icon: '📁',
+        thumbnail: '',
+        parentId: parentCategory.id,
+        status: 'published'
+      })
+    }
+  }, [category, parentCategory, reset])
+
+  // Get available parent categories (exclude current category and its children)
+  const getAvailableParents = () => {
+    if (!category) {
+      return allCategories
+    }
+
+    const excludeIds = new Set([category.id])
+
+    // Add all children IDs to exclude
+    const addChildrenIds = (node) => {
+      if (node.children) {
+        node.children.forEach((child) => {
+          excludeIds.add(child.id)
+          addChildrenIds(child)
+        })
+      }
+    }
+    addChildrenIds(category)
+
+    return allCategories?.filter((cat) => !excludeIds.has(cat.id))
+  }
+
+  // Convert categories to select options
+  const getParentOptions = () => {
+    const options = [{ value: null, label: 'Root Category' }]
+
+    const availableParents = getAvailableParents()
+    availableParents.forEach((cat) => {
+      options.push({
+        value: cat.id,
+        label: `${cat.icon || '📁'} ${cat.name}`
+      })
+    })
+
+    return options
+  }
+
+  const submitHandler = async (data) => {
+    try {
+      console.log('Form submitted with data:', data) // Debug log
+
+      if (category) {
+        console.log('Updating category with ID:', category.id) // Debug log
+        await updateMutation.mutateAsync({ id: category.id, data })
+        console.log('Category updated successfully') // Debug log
+      } else {
+        console.log('Creating new category') // Debug log
+        await createMutation.mutateAsync(data)
+        console.log('Category created successfully') // Debug log
+      }
+
+      // Reset form after successful submission
+      if (!category) {
+        reset()
+      }
+
+      // Call onCancel to close the form
+      onCancel?.()
+    } catch (error) {
+      console.error('Error in submitHandler:', error)
+    }
+  }
+
+  const getFormTitle = () => {
+    if (category) {
+      return 'Edit Category'
+    }
+    if (parentCategory) {
+      return `Add Subcategory to "${parentCategory.name}"`
+    }
+    return 'Create New Category'
+  }
+
+  const getFormDescription = () => {
+    if (category) {
+      return 'Update category information and settings'
+    }
+    if (parentCategory) {
+      return 'Create a new subcategory under the selected parent'
+    }
+    return 'Create a new root category for your content organization'
+  }
+
+  const isLoading = createMutation.isPending || updateMutation.isPending || isSubmitting
+
+  return (
+    <Card className="h-fit">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/20">
+              {category ? <FolderPlus className="h-5 w-5 text-indigo-400" /> : <Plus className="h-5 w-5 text-indigo-400" />}
+            </div>
+            <div>
+              <CardTitle>{getFormTitle()}</CardTitle>
+              <CardDescription>{getFormDescription()}</CardDescription>
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent>
+        <form onSubmit={handleSubmit(submitHandler)} className="space-y-6">
+          {/* Basic Info */}
+          <div>
+            <Label required>Category Name</Label>
+            <Input {...register('name')} placeholder="Enter category name" />
+            {errors.name && <p className="text-sm text-red-400">{errors.name.message}</p>}
+          </div>
+
+          <div>
+            <Label>Description</Label>
+            <Textarea {...register('description')} rows={3} placeholder="Enter category description" />
+            {errors.description && <p className="text-sm text-red-400">{errors.description.message}</p>}
+          </div>
+
+          {/* Icon */}
+          <div>
+            <Label required>Icon</Label>
+            <IconPicker value={watch('icon')} onChange={(val) => setValue('icon', val)} />
+            {errors.icon && <p className="text-sm text-red-400">{errors.icon.message}</p>}
+          </div>
+
+          {/* Thumbnail */}
+          <div>
+            <Label>Thumbnail</Label>
+            <FileUpload value={watch('thumbnail')} onChange={(val) => setValue('thumbnail', val)} />
+          </div>
+
+          {/* Parent Category */}
+          <div>
+            <Label>Parent Category</Label>
+            <Select options={getParentOptions()} value={watch('parentId')} onChange={(val) => setValue('parentId', val)} />
+          </div>
+
+          {/* Status */}
+          <div>
+            <Label>Status</Label>
+            <Select
+              options={[
+                { value: 'published', label: 'Published' },
+                { value: 'draft', label: 'Draft' }
+              ]}
+              value={watch('status')}
+              onChange={(val) => setValue('status', val)}
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-between border-t pt-4">
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" onClick={() => reset()} disabled={isLoading}>
+                Reset
+              </Button>
+              <Button type="button" variant="danger" onClick={onCancel} disabled={isLoading}>
+                Cancel
+              </Button>
+            </div>
+
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? 'Saving...' : category ? 'Update Category' : 'Create Category'}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  )
+}
 
 const CategoriesPage = () => {
-  const [categories, setCategories] = useState(mockCategories)
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [editingCategory, setEditingCategory] = useState(null)
   const [parentForNew, setParentForNew] = useState(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [categoryToDelete, setCategoryToDelete] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [loading, setLoading] = useState(false)
+
+  // Custom hooks
+  const { data: categories = [], isLoading: treesLoading } = useCategoryTrees()
+  const { data: allCategories = [] } = useCategories()
+  const deleteMutation = useDeleteCategory()
+  const toggleStatusMutation = useToggleCategoryStatus()
 
   // Filter categories based on search
   const filteredCategories = categories.filter(
     (category) =>
-      category.name.toLowerCase().includes(searchQuery.toLowerCase()) || category.description.toLowerCase().includes(searchQuery.toLowerCase())
+      category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (category.description || '').toLowerCase().includes(searchQuery.toLowerCase())
   )
-
-  // Get flat list of all categories for form parent selection
-  const getFlatCategories = (cats = categories) => {
-    let flat = []
-    cats.forEach((cat) => {
-      flat.push(cat)
-      if (cat.children) {
-        flat = flat.concat(getFlatCategories(cat.children))
-      }
-    })
-    return flat
-  }
 
   // Get category statistics
   const getStats = () => {
-    const flat = getFlatCategories()
     return {
-      total: flat.length,
-      published: flat.filter((cat) => cat.status === 'published').length,
-      draft: flat.filter((cat) => cat.status === 'draft').length,
+      total: allCategories.length,
+      published: allCategories?.filter((cat) => cat.status === 'published').length,
+      draft: allCategories?.filter((cat) => cat.status === 'draft').length,
       roots: categories.length
     }
   }
@@ -183,135 +419,39 @@ const CategoriesPage = () => {
     setDeleteDialogOpen(true)
   }
 
-  // Handle toggle status
-  const handleToggleStatus = (category) => {
-    const updateCategoryInTree = (cats) => {
-      return cats.map((cat) => {
-        if (cat.id === category.id) {
-          return {
-            ...cat,
-            status: cat.status === 'published' ? 'draft' : 'published'
-          }
-        }
-        if (cat.children) {
-          return {
-            ...cat,
-            children: updateCategoryInTree(cat.children)
-          }
-        }
-        return cat
-      })
-    }
-
-    setCategories(updateCategoryInTree(categories))
-  }
-
-  // Handle form submit
-  const handleFormSubmit = async (formData) => {
-    setLoading(true)
-
+  // Handle toggle status - Fixed function
+  const handleToggleStatus = async (category) => {
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      if (editingCategory) {
-        // Update existing category
-        const updateCategoryInTree = (cats) => {
-          return cats.map((cat) => {
-            if (cat.id === editingCategory.id) {
-              return { ...cat, ...formData }
-            }
-            if (cat.children) {
-              return {
-                ...cat,
-                children: updateCategoryInTree(cat.children)
-              }
-            }
-            return cat
-          })
-        }
-
-        setCategories(updateCategoryInTree(categories))
-        setEditingCategory(null)
-      } else {
-        // Create new category
-        const newCategory = {
-          ...formData,
-          id: Date.now(),
-          children: []
-        }
-
-        if (formData.parentId) {
-          // Add as child
-          const addToParent = (cats) => {
-            return cats.map((cat) => {
-              if (cat.id === formData.parentId) {
-                return {
-                  ...cat,
-                  children: [...(cat.children || []), newCategory]
-                }
-              }
-              if (cat.children) {
-                return {
-                  ...cat,
-                  children: addToParent(cat.children)
-                }
-              }
-              return cat
-            })
-          }
-
-          setCategories(addToParent(categories))
-        } else {
-          // Add as root
-          setCategories([...categories, newCategory])
-        }
-
-        setParentForNew(null)
-      }
+      console.log('Toggling status for category:', category.id, 'Current status:', category.status) // Debug log
+      await toggleStatusMutation.mutateAsync({ category })
+      console.log('Status toggle successful') // Debug log
     } catch (error) {
-      console.error('Failed to save category:', error)
-    } finally {
-      setLoading(false)
+      console.error('Error toggling status:', error)
+      alert('Failed to toggle category status')
     }
   }
 
-  // Handle delete confirm
+  // Handle delete confirm - Fixed to use correct identifier
   const handleDeleteConfirm = async () => {
-    setLoading(true)
-
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      const removeCategoryFromTree = (cats) => {
-        return cats.filter((cat) => {
-          if (cat.id === categoryToDelete.id) {
-            return false
-          }
-          if (cat.children) {
-            cat.children = removeCategoryFromTree(cat.children)
-          }
-          return true
-        })
-      }
-
-      setCategories(removeCategoryFromTree(categories))
-      setDeleteDialogOpen(false)
-      setCategoryToDelete(null)
-
-      // Clear selection if deleted category was selected
-      if (selectedCategory?.id === categoryToDelete.id) {
+    if (categoryToDelete) {
+      try {
+        // Use ID instead of id if your API expects ID
+        await deleteMutation.mutateAsync(categoryToDelete.id) // Changed from id to id
+        setDeleteDialogOpen(false)
+        setCategoryToDelete(null)
         setSelectedCategory(null)
+        console.log('Category deleted successfully') // Debug log
+      } catch (error) {
+        console.error('Error deleting category:', error)
+        alert('Failed to delete category')
       }
-      if (editingCategory?.id === categoryToDelete.id) {
-        setEditingCategory(null)
-      }
-    } catch (error) {
-      console.error('Failed to delete category:', error)
-    } finally {
-      setLoading(false)
     }
+  }
+
+  // Cancel form
+  const handleCancelForm = () => {
+    setEditingCategory(null)
+    setParentForNew(null)
   }
 
   return (
@@ -323,12 +463,12 @@ const CategoriesPage = () => {
           <p className="mt-2 text-gray-400">Organize your content with hierarchical categories</p>
         </div>
         <div className="flex items-center gap-3">
-          <Tooltip content="Import Categories">
+          <Tooltip content="Import">
             <Button variant="outline" size="sm">
               <Upload className="h-4 w-4" />
             </Button>
           </Tooltip>
-          <Tooltip content="Export Categories">
+          <Tooltip content="Export">
             <Button variant="outline" size="sm">
               <Download className="h-4 w-4" />
             </Button>
@@ -352,7 +492,7 @@ const CategoriesPage = () => {
             <Card hover>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
-                  <div>
+                  <div className="py-4">
                     <p className="text-sm font-medium text-gray-400">{stat.label}</p>
                     <p className="mt-1 text-2xl font-bold text-white">{stat.value}</p>
                   </div>
@@ -367,7 +507,7 @@ const CategoriesPage = () => {
       {/* Main Content */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Left Side - Category Tree */}
-        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>
+        <div>
           <Card className="flex h-[600px] flex-col">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -375,7 +515,9 @@ const CategoriesPage = () => {
                   <CardTitle>Category Tree</CardTitle>
                   <CardDescription>Browse and manage your category hierarchy</CardDescription>
                 </div>
-                <Badge variant="secondary">{stats.total} items</Badge>
+                <Badge size="sm" className="w-24 md:w-fit" variant="secondary">
+                  {stats.total} items
+                </Badge>
               </div>
 
               {/* Search */}
@@ -389,36 +531,32 @@ const CategoriesPage = () => {
               </div>
             </CardHeader>
 
-            <CardContent className="flex-1 overflow-hidden">
-              <div className="h-full overflow-y-auto">
-                <TreeView
-                  data={filteredCategories}
-                  selectedId={selectedCategory?.id || editingCategory?.id}
-                  onSelect={handleSelectCategory}
-                  onEdit={handleEditCategory}
-                  onDelete={handleDeleteCategory}
-                  onAddChild={handleAddChild}
-                  onToggleStatus={handleToggleStatus}
-                />
+            <CardContent className="min-h-0 flex-1">
+              <div className="scrollbar-hide max-h-[70vh] overflow-y-auto">
+                {treesLoading ? (
+                  <div className="flex h-32 items-center justify-center">
+                    <div className="text-gray-400">Loading categories...</div>
+                  </div>
+                ) : (
+                  <TreeView
+                    data={filteredCategories}
+                    selectedId={selectedCategory?.id || editingCategory?.id}
+                    onSelect={handleSelectCategory}
+                    onEdit={handleEditCategory}
+                    onDelete={handleDeleteCategory}
+                    onAddChild={handleAddChild}
+                    onToggleStatus={handleToggleStatus}
+                  />
+                )}
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
 
         {/* Right Side - Form or Details */}
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6 }}>
+        <div>
           {editingCategory || parentForNew || (!selectedCategory && !editingCategory) ? (
-            <CategoryForm
-              category={editingCategory}
-              parentCategory={parentForNew}
-              categories={getFlatCategories()}
-              onSubmit={handleFormSubmit}
-              onCancel={() => {
-                setEditingCategory(null)
-                setParentForNew(null)
-              }}
-              loading={loading}
-            />
+            <CategoryForm category={editingCategory} parentCategory={parentForNew} onCancel={handleCancelForm} />
           ) : (
             selectedCategory && (
               <Card>
@@ -474,10 +612,10 @@ const CategoriesPage = () => {
                   {/* Actions */}
                   <div className="flex items-center gap-2 border-t border-indigo-500/20 pt-4">
                     <Button variant="outline" onClick={() => handleEditCategory(selectedCategory)}>
-                      Edit Category
+                      Edit
                     </Button>
                     <Button variant="outline" onClick={() => handleAddChild(selectedCategory)}>
-                      Add Subcategory
+                      Add Sub
                     </Button>
                     <Button variant="outline" onClick={() => handleDeleteCategory(selectedCategory)} className="text-red-400 hover:text-red-300">
                       <Trash2 className="mr-2 h-4 w-4" />
@@ -488,7 +626,7 @@ const CategoriesPage = () => {
               </Card>
             )
           )}
-        </motion.div>
+        </div>
       </div>
 
       {/* Delete Confirmation Dialog */}
@@ -503,7 +641,7 @@ const CategoriesPage = () => {
         }
         confirmText="Delete"
         onConfirm={handleDeleteConfirm}
-        loading={loading}
+        loading={deleteMutation.isPending}
       />
     </div>
   )

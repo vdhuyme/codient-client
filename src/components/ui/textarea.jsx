@@ -1,6 +1,6 @@
 const Textarea = ({ placeholder, value, onChange, disabled = false, error = false, rows = 4, className = '', ...props }) => {
   return (
-    <div className={`relative ${className}`}>
+    <div className={`${className}`}>
       <textarea
         placeholder={placeholder}
         value={value}
