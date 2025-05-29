@@ -27,15 +27,19 @@ const DataTable = ({
   const [searchQuery, setSearchQuery] = useState('')
   const searchQueryDebounced = useDebounce(searchQuery, 750)
 
+  // Trigger onSearch when debounced query changes
   useEffect(() => {
     onSearch?.(searchQueryDebounced)
   }, [searchQueryDebounced])
 
+  // Convert sorting state to "field:ASC,field2:DESC" string and call onSort
   useEffect(() => {
-    if (serverSort && sorting.length) {
-      const { id, desc } = sorting[0]
-      onSort?.({ field: id, direction: desc ? 'desc' : 'asc' })
-    }
+    const sortString = sorting
+      .filter(({ id }) => columns.find((col) => col.accessorKey === id && col.enableSorting !== false))
+      .map(({ id, desc }) => `${id}:${desc ? 'DESC' : 'ASC'}`)
+      .join(',')
+
+    onSort?.(sortString)
   }, [sorting])
 
   const table = useReactTable({
@@ -55,7 +59,7 @@ const DataTable = ({
 
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Top bar: Search + per page */}
+      {/* Top bar: Search + Rows per page */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="w-full max-w-sm">
           <Input
@@ -71,9 +75,12 @@ const DataTable = ({
           <div className="flex items-center space-x-2">
             <span className="text-sm text-gray-400">Rows per page:</span>
             <select
-              className={`flex w-14 items-center justify-between rounded-lg border border-indigo-500/20 bg-slate-800/50 p-2 text-left text-white backdrop-blur-sm transition-all duration-200 focus:border-indigo-500/40 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none md:text-sm ${loading ? 'cursor-not-allowed opacity-50' : 'hover:border-indigo-500/30'} `}
+              className={`flex w-14 items-center justify-between rounded-lg border border-indigo-500/20 bg-slate-800/50 p-2 text-left text-white backdrop-blur-sm transition-all duration-200 focus:border-indigo-500/40 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none md:text-sm ${
+                loading ? 'cursor-not-allowed opacity-50' : 'hover:border-indigo-500/30'
+              }`}
               value={pageSize}
               onChange={(e) => onPageSizeChange?.(parseInt(e.target.value))}
+              disabled={loading}
             >
               {pageSizeOptions.map((option) => (
                 <option key={option} value={option}>

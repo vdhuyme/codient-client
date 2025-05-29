@@ -17,7 +17,7 @@ import {
   MessageCircle,
   Globe
 } from 'lucide-react'
-import { Outlet, Link, NavLink } from 'react-router-dom'
+import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog'
 import { useAuth } from '@/contexts/auth'
 import Button from '../ui/button'
@@ -74,6 +74,11 @@ const AdminLayout = () => {
   const [dialogOpen, setDialogOpen] = useState(false)
   const { logout } = useAuth()
   const { user } = useAuthorize()
+  const navigate = useNavigate()
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950">
@@ -89,7 +94,7 @@ const AdminLayout = () => {
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               Cancel
             </Button>
-            <Button variant="danger" onClick={() => logout()}>
+            <Button variant="danger" onClick={() => handleLogout()}>
               Confirm
             </Button>
           </DialogFooter>

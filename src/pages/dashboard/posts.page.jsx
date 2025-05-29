@@ -37,12 +37,12 @@ const QUERY_KEYS = {
 }
 
 // API wrapper functions with better error handling
-const fetchPosts = async ({ query = '', page = 1, limit = 10, sort = 'DESC' }) => {
+const fetchPosts = async ({ search = '', page = 1, limit = 10, sort = 'createdAt:DESC' }) => {
   try {
-    const { posts, total } = await getPosts({ query, limit, page, sort })
+    const response = await getPosts({ search, limit, page, sort })
     return {
-      data: posts,
-      totalCount: total,
+      data: response.items,
+      totalCount: response.meta.totalItems,
       page,
       limit
     }
@@ -53,8 +53,8 @@ const fetchPosts = async ({ query = '', page = 1, limit = 10, sort = 'DESC' }) =
 
 const fetchCategories = async () => {
   try {
-    const { categories } = await getCategories()
-    return categories.map((cat) => ({ value: cat.id, label: cat.name }))
+    const response = await getCategories()
+    return response.map((cat) => ({ value: cat.id, label: cat.name }))
   } catch (error) {
     throw new Error(`Failed to fetch categories: ${error.message}`)
   }
@@ -62,8 +62,8 @@ const fetchCategories = async () => {
 
 const fetchTags = async () => {
   try {
-    const { tags } = await getTags()
-    return tags.map((tag) => ({ value: tag.id, label: tag.name }))
+    const response = await getTags()
+    return response.map((tag) => ({ value: tag.id, label: tag.name }))
   } catch (error) {
     throw new Error(`Failed to fetch tags: ${error.message}`)
   }
@@ -115,7 +115,7 @@ const usePostMutations = () => {
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ slug, data }) => updatePost(slug, data),
+    mutationFn: ({ id, data }) => updatePost(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] })
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.postStats })
@@ -345,7 +345,8 @@ const PostForm = ({ defaultValues, onSubmit, isEdit = false, loading = false }) 
 const PostsPage = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState('')
-  const [pageSize, setPageSize] = useState(10) // Moved pageSize to component level
+  const [pageSize, setPageSize] = useState(10)
+  const [sort, setSort] = useState('createdAt:DESC') // Sửa: thêm state sort
 
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
@@ -353,15 +354,15 @@ const PostsPage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedPost, setSelectedPost] = useState(null)
 
-  // Query params for posts - Updated to use pageSize from state
+  // Query params for posts - FIX: Sử dụng đúng sort từ state
   const postsParams = useMemo(
     () => ({
-      query: searchQuery,
+      search: searchQuery,
       page: currentPage,
-      limit: pageSize, // Use pageSize from state
-      sort: 'DESC'
+      limit: pageSize,
+      sort: sort // Sửa: sử dụng sort từ state thay vì hardcode
     }),
-    [currentPage, searchQuery, pageSize] // Added pageSize as dependency
+    [currentPage, searchQuery, pageSize, sort] // Sửa: thêm sort vào dependencies
   )
 
   // Data fetching with React Query
@@ -394,7 +395,7 @@ const PostsPage = () => {
     async (data, isEdit = false) => {
       try {
         if (isEdit && selectedPost) {
-          await mutations.updatePost.mutateAsync({ slug: selectedPost.slug, data })
+          await mutations.updatePost.mutateAsync({ id: selectedPost.id, data })
           setEditDialogOpen(false)
           toast.success('Post updated successfully')
         } else {
@@ -411,7 +412,7 @@ const PostsPage = () => {
 
   const handleDeleteConfirm = useCallback(async () => {
     try {
-      await mutations.deletePost.mutateAsync(selectedPost.slug)
+      await mutations.deletePost.mutateAsync(selectedPost.id)
       toast.success('Delete post success')
       setDeleteDialogOpen(false)
     } catch (error) {
@@ -423,6 +424,13 @@ const PostsPage = () => {
   const handlePageSizeChange = useCallback((newPageSize) => {
     setPageSize(newPageSize)
     setCurrentPage(1) // Reset to first page when changing page size
+  }, [])
+
+  // FIX: Handle sort change - reset page khi sort thay đổi
+  const handleSortChange = useCallback((sortString) => {
+    console.log('Sort changed to:', sortString) // Debug log
+    setSort(sortString)
+    setCurrentPage(1) // Reset về trang đầu khi sort
   }, [])
 
   // Prepare form default values for edit
@@ -452,7 +460,8 @@ const PostsPage = () => {
           <div className="h-12 w-16 overflow-hidden rounded-lg bg-slate-700">
             <img src={row.original.thumbnail || '/placeholder.svg'} alt={row.original.title} className="h-full w-full object-cover" />
           </div>
-        )
+        ),
+        enableSorting: false
       },
       {
         accessorKey: 'title',
@@ -462,7 +471,8 @@ const PostsPage = () => {
             <h4 className="truncate font-medium text-white">{row.original.title}</h4>
             <p className="truncate text-sm text-gray-400">{row.original.excerpt}</p>
           </div>
-        )
+        ),
+        enableSorting: true
       },
       {
         accessorKey: 'category',
@@ -471,10 +481,11 @@ const PostsPage = () => {
           return (
             <Badge variant="secondary">
               <Folder className="mr-1 h-3 w-3" />
-              {row.original.category.name || 'Unknown'}
+              {row.original?.category?.name || 'Unknown'}
             </Badge>
           )
-        }
+        },
+        enableSorting: false
       },
       {
         accessorKey: 'tags',
@@ -482,20 +493,21 @@ const PostsPage = () => {
         cell: ({ row }) => {
           return (
             <div className="flex flex-wrap gap-1">
-              {row.original.tags.slice(0, 2).map((tag, index) => (
+              {row.original.tags?.slice(0, 2).map((tag, index) => (
                 <Badge key={`tag-${tag.value}-${index}`} variant="default" size="sm">
                   <Tag className="mr-1 h-2 w-2" />
                   {tag.name}
                 </Badge>
               ))}
-              {row.original.tags.length > 2 && (
+              {row.original.tags?.length > 2 && (
                 <Badge variant="secondary" size="sm">
                   +{row.original.tags.length - 2}
                 </Badge>
               )}
             </div>
           )
-        }
+        },
+        enableSorting: false
       },
       {
         accessorKey: 'readTime',
@@ -505,7 +517,8 @@ const PostsPage = () => {
             <Clock className="mr-1 h-4 w-4" />
             {row.original.readTime} min
           </div>
-        )
+        ),
+        enableSorting: true
       },
       {
         accessorKey: 'status',
@@ -520,7 +533,8 @@ const PostsPage = () => {
             <Calendar className="mr-1 h-4 w-4" />
             {new Date(row.original.createdAt).toLocaleDateString()}
           </div>
-        )
+        ),
+        enableSorting: true
       },
       {
         id: 'actions',
@@ -648,13 +662,15 @@ const PostsPage = () => {
               data={posts}
               columns={columns}
               totalCount={totalCount}
-              pageSize={pageSize} // Pass pageSize prop
+              pageSize={pageSize}
               currentPage={currentPage}
               onPageChange={setCurrentPage}
               onSearch={setSearchQuery}
-              onPageSizeChange={handlePageSizeChange} // Pass the handler
+              onPageSizeChange={handlePageSizeChange}
               loading={isLoading}
               searchPlaceholder="Search posts..."
+              onSort={handleSortChange} // FIX: Sử dụng handler mới
+              serverSort={true}
             />
           </CardContent>
         </Card>
