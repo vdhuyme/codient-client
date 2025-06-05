@@ -285,7 +285,6 @@ const CategoryForm = ({ category = null, parentCategory = null, onCancel }) => {
     try {
       console.log('Form submitted with data:', data)
 
-      // Clean up data and handle parentId conversion
       const cleanData = {
         ...data,
         description: data.description || undefined,
@@ -305,18 +304,15 @@ const CategoryForm = ({ category = null, parentCategory = null, onCancel }) => {
         console.log('Category created successfully')
       }
 
-      // Reset form after successful submission for new categories
       if (!category) {
         reset()
       }
 
-      // Call onCancel to close the form
       if (onCancel) {
         onCancel()
       }
     } catch (error) {
       console.error('Error in submitHandler:', error)
-      // Error is already handled by the mutation hooks
     }
   }
 
@@ -448,16 +444,6 @@ const CategoriesPage = () => {
   const deleteMutation = useDeleteCategory()
   const toggleStatusMutation = useToggleCategoryStatus()
 
-  // Log data for debugging
-  useEffect(() => {
-    console.log('Categories data:', categories)
-    console.log('All categories data:', allCategories)
-    console.log('Trees loading:', treesLoading)
-    console.log('Categories loading:', categoriesLoading)
-    if (treesError) console.error('Trees error:', treesError)
-    if (categoriesError) console.error('Categories error:', categoriesError)
-  }, [categories, allCategories, treesLoading, categoriesLoading, treesError, categoriesError])
-
   // Filter categories based on search
   const filteredCategories = Array.isArray(categories)
     ? categories.filter(
@@ -527,7 +513,6 @@ const CategoriesPage = () => {
       console.log('Status toggle successful')
     } catch (error) {
       console.error('Error toggling status:', error)
-      // Error is already handled by the mutation hook
     }
   }
 
@@ -543,7 +528,6 @@ const CategoriesPage = () => {
         console.log('Category deleted successfully')
       } catch (error) {
         console.error('Error deleting category:', error)
-        // Error is already handled by the mutation hook
       }
     }
   }

@@ -15,23 +15,24 @@ const BlogPage = () => {
   const [limit] = useState(15)
   const observerRef = useRef()
 
-  const debouncedSearch = useDebounce(searchInput, 750)
+  const debouncedSearch = useDebounce(searchInput, 500)
 
   const handleSearchChange = (e) => setSearchInput(e.target.value)
   const handleSortChange = (e) => setSort(e.target.value)
   const handleCategoryChange = (categoryId) => setActiveCategoryId(categoryId)
 
-  const { data: categoriesData } = useQuery({
+  const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
       const data = await getPublishedCategories({
         page: 1,
-        limit: 100,
+        limit: 15,
         query: '',
-        sort: 'ASC'
+        sortBy: 'createdAt',
+        orderBy: 'DESC'
       })
 
-      return [{ id: null, name: 'All' }, ...data.categories]
+      return [{ id: null, name: 'All' }, ...data.items]
     },
     staleTime: 1 * 60 * 1000
   })
@@ -63,7 +64,7 @@ const BlogPage = () => {
       }
       return allPages.length + 1
     },
-    enabled: !!categoriesData,
+    enabled: !!categories,
     staleTime: 1 * 60 * 1000,
     gcTime: 1 * 60 * 1000
   })
@@ -217,14 +218,14 @@ const BlogPage = () => {
           </div>
 
           {/* Categories */}
-          {categoriesData && (
+          {categories && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.5 }}
               className="flex flex-wrap justify-center gap-2"
             >
-              {categoriesData.map((category, index) => (
+              {categories.map((category, index) => (
                 <motion.button
                   key={`${category.id}-${category.name}-${index}`}
                   onClick={() => handleCategoryChange(category.id)}
