@@ -28,8 +28,13 @@ export const usePostMutations = () => {
   const createMutation = useMutation({
     mutationFn: createPost,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: POST_QUERY_KEYS.posts() })
-      queryClient.invalidateQueries({ queryKey: POST_QUERY_KEYS.postStats })
+      queryClient.invalidateQueries({
+        queryKey: ['posts'],
+        exact: false
+      })
+      queryClient.invalidateQueries({
+        queryKey: POST_QUERY_KEYS.postStats
+      })
       toast.success('Post created successfully')
     },
     onError: (error) => {
@@ -41,8 +46,13 @@ export const usePostMutations = () => {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => updatePost(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: POST_QUERY_KEYS.posts() })
-      queryClient.invalidateQueries({ queryKey: POST_QUERY_KEYS.postStats })
+      queryClient.invalidateQueries({
+        queryKey: ['posts'],
+        exact: false
+      })
+      queryClient.invalidateQueries({
+        queryKey: POST_QUERY_KEYS.postStats
+      })
       toast.success('Post updated successfully')
     },
     onError: (error) => {
@@ -54,8 +64,13 @@ export const usePostMutations = () => {
   const deleteMutation = useMutation({
     mutationFn: deletePost,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: POST_QUERY_KEYS.posts() })
-      queryClient.invalidateQueries({ queryKey: POST_QUERY_KEYS.postStats })
+      queryClient.invalidateQueries({
+        queryKey: ['posts'],
+        exact: false
+      })
+      queryClient.invalidateQueries({
+        queryKey: POST_QUERY_KEYS.postStats
+      })
       toast.success('Post deleted successfully')
     },
     onError: (error) => {
