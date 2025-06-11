@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Plus, Edit, Trash2, Calendar, Clock, Tag, Folder, FileText, CheckCircle, FileClock, Eye, Upload, Download } from 'lucide-react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -23,94 +23,13 @@ import FileUpload from '@/components/ui/file-upload'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
 
 // API functions
-import { createPost, deletePost, getPosts, updatePost } from '@/api/post'
 import { getCategories } from '@/api/category'
-import toast from 'react-hot-toast'
 import { getTags } from '@/api/tags'
 
-// React Query keys
-const QUERY_KEYS = {
-  posts: (params) => ['posts', params],
-  categories: ['categories'],
-  tags: ['tags'],
-  postStats: ['post-stats']
-}
+// Custom hooks
+import { usePosts, usePostMutations, POST_QUERY_KEYS, DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS, convertSortingToParams } from '@/hooks/use.posts'
 
-// Custom hooks for data fetching
-const usePosts = (params) => {
-  return useQuery({
-    queryKey: QUERY_KEYS.posts(params),
-    queryFn: () => getPosts(params),
-    keepPreviousData: true,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000 // 10 minutes
-  })
-}
-
-const useCategories = () => {
-  return useQuery({
-    queryKey: QUERY_KEYS.categories,
-    queryFn: getCategories,
-    staleTime: 15 * 60 * 1000, // 15 minutes
-    cacheTime: 30 * 60 * 1000 // 30 minutes
-  })
-}
-
-const useTags = () => {
-  return useQuery({
-    queryKey: QUERY_KEYS.tags,
-    queryFn: getTags,
-    staleTime: 15 * 60 * 1000, // 15 minutes
-    cacheTime: 30 * 60 * 1000 // 30 minutes
-  })
-}
-
-// Custom hooks for mutations
-const usePostMutations = () => {
-  const queryClient = useQueryClient()
-
-  const createMutation = useMutation({
-    mutationFn: createPost,
-    onSuccess: () => {
-      // Invalidate and refetch posts data
-      queryClient.invalidateQueries({ queryKey: ['posts'] })
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.postStats })
-    },
-    onError: (error) => {
-      console.error('Failed to create post:', error)
-    }
-  })
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => updatePost(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] })
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.postStats })
-    },
-    onError: (error) => {
-      console.error('Failed to update post:', error)
-    }
-  })
-
-  const deleteMutation = useMutation({
-    mutationFn: deletePost,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] })
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.postStats })
-    },
-    onError: (error) => {
-      console.error('Failed to delete post:', error)
-    }
-  })
-
-  return {
-    createPost: createMutation,
-    updatePost: updateMutation,
-    deletePost: deleteMutation
-  }
-}
-
-const postSchema = z.object({
+const POST_SCHEMA = z.object({
   title: z.string().min(1, 'Title is required').min(3, 'Title must be at least 3 characters').max(200, 'Title must not exceed 200 characters'),
   excerpt: z
     .string()
@@ -139,8 +58,35 @@ const FormField = ({ label, required, error, children }) => (
 )
 
 const PostForm = ({ defaultValues, onSubmit, isEdit = false, loading = false }) => {
-  const { data: categories = [], isLoading: categoriesLoading } = useCategories()
-  const { data: tags = [], isLoading: tagsLoading } = useTags()
+  const { data: categoryData = [], isLoading: categoriesLoading } = useQuery({
+    queryKey: POST_QUERY_KEYS.categories,
+    queryFn: getCategories,
+    staleTime: 15 * 60 * 1000,
+    cacheTime: 30 * 60 * 1000
+  })
+
+  const { data: tagData = [], isLoading: tagsLoading } = useQuery({
+    queryKey: POST_QUERY_KEYS.tags,
+    queryFn: getTags,
+    staleTime: 15 * 60 * 1000,
+    cacheTime: 30 * 60 * 1000
+  })
+
+  const categories =
+    categoryData?.items
+      ?.flatMap((item) => item || [])
+      .map((item) => ({
+        value: item.id.toString(),
+        label: item.name
+      })) || []
+
+  const tags =
+    tagData?.items
+      ?.flatMap((item) => item || [])
+      .map((item) => ({
+        value: item.id.toString(),
+        label: item.name
+      })) || []
 
   const {
     control,
@@ -148,7 +94,7 @@ const PostForm = ({ defaultValues, onSubmit, isEdit = false, loading = false }) 
     formState: { errors, isValid },
     watch
   } = useForm({
-    resolver: zodResolver(postSchema),
+    resolver: zodResolver(POST_SCHEMA),
     defaultValues: {
       title: '',
       excerpt: '',
@@ -298,9 +244,8 @@ const PostForm = ({ defaultValues, onSubmit, isEdit = false, loading = false }) 
 const PostsPage = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState('')
-  const [pageSize, setPageSize] = useState(10)
-  const [sortBy, setSortBy] = useState('createdAt')
-  const [orderBy, setOrderBy] = useState('DESC')
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
+  const [sorting, setSorting] = useState([])
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -312,16 +257,27 @@ const PostsPage = () => {
       search: searchQuery,
       page: currentPage,
       limit: pageSize,
-      sort: sort
+      ...convertSortingToParams(sorting)
     }),
-    [currentPage, searchQuery, pageSize, sort]
+    [currentPage, searchQuery, pageSize, sorting]
   )
 
   // Data fetching with React Query
   const { data: postsData, isLoading: postsLoading, error: postsError, isFetching: postsFetching } = usePosts(postsParams)
 
-  const { data: categories = [] } = useCategories()
-  const { data: tags = [] } = useTags()
+  const { data: categories = [] } = useQuery({
+    queryKey: POST_QUERY_KEYS.categories,
+    queryFn: getCategories,
+    staleTime: 15 * 60 * 1000,
+    cacheTime: 30 * 60 * 1000
+  })
+
+  const { data: tags = [] } = useQuery({
+    queryKey: POST_QUERY_KEYS.tags,
+    queryFn: getTags,
+    staleTime: 15 * 60 * 1000,
+    cacheTime: 30 * 60 * 1000
+  })
 
   // Mutations
   const mutations = usePostMutations()
@@ -349,11 +305,9 @@ const PostsPage = () => {
         if (isEdit && selectedPost) {
           await mutations.updatePost.mutateAsync({ id: selectedPost.id, data })
           setEditDialogOpen(false)
-          toast.success('Post updated successfully')
         } else {
           await mutations.createPost.mutateAsync(data)
           setCreateDialogOpen(false)
-          toast.success('New post added successfully')
         }
       } catch (error) {
         console.error('Failed to save post:', error)
@@ -365,7 +319,6 @@ const PostsPage = () => {
   const handleDeleteConfirm = useCallback(async () => {
     try {
       await mutations.deletePost.mutateAsync(selectedPost.id)
-      toast.success('Delete post success')
       setDeleteDialogOpen(false)
     } catch (error) {
       console.error('Failed to delete post:', error)
@@ -375,32 +328,14 @@ const PostsPage = () => {
   // Handle page size change
   const handlePageSizeChange = useCallback((newPageSize) => {
     setPageSize(newPageSize)
-    setCurrentPage(1) // Reset to first page when changing page size
+    setCurrentPage(1)
   }, [])
 
-  // FIX: Handle sort change - reset page khi sort thay đổi
-  const handleSortChange = useCallback((sortString) => {
-    console.log('Sort changed to:', sortString) // Debug log
-    setSort(sortString)
-    setCurrentPage(1) // Reset về trang đầu khi sort
+  // Handle sort change
+  const handleSortChange = useCallback((newSorting) => {
+    setSorting(newSorting)
+    setCurrentPage(1)
   }, [])
-
-  // Prepare form default values for edit
-  const editDefaultValues = useMemo(() => {
-    if (!selectedPost) {
-      return undefined
-    }
-
-    return {
-      title: selectedPost.title,
-      excerpt: selectedPost.excerpt,
-      content: selectedPost.content,
-      thumbnail: selectedPost.thumbnail,
-      readTime: selectedPost.readTime?.toString(),
-      categoryId: selectedPost.category.id?.toString(),
-      tagIds: selectedPost.tags?.map((tag) => tag.id)?.map(String) || []
-    }
-  }, [selectedPost])
 
   // Table columns
   const columns = useMemo(
@@ -521,8 +456,8 @@ const PostsPage = () => {
     )
   }
 
-  const posts = postsData?.data || []
-  const totalCount = postsData?.totalCount || 0
+  const posts = postsData?.items?.flatMap((item) => item || []) || []
+  const totalCount = postsData?.meta?.totalItems || 0
   const isLoading = postsLoading || postsFetching
 
   return (
@@ -614,6 +549,7 @@ const PostsPage = () => {
               columns={columns}
               totalCount={totalCount}
               pageSize={pageSize}
+              pageSizeOptions={PAGE_SIZE_OPTIONS}
               currentPage={currentPage}
               onPageChange={setCurrentPage}
               onSearch={setSearchQuery}
@@ -622,6 +558,8 @@ const PostsPage = () => {
               searchPlaceholder="Search posts..."
               onSort={handleSortChange}
               serverSort={true}
+              sorting={sorting}
+              onSortingChange={setSorting}
             />
           </CardContent>
         </Card>
@@ -648,7 +586,19 @@ const PostsPage = () => {
             <DialogDescription>Update the post details</DialogDescription>
           </DialogHeader>
           <PostForm
-            defaultValues={editDefaultValues}
+            defaultValues={
+              selectedPost
+                ? {
+                    title: selectedPost.title,
+                    excerpt: selectedPost.excerpt,
+                    content: selectedPost.content,
+                    thumbnail: selectedPost.thumbnail,
+                    readTime: selectedPost.readTime?.toString(),
+                    categoryId: selectedPost.category?.id?.toString() || selectedPost.categoryId?.toString() || '',
+                    tagIds: selectedPost.tags?.map((tag) => tag.id?.toString()) || []
+                  }
+                : undefined
+            }
             onSubmit={(data) => handleFormSubmit(data, true)}
             isEdit={true}
             loading={mutations.updatePost.isPending}

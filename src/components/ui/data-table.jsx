@@ -21,9 +21,10 @@ const DataTable = ({
   loading = false,
   searchPlaceholder = 'Search...',
   className = '',
-  serverSort = false
+  serverSort = false,
+  sorting = [],
+  onSortingChange
 }) => {
-  const [sorting, setSorting] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
   const searchQueryDebounced = useDebounce(searchQuery, 750)
 
@@ -32,14 +33,9 @@ const DataTable = ({
     onSearch?.(searchQueryDebounced)
   }, [searchQueryDebounced])
 
-  // Convert sorting state to "field:ASC,field2:DESC" string and call onSort
+  // Trigger onSort when sorting changes
   useEffect(() => {
-    const sortString = sorting
-      .filter(({ id }) => columns.find((col) => col.accessorKey === id && col.enableSorting !== false))
-      .map(({ id, desc }) => `${id}:${desc ? 'DESC' : 'ASC'}`)
-      .join(',')
-
-    onSort?.(sortString)
+    onSort?.(sorting)
   }, [sorting])
 
   const table = useReactTable({
@@ -50,7 +46,7 @@ const DataTable = ({
     state: {
       sorting
     },
-    onSortingChange: setSorting,
+    onSortingChange,
     manualPagination: true,
     manualSorting: serverSort
   })
