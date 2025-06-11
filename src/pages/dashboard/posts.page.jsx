@@ -1,13 +1,8 @@
 import { useState, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Plus, Edit, Trash2, Calendar, Clock, Tag, Folder, FileText, CheckCircle, FileClock, Eye, Upload, Download } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
-
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-
-// Components
 import Button from '@/components/ui/button'
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog'
@@ -21,33 +16,11 @@ import DataTable from '@/components/ui/data-table'
 import MultiSelect from '@/components/ui/multi-select'
 import FileUpload from '@/components/ui/file-upload'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
-
-// API functions
-import { getCategories } from '@/api/category'
-import { getTags } from '@/api/tags'
-
-// Custom hooks
-import { usePosts, usePostMutations, POST_QUERY_KEYS, DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS, convertSortingToParams } from '@/hooks/use.posts'
-
-const POST_SCHEMA = z.object({
-  title: z.string().min(1, 'Title is required').min(3, 'Title must be at least 3 characters').max(200, 'Title must not exceed 200 characters'),
-  excerpt: z
-    .string()
-    .min(1, 'Excerpt is required')
-    .min(10, 'Excerpt must be at least 10 characters')
-    .max(500, 'Excerpt must not exceed 500 characters'),
-  content: z.string().min(1, 'Content is required').min(50, 'Content must be at least 50 characters'),
-  thumbnail: z.any().optional(),
-  readTime: z
-    .string()
-    .min(1, 'Read time is required')
-    .refine((val) => {
-      const num = parseInt(val)
-      return !isNaN(num) && num > 0 && num <= 999
-    }, 'Read time must be a positive number between 1 and 999'),
-  categoryId: z.union([z.string().min(1, 'Category is required'), z.number()]),
-  tagIds: z.array(z.coerce.string()).min(1, 'At least one tag is required')
-})
+import { usePosts, usePostMutations, DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from '@/hooks/use.posts'
+import { useCategories, useCategoryOptions } from '@/hooks/use.categories'
+import { useTagOptions, useTags } from '@/hooks/use.tags'
+import { convertSortingToParams } from '@/utils/convert-sorting-params'
+import { POST_SCHEMA } from './schema/post.schema'
 
 const FormField = ({ label, required, error, children }) => (
   <div className="space-y-2">
@@ -58,35 +31,8 @@ const FormField = ({ label, required, error, children }) => (
 )
 
 const PostForm = ({ defaultValues, onSubmit, isEdit = false, loading = false }) => {
-  const { data: categoryData = [], isLoading: categoriesLoading } = useQuery({
-    queryKey: POST_QUERY_KEYS.categories,
-    queryFn: getCategories,
-    staleTime: 15 * 60 * 1000,
-    cacheTime: 30 * 60 * 1000
-  })
-
-  const { data: tagData = [], isLoading: tagsLoading } = useQuery({
-    queryKey: POST_QUERY_KEYS.tags,
-    queryFn: getTags,
-    staleTime: 15 * 60 * 1000,
-    cacheTime: 30 * 60 * 1000
-  })
-
-  const categories =
-    categoryData?.items
-      ?.flatMap((item) => item || [])
-      .map((item) => ({
-        value: item.id.toString(),
-        label: item.name
-      })) || []
-
-  const tags =
-    tagData?.items
-      ?.flatMap((item) => item || [])
-      .map((item) => ({
-        value: item.id.toString(),
-        label: item.name
-      })) || []
+  const { options: categories, isLoading: categoriesLoading } = useCategoryOptions()
+  const { options: tags, isLoading: tagsLoading } = useTagOptions()
 
   const {
     control,
@@ -108,15 +54,22 @@ const PostForm = ({ defaultValues, onSubmit, isEdit = false, loading = false }) 
     mode: 'onChange'
   })
 
-  // Watch for character count
   const watchedTitle = watch('title')
   const watchedExcerpt = watch('excerpt')
   const watchedContent = watch('content')
 
   const isFormLoading = loading || categoriesLoading || tagsLoading
 
+  const handleFormSubmit = async (data) => {
+    const formattedData = {
+      ...data,
+      tagIds: data.tagIds.map((id) => Number(id))
+    }
+    onSubmit(formattedData)
+  }
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {/* Title */}
         <div className="md:col-span-2">
@@ -262,27 +215,12 @@ const PostsPage = () => {
     [currentPage, searchQuery, pageSize, sorting]
   )
 
-  // Data fetching with React Query
   const { data: postsData, isLoading: postsLoading, error: postsError, isFetching: postsFetching } = usePosts(postsParams)
+  const { data: categories = [] } = useCategories()
+  const { data: tags = [] } = useTags()
 
-  const { data: categories = [] } = useQuery({
-    queryKey: POST_QUERY_KEYS.categories,
-    queryFn: getCategories,
-    staleTime: 15 * 60 * 1000,
-    cacheTime: 30 * 60 * 1000
-  })
-
-  const { data: tags = [] } = useQuery({
-    queryKey: POST_QUERY_KEYS.tags,
-    queryFn: getTags,
-    staleTime: 15 * 60 * 1000,
-    cacheTime: 30 * 60 * 1000
-  })
-
-  // Mutations
   const mutations = usePostMutations()
 
-  // Form handlers
   const handleCreate = useCallback(() => {
     setSelectedPost(null)
     setCreateDialogOpen(true)
@@ -298,7 +236,6 @@ const PostsPage = () => {
     setDeleteDialogOpen(true)
   }, [])
 
-  // Submit handler for form
   const handleFormSubmit = useCallback(
     async (data, isEdit = false) => {
       try {
@@ -325,19 +262,30 @@ const PostsPage = () => {
     }
   }, [selectedPost, mutations])
 
-  // Handle page size change
   const handlePageSizeChange = useCallback((newPageSize) => {
     setPageSize(newPageSize)
     setCurrentPage(1)
   }, [])
 
-  // Handle sort change
   const handleSortChange = useCallback((newSorting) => {
     setSorting(newSorting)
     setCurrentPage(1)
   }, [])
 
-  // Table columns
+  const editDefaultValues = useMemo(() => {
+    return selectedPost
+      ? {
+          title: selectedPost.title,
+          excerpt: selectedPost.excerpt,
+          content: selectedPost.content,
+          thumbnail: selectedPost.thumbnail,
+          readTime: selectedPost.readTime?.toString(),
+          categoryId: selectedPost.category.id?.toString(),
+          tagIds: selectedPost.tags?.map(({ id }) => id.toString()) || []
+        }
+      : undefined
+  }, [selectedPost])
+
   const columns = useMemo(
     () => [
       {
@@ -388,7 +336,7 @@ const PostsPage = () => {
               ))}
               {row.original.tags?.length > 2 && (
                 <Badge variant="secondary" size="sm">
-                  +{row.original.tags.length - 2}
+                  + {row.original.tags.length - 2}
                 </Badge>
               )}
             </div>
@@ -586,19 +534,7 @@ const PostsPage = () => {
             <DialogDescription>Update the post details</DialogDescription>
           </DialogHeader>
           <PostForm
-            defaultValues={
-              selectedPost
-                ? {
-                    title: selectedPost.title,
-                    excerpt: selectedPost.excerpt,
-                    content: selectedPost.content,
-                    thumbnail: selectedPost.thumbnail,
-                    readTime: selectedPost.readTime?.toString(),
-                    categoryId: selectedPost.category?.id?.toString() || selectedPost.categoryId?.toString() || '',
-                    tagIds: selectedPost.tags?.map((tag) => tag.id?.toString()) || []
-                  }
-                : undefined
-            }
+            defaultValues={editDefaultValues}
             onSubmit={(data) => handleFormSubmit(data, true)}
             isEdit={true}
             loading={mutations.updatePost.isPending}

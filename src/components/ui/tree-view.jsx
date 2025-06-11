@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { ChevronRight, ChevronsUpDown, ChevronsDownUp } from 'lucide-react'
 import Badge from './badge'
@@ -137,7 +137,6 @@ const TreeView = ({ data, onSelect, onEdit, onDelete, onAddChild, onToggleStatus
     <div className={`space-y-2 ${className}`}>
       {/* Tree Controls */}
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-sm font-medium text-gray-300">Category Tree</h3>
         <div className="flex items-center gap-2">
           <button onClick={toggleExpandCollapse} className="hover:bg-muted text-muted-foreground rounded-md p-2 text-white transition-colors">
             {isExpanded ? <ChevronsDownUp className="h-4 w-4" /> : <ChevronsUpDown className="h-4 w-4" />}
@@ -162,14 +161,6 @@ const TreeView = ({ data, onSelect, onEdit, onDelete, onAddChild, onToggleStatus
           />
         ))}
       </div>
-
-      {data.length === 0 && (
-        <div className="py-8 text-center text-gray-400">
-          <div className="mb-2 text-4xl">📁</div>
-          <p className="text-sm">No categories yet</p>
-          <p className="text-xs">Create your first category to get started</p>
-        </div>
-      )}
     </div>
   )
 }

@@ -2,26 +2,20 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createPost, deletePost, getPosts, updatePost } from '@/api/post'
 import toast from 'react-hot-toast'
 
-// Constants
 export const POST_QUERY_KEYS = {
   posts: (params) => ['posts', params],
-  postStats: ['post-stats']
+  postStats: ['post-stats'],
+  categories: ['categories'],
+  tags: ['tags']
 }
 
 export const DEFAULT_PAGE_SIZE = 10
 export const PAGE_SIZE_OPTIONS = [10, 25, 50, 100]
 
-export const DEFAULT_SORT = {
-  sortBy: 'createdAt',
-  orderBy: 'DESC'
-}
-
 export const usePosts = (params) => {
   return useQuery({
     queryKey: POST_QUERY_KEYS.posts(params),
-    queryFn: async () => {
-      return await getPosts(params)
-    },
+    queryFn: () => getPosts(params),
     keepPreviousData: true,
     staleTime: 5 * 60 * 1000,
     cacheTime: 10 * 60 * 1000
@@ -34,8 +28,8 @@ export const usePostMutations = () => {
   const createMutation = useMutation({
     mutationFn: createPost,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] })
-      queryClient.invalidateQueries({ queryKey: [POST_QUERY_KEYS.postStats] })
+      queryClient.invalidateQueries({ queryKey: POST_QUERY_KEYS.posts() })
+      queryClient.invalidateQueries({ queryKey: POST_QUERY_KEYS.postStats })
       toast.success('Post created successfully')
     },
     onError: (error) => {
@@ -47,8 +41,8 @@ export const usePostMutations = () => {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => updatePost(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] })
-      queryClient.invalidateQueries({ queryKey: [POST_QUERY_KEYS.postStats] })
+      queryClient.invalidateQueries({ queryKey: POST_QUERY_KEYS.posts() })
+      queryClient.invalidateQueries({ queryKey: POST_QUERY_KEYS.postStats })
       toast.success('Post updated successfully')
     },
     onError: (error) => {
@@ -60,8 +54,8 @@ export const usePostMutations = () => {
   const deleteMutation = useMutation({
     mutationFn: deletePost,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] })
-      queryClient.invalidateQueries({ queryKey: [POST_QUERY_KEYS.postStats] })
+      queryClient.invalidateQueries({ queryKey: POST_QUERY_KEYS.posts() })
+      queryClient.invalidateQueries({ queryKey: POST_QUERY_KEYS.postStats })
       toast.success('Post deleted successfully')
     },
     onError: (error) => {
@@ -74,18 +68,5 @@ export const usePostMutations = () => {
     createPost: createMutation,
     updatePost: updateMutation,
     deletePost: deleteMutation
-  }
-}
-
-// Helper function to convert sorting state to API params
-export const convertSortingToParams = (sorting) => {
-  if (!sorting.length) {
-    return DEFAULT_SORT
-  }
-
-  const { id, desc } = sorting[0]
-  return {
-    sortBy: id,
-    orderBy: desc ? 'DESC' : 'ASC'
   }
 }
