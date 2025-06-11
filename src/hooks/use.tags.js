@@ -1,18 +1,22 @@
-import { useQuery } from '@tanstack/react-query'
-import { getTags } from '@/api/tags'
-import { POST_QUERY_KEYS } from './use.posts'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { getTags, createTag, updateTag, deleteTag } from '@/api/tags'
 
-export const useTags = () => {
+export const TAG_QUERY_KEYS = {
+  tags: ['tags'],
+  tag: (id) => ['tag', id]
+}
+
+export const useTags = (params) => {
   return useQuery({
-    queryKey: POST_QUERY_KEYS.tags,
-    queryFn: getTags,
+    queryKey: [...TAG_QUERY_KEYS.tags, params],
+    queryFn: () => getTags(params),
     staleTime: 15 * 60 * 1000,
     cacheTime: 30 * 60 * 1000
   })
 }
 
-export const useTagOptions = () => {
-  const { data: tagData = [], isLoading } = useTags()
+export const useTagOptions = (params = {}) => {
+  const { data: tagData = [], isLoading } = useTags(params)
 
   const options =
     tagData?.items
@@ -25,5 +29,36 @@ export const useTagOptions = () => {
   return {
     options,
     isLoading
+  }
+}
+
+export const useTagMutations = () => {
+  const queryClient = useQueryClient()
+
+  const createTagMutation = useMutation({
+    mutationFn: createTag,
+    onSuccess: () => {
+      queryClient.invalidateQueries(TAG_QUERY_KEYS.tags)
+    }
+  })
+
+  const updateTagMutation = useMutation({
+    mutationFn: ({ id, data }) => updateTag(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(TAG_QUERY_KEYS.tags)
+    }
+  })
+
+  const deleteTagMutation = useMutation({
+    mutationFn: deleteTag,
+    onSuccess: () => {
+      queryClient.invalidateQueries(TAG_QUERY_KEYS.tags)
+    }
+  })
+
+  return {
+    createTag: createTagMutation,
+    updateTag: updateTagMutation,
+    deleteTag: deleteTagMutation
   }
 }

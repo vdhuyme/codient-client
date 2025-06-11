@@ -5,12 +5,12 @@ export const getTags = async ({ page, limit, search, sortBy = 'createdAt', order
   return response.data
 }
 
-export const createTag = async (data) => {
-  return await api.post('/tags', data)
+export const createTag = async ({ name, status }) => {
+  return await api.post('/tags', { name, status })
 }
 
-export const updateTag = async (id, data) => {
-  return await api.put(`/tags/${id}`, data)
+export const updateTag = async (id, { name, status }) => {
+  return await api.put(`/tags/${id}`, { name, status })
 }
 
 export const deleteTag = async (id) => {

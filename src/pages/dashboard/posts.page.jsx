@@ -49,6 +49,7 @@ const PostForm = ({ defaultValues, onSubmit, isEdit = false, loading = false }) 
       readTime: '',
       categoryId: '',
       tagIds: [],
+      status: 'published',
       ...defaultValues
     },
     mode: 'onChange'
@@ -65,6 +66,8 @@ const PostForm = ({ defaultValues, onSubmit, isEdit = false, loading = false }) 
       ...data,
       tagIds: data.tagIds.map((id) => Number(id))
     }
+
+    console.log('Submitted data: ', formattedData)
     onSubmit(formattedData)
   }
 
@@ -182,6 +185,28 @@ const PostForm = ({ defaultValues, onSubmit, isEdit = false, loading = false }) 
             />
           </FormField>
         </div>
+
+        <div>
+          {/* Status */}
+          <FormField label="Status" required error={errors.status}>
+            <Controller
+              name="status"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  options={[
+                    { value: 'published', label: 'Published' },
+                    { value: 'blocked', label: 'Blocked' }
+                  ]}
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Select status"
+                  className={errors.status ? 'border-red-500' : ''}
+                />
+              )}
+            />
+          </FormField>
+        </div>
       </div>
 
       {/* Submit Button */}
@@ -279,6 +304,7 @@ const PostsPage = () => {
           excerpt: selectedPost.excerpt,
           content: selectedPost.content,
           thumbnail: selectedPost.thumbnail,
+          status: selectedPost.status,
           readTime: selectedPost.readTime?.toString(),
           categoryId: selectedPost.category.id?.toString(),
           tagIds: selectedPost.tags?.map(({ id }) => id.toString()) || []

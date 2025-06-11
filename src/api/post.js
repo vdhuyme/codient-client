@@ -5,12 +5,12 @@ export const getPosts = async ({ page, limit, search, sortBy = 'createdAt', orde
   return response.data
 }
 
-export const createPost = async ({ title, excerpt, content, thumbnail, readTime, categoryId, tagIds }) => {
-  return await api.post('/posts', { title, excerpt, content, thumbnail, readTime, categoryId, tagIds })
+export const createPost = async ({ title, excerpt, content, thumbnail, readTime, categoryId, tagIds, status }) => {
+  return await api.post('/posts', { title, excerpt, content, thumbnail, readTime, categoryId, tagIds, status })
 }
 
-export const updatePost = async (id, { title, excerpt, content, thumbnail, readTime, categoryId, tagIds }) => {
-  return await api.put(`/posts/${id}`, { title, excerpt, content, thumbnail, readTime, categoryId, tagIds })
+export const updatePost = async (id, { title, excerpt, content, thumbnail, readTime, categoryId, tagIds, status }) => {
+  return await api.put(`/posts/${id}`, { title, excerpt, content, thumbnail, readTime, categoryId, tagIds, status })
 }
 
 export const deletePost = async (id) => {

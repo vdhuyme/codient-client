@@ -17,5 +17,8 @@ export const POST_SCHEMA = z.object({
       return !isNaN(num) && num > 0 && num <= 999
     }, 'Read time must be a positive number between 1 and 999'),
   categoryId: z.union([z.string().min(1, 'Category is required'), z.number()]),
-  tagIds: z.array(z.coerce.string()).min(1, 'At least one tag is required')
+  tagIds: z.array(z.coerce.string()).min(1, 'At least one tag is required'),
+  status: z.enum(['published', 'blocked'], {
+    required_error: 'Status is required'
+  })
 })
