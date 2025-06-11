@@ -7,11 +7,9 @@ import avatar from '@/assets/profile.png'
 const HomePage = () => {
   const containerRef = useRef(null)
   const [activeTooltip, setActiveTooltip] = useState(null)
-  const [dominantColor, setDominantColor] = useState('rgba(79, 70, 229, 0.3)') // Default indigo color
+  const [dominantColor, setDominantColor] = useState('rgba(79, 70, 229, 0.3)')
 
   useEffect(() => {
-    // This would normally use a color extraction library
-    // For demo purposes, we'll just use a preset color
     setDominantColor('rgba(79, 70, 229, 0.3)')
   }, [])
 

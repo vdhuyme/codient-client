@@ -52,7 +52,7 @@ const App = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/resume" element={<ResumePage />} />
           <Route path="/posts" element={<BlogPage />} />
-          <Route path="/posts/:slug" element={<BlogDetailPage />} />
+          <Route path="/posts/:id/:slug" element={<BlogDetailPage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

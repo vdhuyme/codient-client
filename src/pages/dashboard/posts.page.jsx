@@ -36,44 +36,11 @@ const QUERY_KEYS = {
   postStats: ['post-stats']
 }
 
-// API wrapper functions with better error handling
-const fetchPosts = async ({ search = '', page = 1, limit = 10, sort = 'createdAt:DESC' }) => {
-  try {
-    const response = await getPosts({ search, limit, page, sort })
-    return {
-      data: response.items,
-      totalCount: response.meta.totalItems,
-      page,
-      limit
-    }
-  } catch (error) {
-    throw new Error(`Failed to fetch posts: ${error.message}`)
-  }
-}
-
-const fetchCategories = async () => {
-  try {
-    const response = await getCategories()
-    return response.map((cat) => ({ value: cat.id, label: cat.name }))
-  } catch (error) {
-    throw new Error(`Failed to fetch categories: ${error.message}`)
-  }
-}
-
-const fetchTags = async () => {
-  try {
-    const response = await getTags()
-    return response.map((tag) => ({ value: tag.id, label: tag.name }))
-  } catch (error) {
-    throw new Error(`Failed to fetch tags: ${error.message}`)
-  }
-}
-
 // Custom hooks for data fetching
 const usePosts = (params) => {
   return useQuery({
     queryKey: QUERY_KEYS.posts(params),
-    queryFn: () => fetchPosts(params),
+    queryFn: () => getPosts(params),
     keepPreviousData: true,
     staleTime: 5 * 60 * 1000, // 5 minutes
     cacheTime: 10 * 60 * 1000 // 10 minutes
@@ -83,7 +50,7 @@ const usePosts = (params) => {
 const useCategories = () => {
   return useQuery({
     queryKey: QUERY_KEYS.categories,
-    queryFn: fetchCategories,
+    queryFn: getCategories,
     staleTime: 15 * 60 * 1000, // 15 minutes
     cacheTime: 30 * 60 * 1000 // 30 minutes
   })
@@ -92,7 +59,7 @@ const useCategories = () => {
 const useTags = () => {
   return useQuery({
     queryKey: QUERY_KEYS.tags,
-    queryFn: fetchTags,
+    queryFn: getTags,
     staleTime: 15 * 60 * 1000, // 15 minutes
     cacheTime: 30 * 60 * 1000 // 30 minutes
   })
@@ -143,7 +110,6 @@ const usePostMutations = () => {
   }
 }
 
-// Zod Schema for validation
 const postSchema = z.object({
   title: z.string().min(1, 'Title is required').min(3, 'Title must be at least 3 characters').max(200, 'Title must not exceed 200 characters'),
   excerpt: z
@@ -164,7 +130,6 @@ const postSchema = z.object({
   tagIds: z.array(z.coerce.string()).min(1, 'At least one tag is required')
 })
 
-// Component FormField for error display
 const FormField = ({ label, required, error, children }) => (
   <div className="space-y-2">
     <Label required={required}>{label}</Label>
@@ -326,18 +291,6 @@ const PostForm = ({ defaultValues, onSubmit, isEdit = false, loading = false }) 
           {isEdit ? 'Update Post' : 'Create Post'}
         </Button>
       </div>
-
-      {/* Validation Summary */}
-      {Object.keys(errors).length > 0 && (
-        <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4">
-          <h4 className="mb-2 font-medium text-red-400">Please fix the following errors:</h4>
-          <ul className="list-inside list-disc space-y-1 text-sm text-red-300">
-            {Object.entries(errors).map(([field, error]) => (
-              <li key={field}>{error.message}</li>
-            ))}
-          </ul>
-        </div>
-      )}
     </form>
   )
 }
@@ -346,23 +299,22 @@ const PostsPage = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState('')
   const [pageSize, setPageSize] = useState(10)
-  const [sort, setSort] = useState('createdAt:DESC') // Sửa: thêm state sort
+  const [sortBy, setSortBy] = useState('createdAt')
+  const [orderBy, setOrderBy] = useState('DESC')
 
-  // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedPost, setSelectedPost] = useState(null)
 
-  // Query params for posts - FIX: Sử dụng đúng sort từ state
   const postsParams = useMemo(
     () => ({
       search: searchQuery,
       page: currentPage,
       limit: pageSize,
-      sort: sort // Sửa: sử dụng sort từ state thay vì hardcode
+      sort: sort
     }),
-    [currentPage, searchQuery, pageSize, sort] // Sửa: thêm sort vào dependencies
+    [currentPage, searchQuery, pageSize, sort]
   )
 
   // Data fetching with React Query
@@ -558,7 +510,6 @@ const PostsPage = () => {
     [handleEdit, handleDelete, categories, tags]
   )
 
-  // Handle loading and error states
   if (postsError) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -669,7 +620,7 @@ const PostsPage = () => {
               onPageSizeChange={handlePageSizeChange}
               loading={isLoading}
               searchPlaceholder="Search posts..."
-              onSort={handleSortChange} // FIX: Sử dụng handler mới
+              onSort={handleSortChange}
               serverSort={true}
             />
           </CardContent>

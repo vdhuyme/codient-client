@@ -32,7 +32,6 @@ const ResumePage = () => {
 
       const imageData = canvas.toDataURL('image/png')
 
-      // Make link and auto download
       const link = document.createElement('a')
       link.href = imageData
       link.download = filename

@@ -1,21 +1,18 @@
 import api from '@/utils/axios'
 
-export const getTags = async () => {
-  const response = await api.get('/tags')
+export const getTags = async ({ page, limit, search, sortBy = 'createdAt', orderBy = 'DESC' }) => {
+  const response = await api.get('/tags', { params: { page, limit, search, sortBy, orderBy } })
   return response.data
 }
 
 export const createTag = async (data) => {
-  const response = await api.post('/tags', data)
-  return response.data
+  return await api.post('/tags', data)
 }
 
 export const updateTag = async (id, data) => {
-  const response = await api.put(`/tags/${id}`, data)
-  return response.data
+  return await api.put(`/tags/${id}`, data)
 }
 
 export const deleteTag = async (id) => {
-  const response = await api.delete(`/tags/${id}`)
-  return response.data
+  return await api.delete(`/tags/${id}`)
 }

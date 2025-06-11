@@ -20,33 +20,10 @@ import Textarea from '@/components/ui/textarea'
 import { createCategory, deleteCategory, getCategories, getCategoryTrees, updateCategory } from '@/api/category'
 import toast from 'react-hot-toast'
 
-const fetchCategories = async () => {
-  try {
-    const response = await getCategories()
-    console.log('Fetched categories:', response) // Debug log
-    return response
-  } catch (error) {
-    console.error('Error fetching categories:', error)
-    throw new Error(`Failed to fetch categories: ${error.message}`)
-  }
-}
-
-const fetchCategoryTrees = async () => {
-  try {
-    const response = await getCategoryTrees()
-    console.log('Fetched category trees:', response) // Debug log
-    return response
-  } catch (error) {
-    console.error('Error fetching category trees:', error)
-    throw new Error(`Failed to fetch category trees: ${error.message}`)
-  }
-}
-
-// Custom Hooks
 const useCategories = () => {
   return useQuery({
     queryKey: ['categories'],
-    queryFn: fetchCategories,
+    queryFn: getCategories,
     staleTime: 5 * 60 * 1000, // 5 minutes
     cacheTime: 10 * 60 * 1000, // 10 minutes
     retry: 3,
@@ -60,7 +37,7 @@ const useCategories = () => {
 const useCategoryTrees = () => {
   return useQuery({
     queryKey: ['categoryTrees'],
-    queryFn: fetchCategoryTrees,
+    queryFn: getCategoryTrees,
     staleTime: 5 * 60 * 1000,
     cacheTime: 10 * 60 * 1000,
     retry: 3,

@@ -6,8 +6,7 @@ export const login = async ({ email, password }) => {
 }
 
 export const register = async ({ email, password, name }) => {
-  const response = await api.post('/auth/register', { email, password, name })
-  return response.data
+  return await api.post('/auth/register', { email, password, name })
 }
 
 export const forgotPassword = async ({ email }) => {
@@ -27,4 +26,8 @@ export const redirect = async () => {
 export const callback = async ({ provider, queryParams }) => {
   const response = await api.get(`/auth/${provider}/callback`, { params: queryParams })
   return response.data
+}
+
+export const changePassword = async ({ oldPassword, newPassword }) => {
+  return await api.patch('/auth/change-password', { oldPassword, newPassword })
 }
