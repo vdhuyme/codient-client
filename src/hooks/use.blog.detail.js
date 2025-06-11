@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getPublishedPost, getPublishedRelatedPost } from '@/api/published.post'
 
 export const useBlogDetail = (id) => {
-  const { data: postData, isLoading } = useQuery({
+  const { data: post, isLoading } = useQuery({
     queryKey: ['post', id],
     queryFn: async () => {
       return await getPublishedPost(id)
@@ -17,7 +17,7 @@ export const useBlogDetail = (id) => {
   })
 
   return {
-    post: postData,
+    post,
     relatedPosts,
     isLoading
   }

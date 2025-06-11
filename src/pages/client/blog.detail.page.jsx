@@ -12,6 +12,7 @@ import { useBlogDetail } from '@/hooks/use.blog.detail'
 import { useBlogComments } from '@/hooks/use.blog.comments'
 import toast from 'react-hot-toast'
 import NotFoundPage from '@/pages/error/not.found.page'
+import LoadingOverlay from '@/components/customs/loading.overlay'
 
 const COMMENT_SCHEMA = z.object({
   content: z.string().min(3, 'Content at least 3 characters')
@@ -35,6 +36,10 @@ const BlogDetailPage = () => {
   }
 
   const postUrl = typeof window !== 'undefined' ? window.location.href : ''
+
+  if (isLoading) {
+    return <LoadingOverlay />
+  }
 
   if (!post) {
     return <NotFoundPage />
