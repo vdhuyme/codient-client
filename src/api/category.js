@@ -5,16 +5,16 @@ export const getCategories = async ({ page, limit, search, sortBy = 'createdAt',
   return response.data
 }
 
-export const createCategory = async (data) => {
-  return await api.post('/categories', data)
+export const createCategory = async ({ name, description, thumbnail, icon, parentId, status }) => {
+  return await api.post('/categories', { name, description, thumbnail, icon, parentId, status })
 }
 
-export const updateCategory = async (slug, data) => {
-  return await api.put(`/categories/${slug}`, data)
+export const updateCategory = async (id, { name, description, thumbnail, icon, parentId, status }) => {
+  return await api.put(`/categories/${id}`, { name, description, thumbnail, icon, parentId, status })
 }
 
-export const deleteCategory = async (slug) => {
-  return await api.delete(`/categories/${slug}`)
+export const deleteCategory = async (id) => {
+  return await api.delete(`/categories/${id}`)
 }
 
 export const getCategory = async (id) => {

@@ -1,9 +1,12 @@
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
-import { ChevronRight, ChevronsUpDown, ChevronsDownUp } from 'lucide-react'
+import { ChevronRight, ChevronDown, MoreHorizontal, Plus, Edit, Trash2, EllipsisVertical } from 'lucide-react'
+import Button from './button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from './dropdown-menu'
 import Badge from './badge'
+import Tooltip from './tooltip'
 
-const TreeNode = ({ node, level = 0, onSelect, onEdit, onDelete, onAddChild, onToggleStatus, selectedId, expandedNodes, onToggleExpand }) => {
+const TreeNode = ({ node, level = 0, onSelect, onEdit, onDelete, onAddChild, selectedId, expandedNodes, onToggleExpand }) => {
   const hasChildren = node.children && node.children.length > 0
   const isExpanded = expandedNodes.has(node.id)
   const isSelected = selectedId === node.id
@@ -49,6 +52,9 @@ const TreeNode = ({ node, level = 0, onSelect, onEdit, onDelete, onAddChild, onT
           )}
         </div>
 
+        {/* Icon */}
+        <div className="flex-shrink-0 text-lg">{node.icon || '📁'}</div>
+
         {/* Name and Info */}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
@@ -60,39 +66,62 @@ const TreeNode = ({ node, level = 0, onSelect, onEdit, onDelete, onAddChild, onT
           </div>
           {node.description && <p className="mt-0.5 truncate text-xs text-gray-400">{node.description}</p>}
         </div>
+
+        {/* Actions */}
+        <div className="opacity-0 transition-opacity group-hover:opacity-100">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-12 w-12 p-0">
+                <EllipsisVertical className="h-6 w-6" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => onEdit(node)}>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => onDelete(node)} className="text-red-400 focus:text-red-300">
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </motion.div>
 
       {/* Children */}
-      {hasChildren && isExpanded && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
-          transition={{ duration: 0.2 }}
-          className="overflow-hidden"
-        >
-          {node.children.map((child) => (
-            <TreeNode
-              key={child.id}
-              node={child}
-              level={level + 1}
-              onSelect={onSelect}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onAddChild={onAddChild}
-              onToggleStatus={onToggleStatus}
-              selectedId={selectedId}
-              expandedNodes={expandedNodes}
-              onToggleExpand={onToggleExpand}
-            />
-          ))}
-        </motion.div>
-      )}
+      <AnimatePresence>
+        {hasChildren && isExpanded && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            {node.children.map((child) => (
+              <TreeNode
+                key={child.id}
+                node={child}
+                level={level + 1}
+                onSelect={onSelect}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onAddChild={onAddChild}
+                selectedId={selectedId}
+                expandedNodes={expandedNodes}
+                onToggleExpand={onToggleExpand}
+              />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
 
-const TreeView = ({ data, onSelect, onEdit, onDelete, onAddChild, onToggleStatus, selectedId, className = '' }) => {
+const TreeView = ({ data, onSelect, onEdit, onDelete, onAddChild, selectedId, className = '' }) => {
   const [expandedNodes, setExpandedNodes] = useState(new Set())
 
   const handleToggleExpand = (nodeId) => {
@@ -123,29 +152,29 @@ const TreeView = ({ data, onSelect, onEdit, onDelete, onAddChild, onToggleStatus
     setExpandedNodes(new Set())
   }
 
-  const [isExpanded, setIsExpanded] = useState(false)
-  const toggleExpandCollapse = () => {
-    if (isExpanded) {
-      collapseAll()
-    } else {
-      expandAll()
-    }
-    setIsExpanded(!isExpanded)
-  }
-
   return (
-    <div className={`space-y-2 ${className}`}>
+    <div className={`relative space-y-2 ${className}`}>
       {/* Tree Controls */}
       <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <button onClick={toggleExpandCollapse} className="hover:bg-muted text-muted-foreground rounded-md p-2 text-white transition-colors">
-            {isExpanded ? <ChevronsDownUp className="h-4 w-4" /> : <ChevronsUpDown className="h-4 w-4" />}
-          </button>
-        </div>
+        <h3 className="text-sm font-medium text-gray-300">Category Tree</h3>
+        {data.length > 0 && (
+          <div className="flex items-center gap-2">
+            <Tooltip content="Expand All">
+              <Button variant="ghost" size="sm" onClick={expandAll}>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </Tooltip>
+            <Tooltip content="Collapse All">
+              <Button variant="ghost" size="sm" onClick={collapseAll}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </Tooltip>
+          </div>
+        )}
       </div>
 
       {/* Tree Nodes */}
-      <div className="space-y-1">
+      <div className="max-h-[100vh] overflow-y-auto">
         {data.map((node) => (
           <TreeNode
             key={node.id}
@@ -154,12 +183,18 @@ const TreeView = ({ data, onSelect, onEdit, onDelete, onAddChild, onToggleStatus
             onEdit={onEdit}
             onDelete={onDelete}
             onAddChild={onAddChild}
-            onToggleStatus={onToggleStatus}
             selectedId={selectedId}
             expandedNodes={expandedNodes}
             onToggleExpand={handleToggleExpand}
           />
         ))}
+        {data.length === 0 && (
+          <div className="py-8 text-center text-gray-400">
+            <div className="mb-2 text-4xl">📁</div>
+            <p className="text-sm">No categories yet</p>
+            <p className="text-xs">Create your first category to get started</p>
+          </div>
+        )}
       </div>
     </div>
   )
