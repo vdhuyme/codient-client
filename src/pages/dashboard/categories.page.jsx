@@ -10,7 +10,7 @@ import Label from '@/components/ui/label'
 import Select from '@/components/ui/select'
 import TreeView from '@/components/ui/tree-view'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
-import { useCategories, useCategoryMutations, useCategoryTrees } from '@/hooks/use.categories'
+import { useCategoryMutations, useCategoryTrees } from '@/hooks/use.categories'
 import { CATEGORY_SCHEMA } from './schema/category.schema'
 import FileUpload from '@/components/ui/file-upload'
 
@@ -21,6 +21,16 @@ const FormField = ({ label, required, error, children }) => (
     {error && <p className="text-sm text-red-400">{error.message}</p>}
   </div>
 )
+
+const getAllChildIds = (category, allCategories) => {
+  let childIds = []
+  const children = allCategories.filter((cat) => cat.parentId === category.id)
+  children.forEach((child) => {
+    childIds.push(child.id)
+    childIds = childIds.concat(getAllChildIds(child, allCategories))
+  })
+  return childIds
+}
 
 const CategoryForm = ({ defaultValues, onSubmit, isEdit = false, loading = false, categories = [], parentId = null }) => {
   const {
@@ -35,7 +45,7 @@ const CategoryForm = ({ defaultValues, onSubmit, isEdit = false, loading = false
       description: '',
       thumbnail: '',
       icon: '📁',
-      parentId: parentId,
+      parentId,
       status: 'published'
     },
     mode: 'onChange'
@@ -51,7 +61,7 @@ const CategoryForm = ({ defaultValues, onSubmit, isEdit = false, loading = false
         description: '',
         thumbnail: '',
         icon: '📁',
-        parentId: parentId,
+        parentId,
         status: 'published'
       })
     }
@@ -59,7 +69,20 @@ const CategoryForm = ({ defaultValues, onSubmit, isEdit = false, loading = false
 
   const handleFormSubmit = async (data) => {
     onSubmit(data)
+    reset()
   }
+
+  // Get available parent categories
+  const availableParentCategories = useMemo(() => {
+    if (!isEdit || !defaultValues?.id) {
+      return categories
+    }
+
+    const childIds = getAllChildIds(defaultValues, categories)
+
+    // Filter out current category and its children
+    return categories.filter((cat) => cat.id !== defaultValues.id && !childIds.includes(cat.id))
+  }, [categories, defaultValues, isEdit])
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
@@ -109,12 +132,7 @@ const CategoryForm = ({ defaultValues, onSubmit, isEdit = false, loading = false
             control={control}
             render={({ field }) => (
               <Select
-                options={[
-                  { value: null, label: 'None' },
-                  ...categories
-                    .filter((cat) => cat.id !== defaultValues?.id) // Prevent selecting self as parent
-                    .map((cat) => ({ value: cat.id, label: cat.name }))
-                ]}
+                options={[{ value: null, label: 'None' }, ...availableParentCategories.map((cat) => ({ value: cat.id, label: cat.name }))]}
                 value={field.value}
                 onChange={field.onChange}
                 placeholder="Select parent category"
@@ -153,6 +171,22 @@ const CategoryForm = ({ defaultValues, onSubmit, isEdit = false, loading = false
       </div>
     </form>
   )
+}
+
+const flattenCategories = (tree) => {
+  const result = []
+
+  function traverse(nodes) {
+    for (const node of nodes) {
+      result.push({ ...node, children: undefined })
+      if (node.children && node.children.length > 0) {
+        traverse(node.children)
+      }
+    }
+  }
+
+  traverse(tree)
+  return result
 }
 
 const CategoriesPage = () => {
@@ -211,15 +245,16 @@ const CategoriesPage = () => {
   }, [selectedCategory, mutations])
 
   const editDefaultValues = useMemo(() => {
-    if (!selectedCategory) return null
-    return {
-      name: selectedCategory.name,
-      description: selectedCategory.description,
-      thumbnail: selectedCategory.thumbnail,
-      icon: selectedCategory.icon,
-      parentId: selectedCategory.parentId,
-      status: selectedCategory.status
-    }
+    return selectedCategory
+      ? {
+          name: selectedCategory.name,
+          description: selectedCategory.description,
+          thumbnail: selectedCategory.thumbnail,
+          icon: selectedCategory.icon,
+          parentId: selectedCategory?.parent?.id?.toString(),
+          status: selectedCategory.status
+        }
+      : null
   }, [selectedCategory])
 
   if (categoriesError) {
@@ -232,8 +267,6 @@ const CategoriesPage = () => {
       </div>
     )
   }
-
-  const isLoading = categoriesLoading
 
   return (
     <div className="space-y-6">
@@ -267,7 +300,7 @@ const CategoriesPage = () => {
                 onDelete={handleDelete}
                 onAddChild={handleAddChild}
                 selectedId={selectedCategory?.id}
-                loading={isLoading}
+                loading={categoriesLoading}
               />
             </CardContent>
           </Card>
@@ -286,7 +319,7 @@ const CategoriesPage = () => {
                 onSubmit={handleFormSubmit}
                 isEdit={!!selectedCategory}
                 loading={selectedCategory ? mutations.updateCategory.isPending : mutations.createCategory.isPending}
-                categories={categories}
+                categories={flattenCategories(categories)}
                 parentId={selectedCategory?.parentId}
               />
             </CardContent>

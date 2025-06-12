@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getCategories, createCategory, updateCategory, deleteCategory, getCategoryTrees } from '@/api/category'
+import toast from 'react-hot-toast'
 
 export const useCategories = () => {
   return useQuery({
@@ -25,6 +26,11 @@ export const useCategoryMutations = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] })
       queryClient.invalidateQueries({ queryKey: ['category-trees'] })
+      toast.success('Category created successfully')
+    },
+    onError: (error) => {
+      console.error('Failed to update category:', error)
+      toast.error('Failed to update category')
     }
   })
 
@@ -33,6 +39,11 @@ export const useCategoryMutations = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] })
       queryClient.invalidateQueries({ queryKey: ['category-trees'] })
+      toast.success('Category updated successfully')
+    },
+    onError: (error) => {
+      console.error('Failed to update category:', error)
+      toast.error('Failed to update category')
     }
   })
 
@@ -41,6 +52,11 @@ export const useCategoryMutations = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] })
       queryClient.invalidateQueries({ queryKey: ['category-trees'] })
+      toast.success('Category deleted successfully')
+    },
+    onError: (error) => {
+      console.error('Failed to update category:', error)
+      toast.error('Failed to update category')
     }
   })
 

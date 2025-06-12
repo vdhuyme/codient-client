@@ -6,7 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import Badge from './badge'
 import Tooltip from './tooltip'
 
-const TreeNode = ({ node, level = 0, onSelect, onEdit, onDelete, onAddChild, selectedId, expandedNodes, onToggleExpand }) => {
+const TreeNode = ({ node, level = 0, onEdit, onDelete, onAddChild, selectedId, expandedNodes, onToggleExpand }) => {
   const hasChildren = node.children && node.children.length > 0
   const isExpanded = expandedNodes.has(node.id)
   const isSelected = selectedId === node.id
@@ -17,10 +17,6 @@ const TreeNode = ({ node, level = 0, onSelect, onEdit, onDelete, onAddChild, sel
     }
   }
 
-  const handleSelect = () => {
-    onSelect(node)
-  }
-
   return (
     <div className="select-none">
       <motion.div
@@ -28,7 +24,6 @@ const TreeNode = ({ node, level = 0, onSelect, onEdit, onDelete, onAddChild, sel
           isSelected ? 'border border-indigo-500/30 bg-indigo-500/20 text-indigo-300' : 'text-gray-300 hover:bg-slate-700/50 hover:text-white'
         } `}
         style={{ paddingLeft: `${level * 1.5 + 0.75}rem` }}
-        onClick={handleSelect}
         layout
       >
         {/* Expand/Collapse Button */}
@@ -105,7 +100,6 @@ const TreeNode = ({ node, level = 0, onSelect, onEdit, onDelete, onAddChild, sel
                 key={child.id}
                 node={child}
                 level={level + 1}
-                onSelect={onSelect}
                 onEdit={onEdit}
                 onDelete={onDelete}
                 onAddChild={onAddChild}
@@ -121,7 +115,7 @@ const TreeNode = ({ node, level = 0, onSelect, onEdit, onDelete, onAddChild, sel
   )
 }
 
-const TreeView = ({ data, onSelect, onEdit, onDelete, onAddChild, selectedId, className = '' }) => {
+const TreeView = ({ data, onEdit, onDelete, onAddChild, selectedId, className = '' }) => {
   const [expandedNodes, setExpandedNodes] = useState(new Set())
 
   const handleToggleExpand = (nodeId) => {
@@ -174,12 +168,11 @@ const TreeView = ({ data, onSelect, onEdit, onDelete, onAddChild, selectedId, cl
       </div>
 
       {/* Tree Nodes */}
-      <div className="max-h-[100vh] overflow-y-auto">
+      <div className="max-h-[100vh] overflow-y-visible">
         {data.map((node) => (
           <TreeNode
             key={node.id}
             node={node}
-            onSelect={onSelect}
             onEdit={onEdit}
             onDelete={onDelete}
             onAddChild={onAddChild}

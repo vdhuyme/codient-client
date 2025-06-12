@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getTags, createTag, updateTag, deleteTag } from '@/api/tags'
+import toast from 'react-hot-toast'
 
 export const TAG_QUERY_KEYS = {
   tags: ['tags'],
@@ -39,6 +40,11 @@ export const useTagMutations = () => {
     mutationFn: createTag,
     onSuccess: () => {
       queryClient.invalidateQueries(TAG_QUERY_KEYS.tags)
+      toast.success('Tag created successfully')
+    },
+    onError: (error) => {
+      console.error('Failed to update tag:', error)
+      toast.error('Failed to update tag')
     }
   })
 
@@ -46,6 +52,11 @@ export const useTagMutations = () => {
     mutationFn: ({ id, data }) => updateTag(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries(TAG_QUERY_KEYS.tags)
+      toast.success('Tag updated successfully')
+    },
+    onError: (error) => {
+      console.error('Failed to update tag:', error)
+      toast.error('Failed to update tag')
     }
   })
 
@@ -53,6 +64,11 @@ export const useTagMutations = () => {
     mutationFn: deleteTag,
     onSuccess: () => {
       queryClient.invalidateQueries(TAG_QUERY_KEYS.tags)
+      toast.success('Tag deleted successfully')
+    },
+    onError: (error) => {
+      console.error('Failed to update tag:', error)
+      toast.error('Failed to update tag')
     }
   })
 

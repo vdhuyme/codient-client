@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Plus, Edit, Trash2, Tag as TagIcon } from 'lucide-react'
+import { Plus, Edit, Trash2, Tag as TagIcon, Upload, Download } from 'lucide-react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Button from '@/components/ui/button'
@@ -251,10 +251,22 @@ const TagsPage = () => {
           <p className="mt-2 text-gray-400">Create, edit, and manage your blog tags</p>
         </div>
 
-        <Button onClick={handleCreate} disabled={mutations.createTag.isPending}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Tag
-        </Button>
+        <div className="flex items-center gap-3">
+          <Tooltip content="Import">
+            <Button variant="outline" size="sm">
+              <Upload className="h-4 w-4" />
+            </Button>
+          </Tooltip>
+          <Tooltip content="Export">
+            <Button variant="outline" size="sm">
+              <Download className="h-4 w-4" />
+            </Button>
+          </Tooltip>
+          <Button onClick={handleCreate} disabled={mutations.createTag.isPending}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Tag
+          </Button>
+        </div>
       </motion.div>
 
       {/* Stats Cards */}
