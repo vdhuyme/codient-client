@@ -7,6 +7,7 @@ import { dateFormat } from '@/utils/date'
 import { useBlogPosts } from '@/hooks/use.blog.posts'
 import { useBlogCategories } from '@/hooks/use.blog.categories'
 import { SORT_ORDERS } from '@/utils/constants'
+import LoadingOverlay from '@/components/customs/loading.overlay'
 
 const BlogPage = () => {
   const [activeCategoryId, setActiveCategoryId] = useState(null)
@@ -63,6 +64,10 @@ const BlogPage = () => {
       }
     }
   }, [fetchNextPage, hasNextPage, isFetchingNextPage])
+
+  if (isPostsLoading) {
+    return <LoadingOverlay />
+  }
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950">
