@@ -1,6 +1,20 @@
 import useEmblaCarousel from 'embla-carousel-react'
 import { motion } from 'framer-motion'
-import { Calendar, User, Clock, Facebook, Linkedin, LinkIcon, ChevronLeft, Loader, SendHorizonal, FlagIcon, Twitter } from 'lucide-react'
+import {
+  Calendar,
+  User,
+  Clock,
+  Facebook,
+  Linkedin,
+  LinkIcon,
+  ChevronLeft,
+  Loader,
+  SendHorizonal,
+  FlagIcon,
+  Twitter,
+  ChevronDown,
+  ChevronUp
+} from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { FormProvider, useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -9,10 +23,12 @@ import { TextareaField } from '@/components/customs/form.field'
 import { Button } from '@/components/customs/button'
 import { dateFormat } from '@/utils/date'
 import { useBlogDetail } from '@/hooks/use.blog.detail'
-import { useBlogComments } from '@/hooks/use.blog.comments'
+import { usePublishedComments, usePublishedCommentMutations } from '@/hooks/use.published.comments'
 import toast from 'react-hot-toast'
 import NotFoundPage from '@/pages/error/not.found.page'
 import LoadingOverlay from '@/components/customs/loading.overlay'
+import { useState } from 'react'
+import Pagination from '@/components/ui/pagination'
 
 const COMMENT_SCHEMA = z.object({
   content: z.string().min(3, 'Content at least 3 characters')
@@ -21,6 +37,8 @@ const COMMENT_SCHEMA = z.object({
 const BlogDetailPage = () => {
   const { id } = useParams()
   const [relatedPostCarouselRef] = useEmblaCarousel()
+  const [commentPage, setCommentPage] = useState(1)
+  const [commentSort, setCommentSort] = useState({ sortBy: 'createdAt', orderBy: 'DESC' })
 
   const methods = useForm({
     resolver: zodResolver(COMMENT_SCHEMA)
@@ -28,11 +46,32 @@ const BlogDetailPage = () => {
   const { reset } = methods
 
   const { post, relatedPosts, isLoading } = useBlogDetail(id)
-  const { comments, handleSubmitComment, isSubmitting } = useBlogComments(id)
+  const { data: commentsData, isLoading: commentsLoading } = usePublishedComments(id, {
+    page: commentPage,
+    limit: 3,
+    ...commentSort
+  })
+  const { createComment } = usePublishedCommentMutations(id)
 
-  const onSubmit = (data) => {
-    handleSubmitComment(data)
-    reset()
+  const handleSubmitComment = async (data) => {
+    try {
+      await createComment.mutateAsync({ content: data.content, id })
+      reset()
+    } catch (error) {
+      console.error('Failed to submit comment:', error)
+    }
+  }
+
+  const handlePageChange = (page) => {
+    setCommentPage(page)
+  }
+
+  const handleSortChange = () => {
+    setCommentSort((prev) => ({
+      sortBy: 'createdAt',
+      orderBy: prev.orderBy === 'DESC' ? 'ASC' : 'DESC'
+    }))
+    setCommentPage(1)
   }
 
   const postUrl = typeof window !== 'undefined' ? window.location.href : ''
@@ -199,11 +238,15 @@ const BlogDetailPage = () => {
             <div className="relative">
               <div ref={relatedPostCarouselRef} className="scrollbar-hide overflow-x-auto pb-4">
                 <div className="flex min-w-[20rem] space-x-6">
-                  {relatedPosts?.map((post, index) => (
-                    <div key={`${post.id}-${index}`} className="w-72 flex-none">
-                      <RelatedPostCard post={post} index={index} />
-                    </div>
-                  ))}
+                  {relatedPosts.length > 0 ? (
+                    relatedPosts?.map((post, index) => (
+                      <div key={`${post.id}-${index}`} className="w-72 flex-none">
+                        <RelatedPostCard post={post} index={index} />
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center font-semibold text-white">Not found related posts</div>
+                  )}
                 </div>
               </div>
               <div className="absolute right-0 bottom-0 left-0 h-1 bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent"></div>
@@ -217,9 +260,16 @@ const BlogDetailPage = () => {
             transition={{ duration: 0.5, delay: 1.1 }}
             className="mt-12 rounded-lg border border-indigo-500/20 bg-slate-900/50 p-6 backdrop-blur-sm"
           >
-            <h2 className="mb-6 text-2xl font-bold text-white">Comments</h2>
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-white">Comments</h2>
+              <div onClick={handleSortChange} className="flex cursor-pointer items-center space-x-1 text-sm text-gray-400 hover:text-white">
+                <span>Sort by Date</span>
+                {commentSort.orderBy === 'DESC' ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+              </div>
+            </div>
+
             <div className="space-y-6">
-              {comments?.map((comment, index) => (
+              {commentsData?.items?.map((comment, index) => (
                 <CommentCard
                   key={`comment-${index}`}
                   user={comment?.user?.name}
@@ -227,24 +277,36 @@ const BlogDetailPage = () => {
                   content={comment.content}
                   avatar={
                     comment?.user?.avatar ??
-                    `https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=${post?.author.name}&bold=true&background=random`
+                    `https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=${comment?.user?.name}&bold=true&background=random`
                   }
                 />
               ))}
+
+              {commentsLoading && (
+                <div className="flex justify-center py-4">
+                  <Loader className="h-6 w-6 animate-spin text-indigo-400" />
+                </div>
+              )}
+
+              {commentsData?.meta && commentsData.meta.totalPages > 1 && (
+                <div className="mt-6">
+                  <Pagination currentPage={commentsData.meta.currentPage} totalPages={commentsData.meta.totalPages} onPageChange={handlePageChange} />
+                </div>
+              )}
             </div>
 
             {/* Comment Form */}
             <div className="mt-8">
               <h3 className="mb-4 text-lg font-medium text-white">Leave a comment</h3>
               <FormProvider {...methods}>
-                <form onSubmit={methods.handleSubmit(onSubmit)}>
+                <form onSubmit={methods.handleSubmit(handleSubmitComment)}>
                   <div className="mb-4">
                     <TextareaField name="content" label="Your Comment" placeholder={'Share your thoughts...'} />
                   </div>
                   <Button
-                    disabled={isSubmitting}
+                    disabled={createComment.isPending}
                     icon={
-                      isSubmitting ? (
+                      createComment.isPending ? (
                         <Loader className="mr-2 h-4 w-4 animate-spin" />
                       ) : (
                         <SendHorizonal className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
