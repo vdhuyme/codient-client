@@ -154,6 +154,21 @@ const CommentsPage = () => {
     setCurrentPage(1)
   }, [])
 
+  const handleStatusToggle = useCallback(
+    async (comment) => {
+      try {
+        const newStatus = comment.status === 'published' ? 'pending' : 'published'
+        await mutations.updateComment.mutateAsync({
+          id: comment.id,
+          data: { content: comment.content, status: newStatus }
+        })
+      } catch (error) {
+        console.error('Failed to toggle comment status:', error)
+      }
+    },
+    [mutations]
+  )
+
   const editDefaultValues = useMemo(() => {
     return selectedComment
       ? {
@@ -179,7 +194,17 @@ const CommentsPage = () => {
       {
         accessorKey: 'status',
         header: 'Status',
-        cell: ({ row }) => <Badge variant={row.original.status === 'published' ? 'success' : 'warning'}>{row.original.status}</Badge>,
+        cell: ({ row }) => (
+          <div className="flex items-center space-x-2">
+            <Badge
+              variant={row.original.status === 'published' ? 'success' : 'warning'}
+              className="cursor-pointer transition-opacity hover:opacity-80"
+              onClick={() => handleStatusToggle(row.original)}
+            >
+              {row.original.status}
+            </Badge>
+          </div>
+        ),
         enableSorting: true
       },
       {

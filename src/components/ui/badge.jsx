@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 
-const Badge = ({ children, variant = 'default', size = 'md', className = '', animated = true }) => {
+const Badge = ({ children, variant = 'default', size = 'md', className = '', animated = true, ...props }) => {
   const variants = {
     default: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
     success: 'bg-green-500/20 text-green-300 border-green-500/30',
@@ -27,6 +27,7 @@ const Badge = ({ children, variant = 'default', size = 'md', className = '', ani
     <BadgeComponent
       className={`inline-flex items-center rounded-full border font-medium backdrop-blur-sm ${variants[variant]} ${sizes[size]} ${className}`}
       {...animationProps}
+      {...props}
     >
       {children}
     </BadgeComponent>
