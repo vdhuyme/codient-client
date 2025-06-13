@@ -46,7 +46,8 @@ const CategoryForm = ({ defaultValues, onSubmit, isEdit = false, loading = false
       thumbnail: '',
       icon: '📁',
       parentId,
-      status: 'published'
+      status: 'published',
+      ...defaultValues
     },
     mode: 'onChange'
   })
@@ -244,6 +245,23 @@ const CategoriesPage = () => {
     }
   }, [selectedCategory, mutations])
 
+  const findParentById = (tree, targetId) => {
+    for (const node of tree) {
+      if (node.children?.some((child) => child.id === targetId)) {
+        return node
+      }
+
+      if (node.children && node.children.length > 0) {
+        const parent = findParentById(node.children, targetId)
+        if (parent) {
+          return parent
+        }
+      }
+    }
+
+    return null
+  }
+
   const editDefaultValues = useMemo(() => {
     return selectedCategory
       ? {
@@ -251,7 +269,7 @@ const CategoriesPage = () => {
           description: selectedCategory.description,
           thumbnail: selectedCategory.thumbnail,
           icon: selectedCategory.icon,
-          parentId: selectedCategory?.parent?.id?.toString(),
+          parentId: findParentById(categories, selectedCategory.id)?.id?.toString(),
           status: selectedCategory.status
         }
       : null

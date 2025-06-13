@@ -1,10 +1,10 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
-import { ChevronRight, ChevronDown, MoreHorizontal, Plus, Edit, Trash2, EllipsisVertical } from 'lucide-react'
+import { ChevronRight, ChevronDown, Edit, Trash2 } from 'lucide-react'
 import Button from './button'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from './dropdown-menu'
 import Badge from './badge'
 import Tooltip from './tooltip'
+import ScrollArea from './scroll-area'
 
 const TreeNode = ({ node, level = 0, onEdit, onDelete, onAddChild, selectedId, expandedNodes, onToggleExpand }) => {
   const hasChildren = node.children && node.children.length > 0
@@ -63,25 +63,14 @@ const TreeNode = ({ node, level = 0, onEdit, onDelete, onAddChild, selectedId, e
         </div>
 
         {/* Actions */}
-        <div className="opacity-0 transition-opacity group-hover:opacity-100">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-12 w-12 p-0">
-                <EllipsisVertical className="h-6 w-6" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={() => onEdit(node)}>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => onDelete(node)} className="text-red-400 focus:text-red-300">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary h-10 w-10 p-0" onClick={() => onEdit(node)}>
+            <Edit className="h-4 w-4" />
+          </Button>
+
+          <Button variant="ghost" size="sm" className="h-10 w-10 p-0 text-red-400 hover:text-red-500" onClick={() => onDelete(node)}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
       </motion.div>
 
@@ -168,7 +157,7 @@ const TreeView = ({ data, onEdit, onDelete, onAddChild, selectedId, className = 
       </div>
 
       {/* Tree Nodes */}
-      <div className="max-h-[100vh] overflow-y-visible">
+      <ScrollArea className="h-[60vh]" orientation="vertical" type="always" autoHide>
         {data.map((node) => (
           <TreeNode
             key={node.id}
@@ -181,14 +170,15 @@ const TreeView = ({ data, onEdit, onDelete, onAddChild, selectedId, className = 
             onToggleExpand={handleToggleExpand}
           />
         ))}
-        {data.length === 0 && (
-          <div className="py-8 text-center text-gray-400">
-            <div className="mb-2 text-4xl">📁</div>
-            <p className="text-sm">No categories yet</p>
-            <p className="text-xs">Create your first category to get started</p>
-          </div>
-        )}
-      </div>
+      </ScrollArea>
+
+      {data.length === 0 && (
+        <div className="py-8 text-center text-gray-400">
+          <div className="mb-2 text-4xl">📁</div>
+          <p className="text-sm">No categories yet</p>
+          <p className="text-xs">Create your first category to get started</p>
+        </div>
+      )}
     </div>
   )
 }
