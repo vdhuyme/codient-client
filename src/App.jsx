@@ -19,7 +19,6 @@ import PostsPage from '@/pages/dashboard/posts.page'
 import CategoriesPage from '@/pages/dashboard/categories.page'
 import CommentsPage from '@/pages/dashboard/comments.page'
 import ProfilePage from '@/pages/dashboard/profile.page'
-import SettingsPage from '@/pages/dashboard/settings.page'
 import TagsPage from '@/pages/dashboard/tags.page'
 import UserPage from '@/pages/dashboard/users.page'
 
@@ -42,7 +41,6 @@ const App = () => {
             <Route path="categories" element={<CategoriesPage />} />
             <Route path="comments" element={<CommentsPage />} />
             <Route path="profile" element={<ProfilePage />} />
-            <Route path="settings" element={<SettingsPage />} />
             <Route path="tags" element={<TagsPage />} />
             <Route path="users" element={<UserPage />} />
           </Route>
