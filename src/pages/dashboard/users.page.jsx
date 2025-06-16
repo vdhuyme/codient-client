@@ -9,6 +9,7 @@ import DataTable from '@/components/ui/data-table'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
 import { useUsers, useUserMutations } from '@/hooks/use.users'
 import { convertSortingToParams } from '@/utils/convert-sorting-params'
+import PermissionGuard from '@/hocs/permission-guard'
 
 const DEFAULT_PAGE_SIZE = 10
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50]
@@ -99,13 +100,15 @@ const UsersPage = () => {
         header: 'Actions',
         cell: ({ row }) => (
           <div className="flex items-center space-x-2">
-            <Tooltip content={row.original.status === 'activated' ? 'Block user' : 'Activate user'}>
-              <Button variant="ghost" size="sm" onClick={() => handleStatusToggle(row.original)}>
-                <Badge variant={row.original.status === 'activated' ? 'warning' : 'success'}>
-                  {row.original.status === 'activated' ? 'Block' : 'Activate'}
-                </Badge>
-              </Button>
-            </Tooltip>
+            <PermissionGuard required={'user.update'}>
+              <Tooltip content={row.original.status === 'activated' ? 'Block user' : 'Activate user'}>
+                <Button variant="ghost" size="sm" onClick={() => handleStatusToggle(row.original)}>
+                  <Badge variant={row.original.status === 'activated' ? 'warning' : 'success'}>
+                    {row.original.status === 'activated' ? 'Block' : 'Activate'}
+                  </Badge>
+                </Button>
+              </Tooltip>
+            </PermissionGuard>
           </div>
         )
       }

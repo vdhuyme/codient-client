@@ -5,6 +5,7 @@ import Button from './button'
 import Badge from './badge'
 import Tooltip from './tooltip'
 import ScrollArea from './scroll-area'
+import PermissionGuard from '@/hocs/permission-guard'
 
 const TreeNode = ({ node, level = 0, onEdit, onDelete, onAddChild, selectedId, expandedNodes, onToggleExpand }) => {
   const hasChildren = node.children && node.children.length > 0
@@ -64,18 +65,27 @@ const TreeNode = ({ node, level = 0, onEdit, onDelete, onAddChild, selectedId, e
 
         {/* Actions */}
         <div className={`flex gap-2 opacity-100 transition-opacity group-hover:opacity-100 md:opacity-0`}>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:text-primary h-8 w-8 p-0 md:h-10 md:w-10"
-            onClick={() => onEdit(node)}
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
+          <PermissionGuard required={'category.update'}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground hover:text-primary h-8 w-8 p-0 md:h-10 md:w-10"
+              onClick={() => onEdit(node)}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+          </PermissionGuard>
 
-          <Button variant="ghost" size="icon" className="h-8 w-8 p-0 text-red-400 hover:text-red-500 md:h-10 md:w-10" onClick={() => onDelete(node)}>
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          <PermissionGuard required={'category.delete'}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 p-0 text-red-400 hover:text-red-500 md:h-10 md:w-10"
+              onClick={() => onDelete(node)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </PermissionGuard>
         </div>
       </motion.div>
 

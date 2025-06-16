@@ -16,6 +16,7 @@ import ConfirmDialog from '@/components/ui/confirm-dialog'
 import { useTags, useTagMutations } from '@/hooks/use.tags'
 import { convertSortingToParams } from '@/utils/convert-sorting-params'
 import { TAG_SCHEMA } from './schema/tag.schema'
+import PermissionGuard from '@/hocs/permission-guard'
 
 const DEFAULT_PAGE_SIZE = 10
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50]
@@ -210,16 +211,21 @@ const TagsPage = () => {
         header: 'Actions',
         cell: ({ row }) => (
           <div className="flex items-center space-x-2">
-            <Tooltip content="Edit tag">
-              <Button variant="ghost" size="sm" onClick={() => handleEdit(row.original)}>
-                <Edit className="h-4 w-4" />
-              </Button>
-            </Tooltip>
-            <Tooltip content="Delete tag">
-              <Button variant="ghost" size="sm" onClick={() => handleDelete(row.original)}>
-                <Trash2 className="h-4 w-4 text-red-400" />
-              </Button>
-            </Tooltip>
+            <PermissionGuard required={'tag.update'}>
+              <Tooltip content="Edit tag">
+                <Button variant="ghost" size="sm" onClick={() => handleEdit(row.original)}>
+                  <Edit className="h-4 w-4" />
+                </Button>
+              </Tooltip>
+            </PermissionGuard>
+
+            <PermissionGuard required={'tag.delete'}>
+              <Tooltip content="Delete tag">
+                <Button variant="ghost" size="sm" onClick={() => handleDelete(row.original)}>
+                  <Trash2 className="h-4 w-4 text-red-400" />
+                </Button>
+              </Tooltip>
+            </PermissionGuard>
           </div>
         )
       }

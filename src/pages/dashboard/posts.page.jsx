@@ -21,6 +21,7 @@ import { useCategories, useCategoryOptions } from '@/hooks/use.categories'
 import { useTagOptions, useTags } from '@/hooks/use.tags'
 import { convertSortingToParams } from '@/utils/convert-sorting-params'
 import { POST_SCHEMA } from './schema/post.schema'
+import PermissionGuard from '@/hocs/permission-guard'
 
 const FormField = ({ label, required, error, children }) => (
   <div className="space-y-2">
@@ -402,16 +403,22 @@ const PostsPage = () => {
         header: 'Actions',
         cell: ({ row }) => (
           <div className="flex items-center space-x-2">
-            <Tooltip content="Edit post">
-              <Button variant="ghost" size="sm" onClick={() => handleEdit(row.original)}>
-                <Edit className="h-4 w-4" />
-              </Button>
-            </Tooltip>
-            <Tooltip content="Delete post">
-              <Button variant="ghost" size="sm" onClick={() => handleDelete(row.original)}>
-                <Trash2 className="h-4 w-4 text-red-400" />
-              </Button>
-            </Tooltip>
+            <PermissionGuard required={'post.update'}>
+              {' '}
+              <Tooltip content="Edit post">
+                <Button variant="ghost" size="sm" onClick={() => handleEdit(row.original)}>
+                  <Edit className="h-4 w-4" />
+                </Button>
+              </Tooltip>
+            </PermissionGuard>
+
+            <PermissionGuard required={'post.delete'}>
+              <Tooltip content="Delete post">
+                <Button variant="ghost" size="sm" onClick={() => handleDelete(row.original)}>
+                  <Trash2 className="h-4 w-4 text-red-400" />
+                </Button>
+              </Tooltip>
+            </PermissionGuard>
           </div>
         )
       }
@@ -454,10 +461,13 @@ const PostsPage = () => {
               <Download className="h-4 w-4" />
             </Button>
           </Tooltip>
-          <Button onClick={handleCreate} disabled={mutations.createPost.isPending}>
-            <Plus className="mr-2 h-4 w-4" />
-            Create Post
-          </Button>
+
+          <PermissionGuard required={'post.create'}>
+            <Button onClick={handleCreate} disabled={mutations.createPost.isPending}>
+              <Plus className="mr-2 h-4 w-4" />
+              Create Post
+            </Button>
+          </PermissionGuard>
         </div>
       </motion.div>
 

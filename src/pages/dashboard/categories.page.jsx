@@ -13,6 +13,7 @@ import ConfirmDialog from '@/components/ui/confirm-dialog'
 import { useCategoryMutations, useCategoryTrees } from '@/hooks/use.categories'
 import { CATEGORY_SCHEMA } from './schema/category.schema'
 import FileUpload from '@/components/ui/file-upload'
+import PermissionGuard from '@/hocs/permission-guard'
 
 const FormField = ({ label, required, error, children }) => (
   <div className="space-y-2">
@@ -295,10 +296,12 @@ const CategoriesPage = () => {
           <p className="mt-2 text-gray-400">Create, edit, and manage your blog categories</p>
         </div>
 
-        <Button onClick={handleCreate} disabled={mutations.createCategory.isPending}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Category
-        </Button>
+        <PermissionGuard required={'category.create'}>
+          <Button onClick={handleCreate} disabled={mutations.createCategory.isPending}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Category
+          </Button>
+        </PermissionGuard>
       </motion.div>
 
       {/* Main Content */}

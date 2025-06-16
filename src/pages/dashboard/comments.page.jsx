@@ -16,6 +16,7 @@ import ConfirmDialog from '@/components/ui/confirm-dialog'
 import { useComments, useCommentMutations } from '@/hooks/use.comments'
 import { convertSortingToParams } from '@/utils/convert-sorting-params'
 import { COMMENT_SCHEMA } from './schema/comment.schema'
+import PermissionGuard from '@/hocs/permission-guard'
 
 const DEFAULT_PAGE_SIZE = 10
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50]
@@ -196,13 +197,15 @@ const CommentsPage = () => {
         header: 'Status',
         cell: ({ row }) => (
           <div className="flex items-center space-x-2">
-            <Badge
-              variant={row.original.status === 'published' ? 'success' : 'warning'}
-              className="cursor-pointer transition-opacity hover:opacity-80"
-              onClick={() => handleStatusToggle(row.original)}
-            >
-              {row.original.status}
-            </Badge>
+            <PermissionGuard required={'comment.update'}>
+              <Badge
+                variant={row.original.status === 'published' ? 'success' : 'warning'}
+                className="cursor-pointer transition-opacity hover:opacity-80"
+                onClick={() => handleStatusToggle(row.original)}
+              >
+                {row.original.status}
+              </Badge>
+            </PermissionGuard>
           </div>
         ),
         enableSorting: true
@@ -224,16 +227,21 @@ const CommentsPage = () => {
         header: 'Actions',
         cell: ({ row }) => (
           <div className="flex items-center space-x-2">
-            <Tooltip content="Edit comment">
-              <Button variant="ghost" size="sm" onClick={() => handleEdit(row.original)}>
-                <Edit className="h-4 w-4" />
-              </Button>
-            </Tooltip>
-            <Tooltip content="Delete comment">
-              <Button variant="ghost" size="sm" onClick={() => handleDelete(row.original)}>
-                <Trash2 className="h-4 w-4 text-red-400" />
-              </Button>
-            </Tooltip>
+            <PermissionGuard required={'comment.update'}>
+              <Tooltip content="Edit comment">
+                <Button variant="ghost" size="sm" onClick={() => handleEdit(row.original)}>
+                  <Edit className="h-4 w-4" />
+                </Button>
+              </Tooltip>
+            </PermissionGuard>
+
+            <PermissionGuard required={'comment.delete'}>
+              <Tooltip content="Delete comment">
+                <Button variant="ghost" size="sm" onClick={() => handleDelete(row.original)}>
+                  <Trash2 className="h-4 w-4 text-red-400" />
+                </Button>
+              </Tooltip>
+            </PermissionGuard>
           </div>
         )
       }
