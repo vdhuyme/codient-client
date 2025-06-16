@@ -21,6 +21,7 @@ import CommentsPage from '@/pages/dashboard/comments.page'
 import ProfilePage from '@/pages/dashboard/profile.page'
 import TagsPage from '@/pages/dashboard/tags.page'
 import UserPage from '@/pages/dashboard/users.page'
+import GoogleCallback from '@/pages/auth/google.callback'
 
 const App = () => {
   return (
@@ -31,6 +32,7 @@ const App = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/auth/google/callback" element={<GoogleCallback />} />
           </Route>
         </Route>
 

@@ -17,7 +17,6 @@ import {
 } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { FormProvider, useForm } from 'react-hook-form'
-import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { TextareaField } from '@/components/customs/form.field'
 import { Button } from '@/components/customs/button'
@@ -29,10 +28,7 @@ import NotFoundPage from '@/pages/error/not.found.page'
 import LoadingOverlay from '@/components/customs/loading.overlay'
 import { useState } from 'react'
 import Pagination from '@/components/ui/pagination'
-
-const COMMENT_SCHEMA = z.object({
-  content: z.string().min(3, 'Content at least 3 characters')
-})
+import { COMMENT_SCHEMA } from './schema/comment.schema'
 
 const BlogDetailPage = () => {
   const { id } = useParams()
@@ -45,10 +41,10 @@ const BlogDetailPage = () => {
   })
   const { reset } = methods
 
-  const { post, relatedPosts, isLoading } = useBlogDetail(id)
+  const { post, relatedPosts = [], isLoading } = useBlogDetail(id)
   const { data: commentsData, isLoading: commentsLoading } = usePublishedComments(id, {
     page: commentPage,
-    limit: 3,
+    limit: 5,
     ...commentSort
   })
   const { createComment } = usePublishedCommentMutations(id)

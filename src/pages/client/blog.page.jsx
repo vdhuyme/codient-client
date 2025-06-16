@@ -25,7 +25,7 @@ const BlogPage = () => {
   const categories = categoryData?.items ? [{ id: null, name: 'All' }, ...categoryData.items] : []
 
   const {
-    data: postsData,
+    data: postsData = [],
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -37,7 +37,7 @@ const BlogPage = () => {
     categoryId: activeCategoryId
   })
 
-  const posts = postsData?.pages?.flatMap((page) => page.items || []) || []
+  const posts = postsData?.pages?.flatMap((page) => page.items)
   const totalPosts = postsData?.pages?.[0]?.meta.totalItems
 
   useEffect(() => {

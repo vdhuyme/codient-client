@@ -6,7 +6,8 @@ export const login = async ({ email, password }) => {
 }
 
 export const register = async ({ email, password, name }) => {
-  return await api.post('/auth/register', { email, password, name })
+  const response = await api.post('/auth/register', { email, password, name })
+  return response.data
 }
 
 export const forgotPassword = async ({ email }) => {
@@ -23,8 +24,8 @@ export const redirect = async () => {
   return response.data
 }
 
-export const callback = async ({ provider, queryParams }) => {
-  const response = await api.get(`/auth/${provider}/callback`, { params: queryParams })
+export const callback = async (code) => {
+  const response = await api.get('/auth/callback/google', { params: { code } })
   return response.data
 }
 

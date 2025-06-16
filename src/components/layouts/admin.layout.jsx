@@ -12,31 +12,25 @@ const AdminLayout = () => {
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const userMenuRef = useRef(null)
 
-  // Handle responsive sidebar behavior
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
-        // On desktop, ensure sidebar is visible
         setSidebarOpen(true)
       }
     }
 
-    // Set initial state based on screen size
     handleResize()
 
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Close sidebar on mobile when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Close sidebar on mobile only
       if (sidebarOpen && window.innerWidth < 1024 && !event.target.closest('.sidebar') && !event.target.closest('.menu-button')) {
         setSidebarOpen(false)
       }
 
-      // Close user menu
       if (userMenuOpen && userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setUserMenuOpen(false)
       }

@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('refresh_token', refreshToken)
       setRefreshToken(refreshToken)
     }
-    toast.success('Login success')
+    toast.success('Welcome 😊')
   }
 
   const logout = () => {

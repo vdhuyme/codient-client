@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card'
-import { DateRangePicker } from '@/components/ui/date-range-picker'
 import { Users, Eye } from 'lucide-react'
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from 'react-simple-maps'
 import { Tooltip } from 'react-tooltip'
 import { format, startOfYear } from 'date-fns'
 import { useGA4s } from '@/hooks/use.stats'
+import { DateRangePicker } from '@/components/ui/date-range-picker'
 
 const geoUrl = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json'
 
@@ -43,7 +43,9 @@ const StatsPage = () => {
           <p className="mt-2 text-gray-400">View your website analytics and statistics</p>
         </div>
 
-        <DateRangePicker value={dateRange} onChange={setDateRange} placeholder="Select date range" className="w-[300px]" />
+        <div className="w-auto">
+          <DateRangePicker value={dateRange} onChange={setDateRange} placeholder="Select date range" />
+        </div>
       </motion.div>
 
       {/* Stats Cards */}
@@ -58,7 +60,7 @@ const StatsPage = () => {
           {
             label: 'Total Page Views',
             value: totalPageViews,
-            color: 'blue',
+            color: 'yellow',
             icon: Eye
           }
         ].map((stat, index) => {
@@ -91,46 +93,48 @@ const StatsPage = () => {
             <CardDescription>View user distribution across countries</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[500px] w-full">
-              <ComposableMap projection="geoMercator" projectionConfig={{ scale: 200 }}>
-                <ZoomableGroup>
-                  <Geographies geography={geoUrl}>
-                    {({ geographies }) =>
-                      geographies?.map((geo) => {
-                        const stat = data.find((s) => s.country === geo.properties.name)
-                        return (
-                          <Geography
-                            key={geo.rsmKey}
-                            geography={geo}
-                            fill={stat ? '#3b82f6' : '#1e293b'}
-                            stroke="#334155"
-                            strokeWidth={1}
-                            style={{
-                              default: {
-                                outline: 'none'
-                              },
-                              hover: {
-                                fill: '#22c55e',
-                                outline: 'none'
-                              },
-                              pressed: {
-                                outline: 'none'
-                              }
-                            }}
-                            data-tooltip-id={`tooltip-${geo.rsmKey}`}
-                          >
-                            <title>
-                              {geo.properties.name}
-                              {stat ? ` - ${stat.pageViews} page view(s) - ${stat.activeUsers} active user(s)` : ' - No data'}
-                            </title>
-                          </Geography>
-                        )
-                      })
-                    }
-                  </Geographies>
-                </ZoomableGroup>
-              </ComposableMap>
-              <Tooltip id="tooltip" />
+            <div className="relative w-full pb-[60%]">
+              {/* aspect ratio 5:3 */}
+              <div className="absolute top-0 left-0 h-full w-full">
+                <ComposableMap
+                  projection="geoMercator"
+                  projectionConfig={{ scale: 130 }}
+                  width={undefined}
+                  height={undefined}
+                  style={{ width: '100%', height: '100%' }}
+                >
+                  <ZoomableGroup>
+                    <Geographies geography={geoUrl}>
+                      {({ geographies }) =>
+                        geographies?.map((geo) => {
+                          const stat = data.find((s) => s.country === geo.properties.name)
+                          return (
+                            <Geography
+                              key={geo.rsmKey}
+                              geography={geo}
+                              fill={stat ? '#3b82f6' : '#1e293b'}
+                              stroke="#334155"
+                              strokeWidth={0.5}
+                              style={{
+                                default: { outline: 'none' },
+                                hover: { fill: '#22c55e', outline: 'none' },
+                                pressed: { outline: 'none' }
+                              }}
+                              data-tooltip-id={`tooltip-${geo.rsmKey}`}
+                            >
+                              <title>
+                                {geo.properties.name}
+                                {stat ? ` - ${stat.pageViews} page view(s) - ${stat.activeUsers} active user(s)` : ' - No data'}
+                              </title>
+                            </Geography>
+                          )
+                        })
+                      }
+                    </Geographies>
+                  </ZoomableGroup>
+                </ComposableMap>
+                <Tooltip id="tooltip" />
+              </div>
             </div>
           </CardContent>
         </Card>

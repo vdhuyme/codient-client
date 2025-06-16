@@ -1,5 +1,3 @@
-'use client'
-
 import * as React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight, CalendarIcon, X } from 'lucide-react'
@@ -19,7 +17,8 @@ import {
   getYear,
   isWithinInterval,
   startOfDay,
-  endOfDay
+  endOfDay,
+  getDay
 } from 'date-fns'
 
 import { cn } from '@/lib/utils'
@@ -35,7 +34,7 @@ const DateRangePicker = React.forwardRef(
       className,
       minDate,
       maxDate,
-      dateFormat = 'PPP',
+      dateFormat = 'yyyy-MM-dd',
       clearable = true,
       ...props
     },
@@ -62,27 +61,20 @@ const DateRangePicker = React.forwardRef(
     }, [currentMonth])
 
     React.useEffect(() => {
-      const handleClickOutside = (event) => {
-        if (popoverRef.current && !popoverRef.current.contains(event.target)) {
+      const handleClickOutside = (e) => {
+        if (popoverRef.current && !popoverRef.current.contains(e.target)) {
           setOpen(false)
         }
       }
-
-      if (open) {
-        document.addEventListener('mousedown', handleClickOutside)
-      }
-
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside)
-      }
-    }, [open])
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [])
 
     const handleSelect = (day) => {
-      if (!range.from || (range.from && range.to)) {
+      if (!range.from || range.to) {
         setRange({ from: day, to: null })
       } else {
         const newRange = isBefore(day, range.from) ? { from: day, to: range.from } : { from: range.from, to: day }
-
         setRange(newRange)
         onChange?.(newRange)
         setOpen(false)
@@ -91,222 +83,150 @@ const DateRangePicker = React.forwardRef(
 
     const handleClear = (e) => {
       e.stopPropagation()
-      setRange({ from: null, to: null })
-      onChange?.({ from: null, to: null })
+      const empty = { from: null, to: null }
+      setRange(empty)
+      onChange?.(empty)
     }
 
-    const togglePopover = () => {
-      if (!disabled) {
-        setOpen(!open)
-      }
+    const changeMonth = (type, direction) => {
+      const mod = direction === 'next' ? 1 : -1
+      const monthFn = type === 'first' ? setCurrentMonth : setSecondMonth
+      const refDate = type === 'first' ? currentMonth : secondMonth
+      monthFn(addMonths(refDate, mod))
     }
 
-    const nextMonth = () => {
-      if (activeMonth === 'first') {
-        setCurrentMonth(addMonths(currentMonth, 1))
-      } else {
-        setSecondMonth(addMonths(secondMonth, 1))
-      }
-    }
-
-    const prevMonth = () => {
-      if (activeMonth === 'first') {
-        setCurrentMonth(subMonths(currentMonth, 1))
-      } else {
-        setSecondMonth(subMonths(secondMonth, 1))
-      }
-    }
-
-    const nextYear = () => {
-      if (activeMonth === 'first') {
-        setCurrentMonth(addYears(currentMonth, 1))
-      } else {
-        setSecondMonth(addYears(secondMonth, 1))
-      }
-    }
-
-    const prevYear = () => {
-      if (activeMonth === 'first') {
-        setCurrentMonth(subYears(currentMonth, 1))
-      } else {
-        setSecondMonth(subYears(secondMonth, 1))
-      }
+    const changeYear = (type, direction) => {
+      const mod = direction === 'next' ? 1 : -1
+      const yearFn = type === 'first' ? setCurrentMonth : setSecondMonth
+      const refDate = type === 'first' ? currentMonth : secondMonth
+      yearFn(addYears(refDate, mod))
     }
 
     const setYear = (year) => {
-      if (activeMonth === 'first') {
-        setCurrentMonth(new Date(year, currentMonth.getMonth(), 1))
-      } else {
-        setSecondMonth(new Date(year, secondMonth.getMonth(), 1))
-      }
+      const setter = activeMonth === 'first' ? setCurrentMonth : setSecondMonth
+      const refMonth = activeMonth === 'first' ? currentMonth : secondMonth
+      setter(new Date(year, refMonth.getMonth(), 1))
       setYearSelectOpen(false)
     }
 
     const years = React.useMemo(() => {
-      const currentYear = getYear(new Date())
-      return Array.from({ length: 21 }, (_, i) => currentYear - 10 + i)
+      const thisYear = getYear(new Date())
+      return Array.from({ length: 21 }, (_, i) => thisYear - 10 + i)
     }, [])
 
-    const firstMonthDays = React.useMemo(() => {
-      const start = startOfMonth(currentMonth)
-      const end = endOfMonth(currentMonth)
+    const generateDays = (month) => {
+      const start = startOfMonth(month)
+      const end = endOfMonth(month)
       return eachDayOfInterval({ start, end })
-    }, [currentMonth])
-
-    const secondMonthDays = React.useMemo(() => {
-      const start = startOfMonth(secondMonth)
-      const end = endOfMonth(secondMonth)
-      return eachDayOfInterval({ start, end })
-    }, [secondMonth])
-
-    const dayNames = React.useMemo(() => {
-      const date = new Date(2023, 8, 3)
-      const days = []
-      for (let i = 0; i < 7; i++) {
-        const day = addDays(date, i)
-        days.push(format(day, 'EEEEEE'))
-      }
-      return days
-    }, [])
-
-    function addDays(date, days) {
-      const result = new Date(date)
-      result.setDate(result.getDate() + days)
-      return result
     }
 
-    const isDateDisabled = (date) => {
-      if (minDate && isBefore(date, minDate)) return true
-      if (maxDate && isAfter(date, maxDate)) return true
-      return false
-    }
+    const isDateDisabled = (date) => (minDate && isBefore(date, minDate)) || (maxDate && isAfter(date, maxDate))
 
-    const isDateInRange = (day) => {
-      if (!range.from || !range.to) return false
-      return isWithinInterval(day, {
+    const isDateInRange = (date) =>
+      range.from &&
+      range.to &&
+      isWithinInterval(date, {
         start: startOfDay(range.from),
         end: endOfDay(range.to)
       })
-    }
 
-    const isRangeStart = (day) => {
-      return range.from && isSameDay(day, range.from)
-    }
+    const isStart = (day) => range.from && isSameDay(day, range.from)
+    const isEnd = (day) => range.to && isSameDay(day, range.to)
 
-    const isRangeEnd = (day) => {
-      return range.to && isSameDay(day, range.to)
-    }
-
-    const formatDateRange = () => {
-      if (!range.from) return placeholder
-      if (!range.to) return `${format(range.from, dateFormat)} - ...`
-      return `${format(range.from, dateFormat)} - ${format(range.to, dateFormat)}`
-    }
-
-    const renderMonth = (days, monthDate, monthType) => {
-      return (
-        <div className="p-3" onMouseEnter={() => setActiveMonth(monthType)}>
-          <div className="mb-2 flex items-center justify-center">
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setActiveMonth(monthType)
-                setYearSelectOpen(!yearSelectOpen)
-              }}
-              className="rounded bg-slate-800 px-2 py-1 text-sm font-medium hover:bg-slate-700"
-            >
-              {format(monthDate, 'MMMM yyyy')}
-            </Button>
-          </div>
-
-          <div className="mb-1 grid grid-cols-7 gap-1">
-            {dayNames.map((day) => (
-              <div key={day} className="py-1 text-center text-xs font-medium text-slate-400">
-                {day}
-              </div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-7 gap-1">
-            {Array.from({ length: days[0].getDay() }).map((_, index) => (
-              <div key={`empty-start-${index}`} className="h-8 w-8" />
-            ))}
-
-            {days.map((day) => {
-              const isSelected = isRangeStart(day) || isRangeEnd(day)
-              const isInRange = isDateInRange(day)
-              const isDisabled = isDateDisabled(day)
-              const isCurrent = isToday(day)
-
-              return (
-                <Button
-                  key={day.toString()}
-                  variant="ghost"
-                  size="icon"
-                  disabled={isDisabled}
-                  className={cn(
-                    'relative h-8 w-8 p-0 font-normal',
-                    isSelected && 'z-10 rounded-full bg-indigo-600 text-white hover:bg-indigo-700',
-                    !isSelected && isInRange && 'rounded-none bg-indigo-600/20 text-indigo-200 hover:bg-indigo-600/30',
-                    !isSelected && !isInRange && isCurrent && 'rounded-full border border-indigo-500 text-indigo-400',
-                    isDisabled && 'cursor-not-allowed opacity-50',
-                    isRangeStart(day) && 'rounded-l-full',
-                    isRangeEnd(day) && 'rounded-r-full'
-                  )}
-                  onClick={() => handleSelect(day)}
-                >
-                  {format(day, 'd')}
-                </Button>
-              )
-            })}
-
-            {Array.from({ length: 6 - days[days.length - 1].getDay() }).map((_, index) => (
-              <div key={`empty-end-${index}`} className="h-8 w-8" />
-            ))}
-          </div>
+    const renderDays = (days, monthType, monthDate) => (
+      <div className="flex-1 p-3" onMouseEnter={() => setActiveMonth(monthType)}>
+        <div className="mb-2 flex justify-center">
+          <Button
+            variant="ghost"
+            onClick={() => setYearSelectOpen(!yearSelectOpen)}
+            className="rounded bg-slate-800 px-2 py-1 text-sm font-medium hover:bg-slate-700"
+          >
+            {format(monthDate, 'MMMM yyyy')}
+          </Button>
         </div>
-      )
-    }
+        <div className="mb-1 grid grid-cols-7 gap-1">
+          {[...Array(7)].map((_, i) => (
+            <div key={i} className="text-center text-xs font-medium text-slate-400">
+              {format(new Date(2023, 8, i + 3), 'EEEEE')}
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-1">
+          {[...Array(getDay(days[0]))].map((_, i) => (
+            <div key={`spacer-${i}`} className="h-8 w-8" />
+          ))}
+          {days.map((day) => (
+            <Button
+              key={day.toISOString()}
+              variant="ghost"
+              size="icon"
+              disabled={isDateDisabled(day)}
+              onClick={() => handleSelect(day)}
+              className={cn(
+                'relative h-8 w-8 p-0 font-normal',
+                isStart(day) && 'z-10 rounded-full bg-indigo-600 text-white hover:bg-indigo-700',
+                isEnd(day) && 'z-10 rounded-full bg-indigo-600 text-white hover:bg-indigo-700',
+                !isStart(day) && !isEnd(day) && isDateInRange(day) && 'bg-indigo-600/20 text-indigo-200 hover:bg-indigo-600/30',
+                isToday(day) && 'border border-indigo-500 text-indigo-400',
+                isDateDisabled(day) && 'cursor-not-allowed opacity-50'
+              )}
+            >
+              {format(day, 'd')}
+            </Button>
+          ))}
+        </div>
+      </div>
+    )
 
     return (
-      <div className="relative">
+      <div className="relative w-full">
         <Button
           ref={ref}
           variant="outline"
           className={cn('w-full justify-start text-left font-normal', !range.from && 'text-muted-foreground', className)}
           disabled={disabled}
-          onClick={togglePopover}
+          onClick={() => setOpen(!open)}
           {...props}
         >
           <CalendarIcon className="mr-2 h-4 w-4 opacity-70" />
-          {formatDateRange()}
+          {range.from ? `${format(range.from, dateFormat)} - ${range.to ? format(range.to, dateFormat) : '...'}` : placeholder}
           {(range.from || range.to) && clearable && (
             <X className="ml-auto h-4 w-4 cursor-pointer opacity-70 hover:opacity-100" onClick={handleClear} />
           )}
         </Button>
 
-        {open && (
-          <div ref={popoverRef} className="absolute z-50 mt-2 w-auto">
+        <AnimatePresence>
+          {open && (
             <motion.div
+              ref={popoverRef}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="rounded-md border border-slate-800 bg-slate-900 shadow-lg"
+              className="fixed top-1/2 left-1/2 z-50 w-[95vw] max-w-full -translate-x-1/2 -translate-y-1/2 rounded-md border border-slate-800 bg-slate-900 shadow-lg md:w-[600px]"
             >
               <div className="flex items-center justify-between border-b border-slate-800 p-3">
-                <div className="flex items-center space-x-2">
-                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full bg-slate-800 p-0 hover:bg-slate-700" onClick={prevYear}>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 rounded-full bg-slate-800 p-0 hover:bg-slate-700"
+                    onClick={() => changeYear(activeMonth, 'prev')}
+                  >
                     <ChevronLeft className="h-4 w-4" />
                     <ChevronLeft className="-ml-2 h-4 w-4" />
                     <span className="sr-only">Previous Year</span>
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full bg-slate-800 p-0 hover:bg-slate-700" onClick={prevMonth}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 rounded-full bg-slate-800 p-0 hover:bg-slate-700"
+                    onClick={() => changeMonth(activeMonth, 'prev')}
+                  >
                     <ChevronLeft className="h-4 w-4" />
                     <span className="sr-only">Previous Month</span>
                   </Button>
                 </div>
-
                 <div className="relative">
                   <AnimatePresence>
                     {yearSelectOpen && (
@@ -339,13 +259,22 @@ const DateRangePicker = React.forwardRef(
                     )}
                   </AnimatePresence>
                 </div>
-
-                <div className="flex items-center space-x-2">
-                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full bg-slate-800 p-0 hover:bg-slate-700" onClick={nextMonth}>
+                <div className="flex gap-2">
+                  <Button
+                    className="h-7 w-7 rounded-full bg-slate-800 p-0 hover:bg-slate-700"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => changeMonth(activeMonth, 'next')}
+                  >
                     <ChevronRight className="h-4 w-4" />
                     <span className="sr-only">Next Month</span>
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full bg-slate-800 p-0 hover:bg-slate-700" onClick={nextYear}>
+                  <Button
+                    className="h-7 w-7 rounded-full bg-slate-800 p-0 hover:bg-slate-700"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => changeYear(activeMonth, 'next')}
+                  >
                     <ChevronRight className="h-4 w-4" />
                     <ChevronRight className="-ml-2 h-4 w-4" />
                     <span className="sr-only">Next Year</span>
@@ -354,9 +283,9 @@ const DateRangePicker = React.forwardRef(
               </div>
 
               <div className="flex flex-col md:flex-row">
-                {renderMonth(firstMonthDays, currentMonth, 'first')}
+                {renderDays(generateDays(currentMonth), 'first', currentMonth)}
                 <div className="hidden w-px bg-slate-800 md:block" />
-                {renderMonth(secondMonthDays, secondMonth, 'second')}
+                {renderDays(generateDays(secondMonth), 'second', secondMonth)}
               </div>
 
               <div className="flex items-center justify-between border-t border-slate-800 p-3">
@@ -364,37 +293,20 @@ const DateRangePicker = React.forwardRef(
                   {range.from && !range.to && 'Select end date'}
                   {range.from && range.to && `${format(range.from, 'MMM d')} - ${format(range.to, 'MMM d, yyyy')}`}
                 </div>
-
-                <div className="flex space-x-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 bg-slate-800 text-xs hover:bg-slate-700"
-                    onClick={() => {
-                      setRange({ from: null, to: null })
-                      onChange?.({ from: null, to: null })
-                      setOpen(false)
-                    }}
-                  >
+                <div className="flex gap-2">
+                  <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>
                     Cancel
                   </Button>
-
                   {isToday(new Date()) && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 bg-slate-800 text-xs hover:bg-slate-700"
-                      onClick={() => handleSelect(new Date())}
-                    >
+                    <Button size="sm" variant="ghost" onClick={() => handleSelect(new Date())}>
                       Today
                     </Button>
                   )}
-
                   {range.from && range.to && (
                     <Button
-                      variant="default"
                       size="sm"
-                      className="h-7 text-xs"
+                      variant="default"
+                      className="text-white"
                       onClick={() => {
                         onChange?.(range)
                         setOpen(false)
@@ -406,13 +318,12 @@ const DateRangePicker = React.forwardRef(
                 </div>
               </div>
             </motion.div>
-          </div>
-        )}
+          )}
+        </AnimatePresence>
       </div>
     )
   }
 )
 
 DateRangePicker.displayName = 'DateRangePicker'
-
 export { DateRangePicker }

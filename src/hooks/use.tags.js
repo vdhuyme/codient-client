@@ -43,8 +43,8 @@ export const useTagMutations = () => {
       toast.success('Tag created successfully')
     },
     onError: (error) => {
-      console.error('Failed to update tag:', error)
-      toast.error('Failed to update tag')
+      console.error('Failed to create tag:', error)
+      toast.error('Failed to create tag')
     }
   })
 

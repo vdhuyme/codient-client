@@ -6,19 +6,15 @@ import { Mail, User, ArrowRight, ChevronLeft, Loader } from 'lucide-react'
 import { useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
-import { Link } from 'react-router-dom'
-import { z } from 'zod'
-import GoogleOAuth2Button from './google.oauth2.button'
+import { Link, useNavigate } from 'react-router-dom'
+import GoogleOAuth2 from './google.oauth2'
+import { REGISTER_SCHEMA } from './schema/register.schema'
+import { register } from '@/api/auth'
+import { useAuth } from '@/contexts/auth'
 
 const RegisterPage = () => {
-  const schema = z.object({
-    name: z.string().min(3, 'Name min 3 characters'),
-    email: z.string().min(1, 'Email is required').email('Invalid email'),
-    password: z.string().min(8, 'Password at least 8 characters')
-  })
-
   const methods = useForm({
-    resolver: zodResolver(schema)
+    resolver: zodResolver(REGISTER_SCHEMA)
   })
 
   const {
@@ -27,9 +23,21 @@ const RegisterPage = () => {
 
   const [isLoading, setIsLoading] = useState(false)
   const [allowCondition, setAllowCondition] = useState(true)
+  const navigate = useNavigate()
+  const { setAuthToken } = useAuth()
 
   const onSubmit = async (data) => {
-    toast.error('This feature is under development')
+    setIsLoading(true)
+    try {
+      const { accessToken, refreshToken } = await register(data)
+      setAuthToken({ accessToken, refreshToken })
+      navigate('/')
+    } catch (error) {
+      toast.error(error?.data?.message || 'An error occurred during register')
+      console.error('Fail to register:', error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -191,7 +199,7 @@ const RegisterPage = () => {
               </div>
 
               <div className="mt-6">
-                <GoogleOAuth2Button />
+                <GoogleOAuth2 />
               </div>
             </motion.div>
           </motion.div>

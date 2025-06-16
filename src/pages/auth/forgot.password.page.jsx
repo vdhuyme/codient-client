@@ -3,19 +3,15 @@ import { motion } from 'framer-motion'
 import { Mail, ArrowRight, ChevronLeft, Loader } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { FormProvider, useForm } from 'react-hook-form'
-import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { InputField } from '@/components/customs/form.field'
 import { Button } from '@/components/customs/button'
 import toast from 'react-hot-toast'
+import { FORGOT_PASSWORD_SCHEMA } from './schema/forgot.password.schema'
 
 const ForgotPasswordPage = () => {
-  const schema = z.object({
-    email: z.string().min(1, 'Email is required').email('Invalid email')
-  })
-
   const methods = useForm({
-    resolver: zodResolver(schema)
+    resolver: zodResolver(FORGOT_PASSWORD_SCHEMA)
   })
   const {
     reset,
