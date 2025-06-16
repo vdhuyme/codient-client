@@ -5,27 +5,27 @@ const AuthorizeContext = createContext({
   user: null,
   isLoading: true,
   isLoggedIn: false,
-  hasPermission: () => false
+  hasPermission: () => false,
+  getUser: () => null
 })
 
 export const AuthorizeProvider = ({ children }) => {
-  const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
   const fetchAuthUser = async () => {
     const accessToken = localStorage.getItem('access_token')
     if (!accessToken) {
-      setUser(null)
+      localStorage.removeItem('auth_user')
       setIsLoading(false)
       return
     }
 
     try {
       const data = await me()
-      setUser(data)
+      localStorage.setItem('auth_user', JSON.stringify(data))
     } catch (error) {
       console.error('Failed to fetch user', error)
-      setUser(null)
+      localStorage.removeItem('auth_user')
     } finally {
       setIsLoading(false)
     }
@@ -35,19 +35,32 @@ export const AuthorizeProvider = ({ children }) => {
     fetchAuthUser()
   }, [])
 
-  const hasPermission = (permission, mode = 'every') => {
-    if (!user?.permissions) return false
-
-    if (Array.isArray(permission)) {
-      return mode === 'every' ? permission.every((p) => user.permissions.includes(p)) : permission.some((p) => user.permissions.includes(p))
+  const getUser = () => {
+    try {
+      const raw = localStorage.getItem('auth_user')
+      return raw ? JSON.parse(raw) : null
+    } catch {
+      return null
     }
-
-    return user.permissions.includes(permission)
   }
 
+  const hasPermission = (permission, mode = 'every') => {
+    const user = getUser()
+    if (!user?.permissions) return false
+
+    const check = (p) => user.permissions.includes(p)
+
+    if (Array.isArray(permission)) {
+      return mode === 'every' ? permission.every(check) : permission.some(check)
+    }
+
+    return check(permission)
+  }
+
+  const user = getUser()
   const isLoggedIn = Boolean(user)
 
-  return <AuthorizeContext.Provider value={{ user, hasPermission, isLoading, isLoggedIn }}>{children}</AuthorizeContext.Provider>
+  return <AuthorizeContext.Provider value={{ user, isLoggedIn, isLoading, hasPermission, getUser }}>{children}</AuthorizeContext.Provider>
 }
 
 export const useAuthorize = () => {

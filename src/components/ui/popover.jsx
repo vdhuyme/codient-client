@@ -1,5 +1,3 @@
-'use client'
-
 import React from 'react'
 
 import { useState, useRef, useEffect } from 'react'
@@ -76,7 +74,7 @@ export function PopoverContent({ children, align = 'center', side = 'bottom', si
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ duration: 0.2 }}
           className={`absolute z-50 min-w-[8rem] rounded-lg border border-indigo-500/20 bg-slate-900/95 shadow-xl backdrop-blur-xl ${sideClasses[side]} ${alignmentClasses[align]} ${className} `}
-          style={{ [side === 'top' || side === 'bottom' ? 'margin-top' : 'margin-left']: sideOffset }}
+          style={{ [side === 'top' || side === 'bottom' ? 'marginTop' : 'marginLeft']: sideOffset }}
           {...props}
         >
           <div className="p-4">{children}</div>
