@@ -4,13 +4,115 @@ import { Menu, X, Home, Users, Bell, Search, User, LogOut, Sparkles, Tag, ChartC
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog'
 import { useAuth } from '@/contexts/auth'
-import Button from '../ui/button'
 import { useAuthorize } from '@/contexts/authorize'
+import Button from '../ui/button'
+import Input from '../ui/input'
+import ScrollArea from '../ui/scroll-area'
+
+const DialogSearch = ({ open, onClose, menuItems, navigate }) => {
+  const [query, setQuery] = useState('')
+  const [selected, setSelected] = useState(0)
+  const inputRef = useRef(null)
+  const filtered = menuItems.filter((item) => item.label.toLowerCase().includes(query.toLowerCase()))
+
+  useEffect(() => {
+    if (open) {
+      setQuery('')
+      setSelected(0)
+      setTimeout(() => inputRef.current?.focus(), 50)
+    }
+  }, [open])
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'ArrowDown') {
+      setSelected((prev) => (prev + 1) % filtered.length)
+      e.preventDefault()
+    } else if (e.key === 'ArrowUp') {
+      setSelected((prev) => (prev - 1 + filtered.length) % filtered.length)
+      e.preventDefault()
+    } else if (e.key === 'Enter') {
+      if (filtered[selected]) {
+        navigate(filtered[selected].path)
+        onClose()
+      }
+    } else if (e.key === 'Escape') {
+      onClose()
+    }
+  }
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.div
+            className="w-full max-w-md rounded-xl border border-indigo-500/30 bg-slate-900 p-4 shadow-2xl"
+            initial={{ scale: 0.98, y: 40, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            exit={{ scale: 0.98, y: 40, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            onKeyDown={handleKeyDown}
+            tabIndex={-1}
+          >
+            <div className="mb-2">
+              <Input
+                ref={inputRef}
+                placeholder="Search features..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
+                autoFocus
+                icon={<Search className="h-5 w-5 text-white" />}
+              />
+            </div>
+            <div className="max-h-64 divide-y divide-indigo-500/10 rounded-lg bg-slate-800/60">
+              <ScrollArea className="h-[20vh]">
+                {filtered.length === 0 && <div className="p-4 text-center text-gray-400">No features found</div>}
+                {filtered.map((item, idx) => (
+                  <button
+                    key={item.id}
+                    className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-all duration-100 ${
+                      idx === selected ? 'bg-indigo-500/20 text-indigo-300' : 'text-gray-300 hover:bg-slate-700/40'
+                    }`}
+                    onClick={() => {
+                      navigate(item.path)
+                      onClose()
+                    }}
+                    tabIndex={-1}
+                  >
+                    <item.icon className="h-5 w-5" />
+                    <span className="font-medium">{item.label}</span>
+                  </button>
+                ))}
+              </ScrollArea>
+            </div>
+            <div className="mt-3 flex items-center justify-between px-1 text-xs text-gray-500">
+              <div>
+                <kbd className="rounded bg-slate-700 px-1 py-0.5">↑</kbd>/<kbd className="rounded bg-slate-700 px-1 py-0.5">↓</kbd> to navigate
+              </div>
+              <div>
+                <kbd className="rounded bg-slate-700 px-1 py-0.5">Enter</kbd> to select
+              </div>
+              <div>
+                <kbd className="rounded bg-slate-700 px-1 py-0.5">Esc</kbd> to close
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const userMenuRef = useRef(null)
+  const [searchDialogOpen, setSearchDialogOpen] = useState(false)
 
   useEffect(() => {
     const handleResize = () => {
@@ -59,6 +161,8 @@ const AdminLayout = () => {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950">
+      {/* Search Dialog */}
+      <DialogSearch open={searchDialogOpen} onClose={() => setSearchDialogOpen(false)} menuItems={menuItems} navigate={navigate} />
       {/* Logout Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
@@ -267,6 +371,10 @@ const AdminLayout = () => {
                     placeholder="Search..."
                     type="search"
                     whileFocus={{ scale: 1.02 }}
+                    onFocus={() => setSearchDialogOpen(true)}
+                    onClick={() => setSearchDialogOpen(true)}
+                    readOnly
+                    style={{ cursor: 'pointer', background: 'rgba(30,41,59,0.5)' }}
                   />
                 </div>
               </div>
