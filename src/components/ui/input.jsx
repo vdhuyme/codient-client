@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 const Input = ({ type = 'text', placeholder, value, onChange, disabled = false, error = false, icon, className = '', ...props }) => {
   return (
     <div className={`relative ${className}`}>

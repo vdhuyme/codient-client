@@ -404,7 +404,6 @@ const PostsPage = () => {
         cell: ({ row }) => (
           <div className="flex items-center space-x-2">
             <PermissionGuard required={'post.update'}>
-              {' '}
               <Tooltip content="Edit post">
                 <Button variant="ghost" size="sm" onClick={() => handleEdit(row.original)}>
                   <Edit className="h-4 w-4" />

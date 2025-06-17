@@ -6,8 +6,8 @@ import { upload } from '@imagekit/react'
 import { createPortal } from 'react-dom'
 
 const FileUpload = ({
-  value, // URLs hoặc mảng URLs
-  onChange, // Callback trả về URLs
+  value,
+  onChange,
   accept = 'image/*',
   disabled = false,
   multiple = false,
@@ -18,9 +18,8 @@ const FileUpload = ({
 }) => {
   const [dragOver, setDragOver] = useState(false)
   const [uploadProgress, setUploadProgress] = useState({})
-  const [previewFiles, setPreviewFiles] = useState([]) // Files đang preview/upload
+  const [previewFiles, setPreviewFiles] = useState([])
 
-  // Parse value thành URLs
   const urls = multiple ? (Array.isArray(value) ? value : value ? [value] : []) : value ? [value] : []
 
   const handleDrop = (e) => {
@@ -47,7 +46,6 @@ const FileUpload = ({
 
     if (filesToUpload.length === 0) return
 
-    // Tạo preview files ngay lập tức
     const newPreviewFiles = filesToUpload.map((file) => {
       const fileId = `${file.name}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
       return {
@@ -61,18 +59,15 @@ const FileUpload = ({
       }
     })
 
-    // Nếu single file, reset preview files
     if (!multiple) {
       setPreviewFiles(newPreviewFiles)
     } else {
       setPreviewFiles((prev) => [...prev, ...newPreviewFiles])
     }
 
-    // Upload từng file
     for (const previewFile of newPreviewFiles) {
       const originalFile = previewFile.originalFile
 
-      // Set progress ban đầu
       setUploadProgress((prev) => ({
         ...prev,
         [previewFile.id]: 0
@@ -98,7 +93,6 @@ const FileUpload = ({
           }
         })
 
-        // Upload thành công - cập nhật URLs
         if (multiple) {
           const newUrls = [...urls, result.url]
           onChange?.(newUrls)
@@ -106,7 +100,6 @@ const FileUpload = ({
           onChange?.(result.url)
         }
 
-        // Remove preview file và progress
         setPreviewFiles((prev) => prev.filter((f) => f.id !== previewFile.id))
         setTimeout(() => {
           setUploadProgress((prev) => {
@@ -118,7 +111,6 @@ const FileUpload = ({
       } catch (error) {
         console.error(`Error uploading ${originalFile.name}:`, error)
 
-        // Remove preview file bị lỗi
         setPreviewFiles((prev) => prev.filter((f) => f.id !== previewFile.id))
         setUploadProgress((prev) => {
           const newProgress = { ...prev }

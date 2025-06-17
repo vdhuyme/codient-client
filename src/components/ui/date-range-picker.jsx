@@ -196,6 +196,8 @@ const DateRangePicker = React.forwardRef(
         </Button>
 
         <AnimatePresence>
+          {open && <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" onClick={() => setOpen(false)} />}
+
           {open && (
             <motion.div
               ref={popoverRef}

@@ -194,8 +194,7 @@ const DatePicker = React.forwardRef(
           {date && clearable && <X className="ml-auto h-4 w-4 flex-shrink-0 cursor-pointer opacity-70 hover:opacity-100" onClick={handleClear} />}
         </Button>
 
-        {/* Mobile Overlay */}
-        {open && isMobile && <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" onClick={() => setOpen(false)} />}
+        {open && <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" onClick={() => setOpen(false)} />}
 
         {open && (
           <div
