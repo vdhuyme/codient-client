@@ -3,23 +3,18 @@ import { Mail, ArrowRight, ChevronLeft, Loader } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { InputField, PasswordField } from '@/components/customs/form.field'
 import { FormProvider, useForm } from 'react-hook-form'
-import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { login } from '@/api/auth'
 import { useAuth } from '@/contexts/auth'
 import { Button } from '@/components/customs/button'
-import GoogleOAuth2Button from './google.oauth2.button'
+import GoogleOAuth2 from './google.oauth2'
+import { LOGIN_SCHEMA } from './schema/login.schema'
 
 const LoginPage = () => {
-  const schema = z.object({
-    email: z.string().min(1, 'Email is required').email('Invalid email'),
-    password: z.string().min(1, 'Password is required')
-  })
-
   const methods = useForm({
-    resolver: zodResolver(schema)
+    resolver: zodResolver(LOGIN_SCHEMA)
   })
 
   const {
@@ -34,12 +29,6 @@ const LoginPage = () => {
     setIsLoading(true)
     try {
       const { accessToken, refreshToken } = await login(data)
-
-      if (!accessToken || !refreshToken) {
-        toast.error('The service has some errors')
-        return
-      }
-
       setAuthToken({ accessToken, refreshToken })
       navigate('/')
     } catch (error) {
@@ -179,7 +168,7 @@ const LoginPage = () => {
               </div>
 
               <div className="mt-6">
-                <GoogleOAuth2Button />
+                <GoogleOAuth2 />
               </div>
             </motion.div>
 

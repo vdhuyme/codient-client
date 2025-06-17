@@ -1,23 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  Menu,
-  X,
-  Home,
-  Users,
-  Settings,
-  Bell,
-  Search,
-  User,
-  LogOut,
-  Sparkles,
-  Tag,
-  ChartColumnStacked,
-  Notebook,
-  MessageCircle,
-  Globe
-} from 'lucide-react'
-import { Outlet, Link, NavLink } from 'react-router-dom'
+import { Menu, X, Home, Users, Bell, Search, User, LogOut, Sparkles, Tag, ChartColumnStacked, Notebook, MessageCircle, Globe } from 'lucide-react'
+import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog'
 import { useAuth } from '@/contexts/auth'
 import Button from '../ui/button'
@@ -28,31 +12,25 @@ const AdminLayout = () => {
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const userMenuRef = useRef(null)
 
-  // Handle responsive sidebar behavior
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
-        // On desktop, ensure sidebar is visible
         setSidebarOpen(true)
       }
     }
 
-    // Set initial state based on screen size
     handleResize()
 
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Close sidebar on mobile when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Close sidebar on mobile only
       if (sidebarOpen && window.innerWidth < 1024 && !event.target.closest('.sidebar') && !event.target.closest('.menu-button')) {
         setSidebarOpen(false)
       }
 
-      // Close user menu
       if (userMenuOpen && userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setUserMenuOpen(false)
       }
@@ -68,12 +46,16 @@ const AdminLayout = () => {
     { id: 'tags', label: 'Tags', icon: Tag, path: '/admin/tags' },
     { id: 'posts', label: 'Posts', icon: Notebook, path: '/admin/posts' },
     { id: 'comments', label: 'Comments', icon: MessageCircle, path: '/admin/comments' },
-    { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
-    { id: 'settings', label: 'Settings', icon: Settings, path: '/admin/settings' }
+    { id: 'users', label: 'Users', icon: Users, path: '/admin/users' }
   ]
   const [dialogOpen, setDialogOpen] = useState(false)
   const { logout } = useAuth()
   const { user } = useAuthorize()
+  const navigate = useNavigate()
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950">
@@ -89,7 +71,7 @@ const AdminLayout = () => {
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               Cancel
             </Button>
-            <Button variant="danger" onClick={() => logout()}>
+            <Button variant="danger" onClick={() => handleLogout()}>
               Confirm
             </Button>
           </DialogFooter>
@@ -347,14 +329,6 @@ const AdminLayout = () => {
                         >
                           <User className="mr-3 h-4 w-4" />
                           Profile
-                        </Link>
-                        <Link
-                          to="/admin/settings"
-                          className="flex w-full items-center px-4 py-2 text-sm text-gray-300 hover:bg-indigo-500/10 hover:text-indigo-300"
-                          onClick={() => setUserMenuOpen(false)}
-                        >
-                          <Settings className="mr-3 h-4 w-4" />
-                          Settings
                         </Link>
                         <hr className="my-2 border-indigo-500/20" />
                         <button

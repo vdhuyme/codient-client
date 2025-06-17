@@ -1,14 +1,23 @@
+import { redirect } from '@/api/auth'
 import { Button } from '@/components/customs/button'
 import { Loader } from 'lucide-react'
 import React, { useState } from 'react'
-import toast from 'react-hot-toast'
 
-const GoogleOAuth2Button = () => {
+const GoogleOAuth2 = () => {
   const [isLoading, setIsLoading] = useState(false)
 
   const handleRedirectToGoogle = async () => {
-    toast.error('This feature is under development')
+    setIsLoading(true)
+    try {
+      const data = await redirect()
+      window.location.href = data
+    } catch (error) {
+      console.log('Failed to redirect')
+    } finally {
+      setIsLoading(false)
+    }
   }
+
   return (
     <Button
       variant={'secondary'}
@@ -46,4 +55,4 @@ const GoogleOAuth2Button = () => {
   )
 }
 
-export default GoogleOAuth2Button
+export default GoogleOAuth2

@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('refresh_token', refreshToken)
       setRefreshToken(refreshToken)
     }
-    toast.success('Login success')
+    toast.success('Welcome 😊')
   }
 
   const logout = () => {
@@ -45,4 +45,10 @@ export const AuthProvider = ({ children }) => {
   )
 }
 
-export const useAuth = () => useContext(AuthContext)
+export const useAuth = () => {
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return context
+}

@@ -19,9 +19,9 @@ import PostsPage from '@/pages/dashboard/posts.page'
 import CategoriesPage from '@/pages/dashboard/categories.page'
 import CommentsPage from '@/pages/dashboard/comments.page'
 import ProfilePage from '@/pages/dashboard/profile.page'
-import SettingsPage from '@/pages/dashboard/settings.page'
 import TagsPage from '@/pages/dashboard/tags.page'
 import UserPage from '@/pages/dashboard/users.page'
+import GoogleCallback from '@/pages/auth/google.callback'
 
 const App = () => {
   return (
@@ -32,6 +32,7 @@ const App = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/auth/google/callback" element={<GoogleCallback />} />
           </Route>
         </Route>
 
@@ -42,7 +43,6 @@ const App = () => {
             <Route path="categories" element={<CategoriesPage />} />
             <Route path="comments" element={<CommentsPage />} />
             <Route path="profile" element={<ProfilePage />} />
-            <Route path="settings" element={<SettingsPage />} />
             <Route path="tags" element={<TagsPage />} />
             <Route path="users" element={<UserPage />} />
           </Route>
@@ -52,7 +52,7 @@ const App = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/resume" element={<ResumePage />} />
           <Route path="/posts" element={<BlogPage />} />
-          <Route path="/posts/:slug" element={<BlogDetailPage />} />
+          <Route path="/posts/:id/:slug" element={<BlogDetailPage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

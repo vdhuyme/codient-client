@@ -17,7 +17,6 @@ const MultiSelect = ({
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      // Fixed: Use 'e.target' instead of 'event.target'
       if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
         setIsOpen(false)
       }
@@ -49,9 +48,8 @@ const MultiSelect = ({
   }
 
   const handleTriggerClick = (e) => {
-    // Check if clicked element is a remove button or its child
     if (e.target.closest('[data-remove-tag]')) {
-      return // Don't toggle dropdown if clicking remove button
+      return
     }
     if (!disabled && !loading) {
       setIsOpen(!isOpen)

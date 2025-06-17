@@ -2,74 +2,43 @@ import { useEffect, useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Search, Calendar, User, Clock, ChevronRight, Filter, ChevronLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
-import { getPublishedCategories } from '@/api/published.categories'
-import { getPublishedPosts } from '@/api/published.post'
 import { useDebounce } from '@/hooks/use.debounce'
 import { dateFormat } from '@/utils/date'
+import { useBlogPosts } from '@/hooks/use.blog.posts'
+import { useBlogCategories } from '@/hooks/use.blog.categories'
+import { SORT_ORDERS } from '@/utils/constants'
+import LoadingOverlay from '@/components/customs/loading.overlay'
 
 const BlogPage = () => {
   const [activeCategoryId, setActiveCategoryId] = useState(null)
   const [searchInput, setSearchInput] = useState('')
-  const [sort, setSort] = useState('DESC')
-  const [limit] = useState(15)
+  const [sort, setSort] = useState(SORT_ORDERS.DESC)
   const observerRef = useRef()
 
-  const debouncedSearch = useDebounce(searchInput, 750)
+  const debouncedSearch = useDebounce(searchInput, 500)
 
   const handleSearchChange = (e) => setSearchInput(e.target.value)
   const handleSortChange = (e) => setSort(e.target.value)
   const handleCategoryChange = (categoryId) => setActiveCategoryId(categoryId)
 
-  const { data: categoriesData } = useQuery({
-    queryKey: ['categories'],
-    queryFn: async () => {
-      const data = await getPublishedCategories({
-        page: 1,
-        limit: 100,
-        query: '',
-        sort: 'ASC'
-      })
-
-      return [{ id: null, name: 'All' }, ...data.categories]
-    },
-    staleTime: 1 * 60 * 1000
-  })
+  const { data: categoryData } = useBlogCategories()
+  const categories = categoryData?.items ? [{ id: null, name: 'All' }, ...categoryData.items] : []
 
   const {
-    data: postsData,
+    data: postsData = [],
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     isLoading: isPostsLoading,
     isError: isPostsError
-  } = useInfiniteQuery({
-    queryKey: ['posts', debouncedSearch, sort, activeCategoryId],
-    queryFn: async ({ pageParam = 1 }) => {
-      return await getPublishedPosts({
-        page: pageParam,
-        limit,
-        query: debouncedSearch.trim(),
-        sort,
-        categoryId: activeCategoryId
-      })
-    },
-    getNextPageParam: (lastPage, allPages) => {
-      if (lastPage.hasMore !== undefined) {
-        return lastPage.hasMore ? allPages.length + 1 : undefined
-      }
-      if (lastPage.posts?.length < limit) {
-        return undefined
-      }
-      return allPages.length + 1
-    },
-    enabled: !!categoriesData,
-    staleTime: 1 * 60 * 1000,
-    gcTime: 1 * 60 * 1000
+  } = useBlogPosts({
+    searchQuery: debouncedSearch,
+    sortOrder: sort,
+    categoryId: activeCategoryId
   })
 
-  const posts = postsData?.pages?.flatMap((page) => page.posts || []) || []
-  const totalPosts = postsData?.pages?.[0]?.total || posts.length
+  const posts = postsData?.pages?.flatMap((page) => page.items)
+  const totalPosts = postsData?.pages?.[0]?.meta.totalItems
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -95,6 +64,10 @@ const BlogPage = () => {
       }
     }
   }, [fetchNextPage, hasNextPage, isFetchingNextPage])
+
+  if (isPostsLoading) {
+    return <LoadingOverlay />
+  }
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950">
@@ -203,8 +176,8 @@ const BlogPage = () => {
                   onChange={handleSortChange}
                   className="appearance-none rounded-md border border-indigo-500/30 bg-slate-900/80 px-10 py-2 pl-6 text-white placeholder-gray-400 backdrop-blur-sm focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 focus:outline-none"
                 >
-                  <option value="DESC">Latest</option>
-                  <option value="ASC">Oldest</option>
+                  <option value={SORT_ORDERS.DESC}>Latest</option>
+                  <option value={SORT_ORDERS.ASC}>Oldest</option>
                 </select>
 
                 <div className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-indigo-400">
@@ -217,14 +190,14 @@ const BlogPage = () => {
           </div>
 
           {/* Categories */}
-          {categoriesData && (
+          {categories && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.5 }}
               className="flex flex-wrap justify-center gap-2"
             >
-              {categoriesData.map((category, index) => (
+              {categories.map((category, index) => (
                 <motion.button
                   key={`${category.id}-${category.name}-${index}`}
                   onClick={() => handleCategoryChange(category.id)}
@@ -279,7 +252,7 @@ const BlogPage = () => {
                   <span className="text-sm">Loading more articles...</span>
                 </motion.div>
               )}
-              {!hasNextPage && posts.length > limit && (
+              {!hasNextPage && posts.length > 0 && (
                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-gray-400">
                   You've reached the end of articles
                 </motion.p>
@@ -326,7 +299,7 @@ const BlogPostCard = ({ post, index }) => (
     transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
     className="group overflow-hidden rounded-lg border border-indigo-500/20 bg-slate-900/50 backdrop-blur-sm transition-all hover:border-indigo-500/40"
   >
-    <Link to={`/posts/${post.slug}`}>
+    <Link to={`/posts/${post.id}/${post.slug}`}>
       <div className="relative h-48 overflow-hidden">
         <motion.div className="absolute inset-0 bg-indigo-900/20" whileHover={{ opacity: 0 }} transition={{ duration: 0.3 }} />
         <motion.img
