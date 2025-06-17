@@ -48,6 +48,7 @@ const DialogSearch = ({ open, onClose, menuItems, navigate }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          onClick={onClose}
         >
           <motion.div
             className="w-full max-w-md rounded-xl border border-indigo-500/30 bg-slate-900 p-4 shadow-2xl"
