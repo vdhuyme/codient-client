@@ -44,9 +44,10 @@ const DateRangePicker = React.forwardRef(
     const [range, setRange] = React.useState(value)
     const [currentMonth, setCurrentMonth] = React.useState(range.from || new Date())
     const [secondMonth, setSecondMonth] = React.useState(addMonths(currentMonth, 1))
-    const [yearSelectOpen, setYearSelectOpen] = React.useState(false)
+    const [yearSelectOpen, setYearSelectOpen] = React.useState(null) // null, 'first', or 'second'
     const [activeMonth, setActiveMonth] = React.useState('first')
     const popoverRef = React.useRef(null)
+    const yearSelectRef = React.useRef(null)
 
     React.useEffect(() => {
       setRange(value)
@@ -64,6 +65,10 @@ const DateRangePicker = React.forwardRef(
       const handleClickOutside = (e) => {
         if (popoverRef.current && !popoverRef.current.contains(e.target)) {
           setOpen(false)
+          setYearSelectOpen(null)
+        }
+        if (yearSelectRef.current && !yearSelectRef.current.contains(e.target)) {
+          setYearSelectOpen(null)
         }
       }
       document.addEventListener('mousedown', handleClickOutside)
@@ -102,17 +107,39 @@ const DateRangePicker = React.forwardRef(
       yearFn(addYears(refDate, mod))
     }
 
-    const setYear = (year) => {
-      const setter = activeMonth === 'first' ? setCurrentMonth : setSecondMonth
-      const refMonth = activeMonth === 'first' ? currentMonth : secondMonth
+    const setYear = (year, monthType) => {
+      const setter = monthType === 'first' ? setCurrentMonth : setSecondMonth
+      const refMonth = monthType === 'first' ? currentMonth : secondMonth
       setter(new Date(year, refMonth.getMonth(), 1))
-      setYearSelectOpen(false)
+      setYearSelectOpen(null)
     }
 
-    const years = React.useMemo(() => {
-      const thisYear = getYear(new Date())
-      return Array.from({ length: 21 }, (_, i) => thisYear - 10 + i)
-    }, [])
+    // Generate years based on minDate and maxDate
+    const getYears = (monthType) => {
+      const currentDate = monthType === 'first' ? currentMonth : secondMonth
+      const currentYear = getYear(currentDate)
+
+      let minYear = minDate ? getYear(minDate) : currentYear - 10
+      let maxYear = maxDate ? getYear(maxDate) : currentYear + 10
+
+      // Ensure we have at least a reasonable range
+      if (maxYear - minYear < 20) {
+        if (!minDate && !maxDate) {
+          minYear = currentYear - 10
+          maxYear = currentYear + 10
+        } else if (!minDate) {
+          minYear = maxYear - 20
+        } else if (!maxDate) {
+          maxYear = minYear + 20
+        }
+      }
+
+      const years = []
+      for (let year = minYear; year <= maxYear; year++) {
+        years.push(year)
+      }
+      return years
+    }
 
     const generateDays = (month) => {
       const start = startOfMonth(month)
@@ -133,16 +160,47 @@ const DateRangePicker = React.forwardRef(
     const isStart = (day) => range.from && isSameDay(day, range.from)
     const isEnd = (day) => range.to && isSameDay(day, range.to)
 
+    const handleYearSelectToggle = (monthType, e) => {
+      e.stopPropagation()
+      setYearSelectOpen(yearSelectOpen === monthType ? null : monthType)
+    }
+
     const renderDays = (days, monthType, monthDate) => (
       <div className="flex-1 p-3" onMouseEnter={() => setActiveMonth(monthType)}>
-        <div className="mb-2 flex justify-center">
+        <div className="relative mb-2 flex justify-center">
           <Button
             variant="ghost"
-            onClick={() => setYearSelectOpen(!yearSelectOpen)}
+            onClick={(e) => handleYearSelectToggle(monthType, e)}
             className="rounded bg-slate-800 px-2 py-1 text-sm font-medium hover:bg-slate-700"
           >
             {format(monthDate, 'MMMM yyyy')}
           </Button>
+
+          <AnimatePresence>
+            {yearSelectOpen === monthType && (
+              <motion.div
+                ref={yearSelectRef}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="absolute top-full left-1/2 z-20 mt-1 max-h-60 w-40 -translate-x-1/2 overflow-y-auto rounded-md border border-slate-800 bg-slate-900 p-1 shadow-lg"
+              >
+                <div className="grid grid-cols-3 gap-1">
+                  {getYears(monthType).map((year) => (
+                    <Button
+                      key={year}
+                      variant="ghost"
+                      size="sm"
+                      className={cn('h-8 text-xs', getYear(monthDate) === year ? 'bg-indigo-600 text-white hover:bg-indigo-700' : '')}
+                      onClick={() => setYear(year, monthType)}
+                    >
+                      {year}
+                    </Button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
         <div className="mb-1 grid grid-cols-7 gap-1">
           {[...Array(7)].map((_, i) => (
@@ -228,38 +286,6 @@ const DateRangePicker = React.forwardRef(
                     <ChevronLeft className="h-4 w-4" />
                     <span className="sr-only">Previous Month</span>
                   </Button>
-                </div>
-                <div className="relative">
-                  <AnimatePresence>
-                    {yearSelectOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="absolute top-full left-0 z-10 mt-1 max-h-60 w-40 overflow-y-auto rounded-md border border-slate-800 bg-slate-900 p-1 shadow-lg"
-                      >
-                        <div className="grid grid-cols-3 gap-1">
-                          {years.map((year) => (
-                            <Button
-                              key={year}
-                              variant="ghost"
-                              size="sm"
-                              className={cn(
-                                'h-8 text-xs',
-                                (activeMonth === 'first' && getYear(currentMonth) === year) ||
-                                  (activeMonth === 'second' && getYear(secondMonth) === year)
-                                  ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                                  : ''
-                              )}
-                              onClick={() => setYear(year)}
-                            >
-                              {year}
-                            </Button>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
                 </div>
                 <div className="flex gap-2">
                   <Button

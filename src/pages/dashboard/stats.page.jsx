@@ -44,7 +44,13 @@ const StatsPage = () => {
         </div>
 
         <div className="w-auto">
-          <DateRangePicker maxDate={new Date()} value={dateRange} onChange={setDateRange} placeholder="Select date range" />
+          <DateRangePicker
+            minDate={new Date('2020-01-01')}
+            maxDate={new Date()}
+            value={dateRange}
+            onChange={setDateRange}
+            placeholder="Select date range"
+          />
         </div>
       </motion.div>
 

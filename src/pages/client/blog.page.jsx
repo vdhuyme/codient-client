@@ -13,6 +13,7 @@ const BlogPage = () => {
   const [activeCategoryId, setActiveCategoryId] = useState(null)
   const [searchInput, setSearchInput] = useState('')
   const [sort, setSort] = useState(SORT_ORDERS.DESC)
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
   const observerRef = useRef()
 
   const debouncedSearch = useDebounce(searchInput, 500)
@@ -30,7 +31,8 @@ const BlogPage = () => {
     hasNextPage,
     isFetchingNextPage,
     isLoading: isPostsLoading,
-    isError: isPostsError
+    isError: isPostsError,
+    isFetching: isPostsFetching
   } = useBlogPosts({
     searchQuery: debouncedSearch,
     sortOrder: sort,
@@ -39,6 +41,16 @@ const BlogPage = () => {
 
   const posts = postsData?.pages?.flatMap((page) => page.items)
   const totalPosts = postsData?.pages?.[0]?.meta.totalItems
+
+  // Track if this is the initial load or subsequent filtering
+  useEffect(() => {
+    if (posts && posts.length >= 0) {
+      setIsInitialLoad(false)
+    }
+  }, [posts])
+
+  // Only show full overlay on true initial load (no data yet)
+  const showFullOverlay = isInitialLoad && isPostsLoading && !posts
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -65,7 +77,8 @@ const BlogPage = () => {
     }
   }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
-  if (isPostsLoading) {
+  // Only show full overlay on true initial load
+  if (showFullOverlay) {
     return <LoadingOverlay />
   }
 
@@ -160,6 +173,11 @@ const BlogPage = () => {
                 className="w-full rounded-md border border-indigo-500/30 bg-slate-900/80 px-4 py-2 pl-10 text-white placeholder-gray-400 backdrop-blur-sm focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 focus:outline-none"
               />
               <Search className="absolute top-3 left-3 h-4 w-4 text-gray-400" />
+
+              {/* Small loading indicator next to search when filtering */}
+              {isPostsFetching && !isInitialLoad && (
+                <div className="absolute top-3 right-3 h-4 w-4 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent"></div>
+              )}
             </motion.div>
 
             <motion.div
@@ -218,75 +236,87 @@ const BlogPage = () => {
               ))}
             </motion.div>
           )}
+
           {/* Results count */}
           {debouncedSearch && (
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 text-sm text-gray-400">
-              {posts.length > 0
+              {posts && posts.length > 0
                 ? `Found ${posts.length} article${posts.length !== 1 ? 's' : ''} for "${debouncedSearch}"`
                 : `No articles found for "${debouncedSearch}"`}
             </motion.p>
           )}
-
-          {/* Loading indicator for initial load */}
-          {isPostsLoading && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 flex justify-center">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent"></div>
-            </motion.div>
-          )}
         </header>
 
-        {/* Blog Posts */}
-        {posts.length > 0 ? (
-          <>
-            <div className="grid gap-8 md:grid-cols-2">
-              {posts.map((post, index) => (
-                <BlogPostCard key={`${post.id}-${index}`} post={post} index={index} />
-              ))}
-            </div>
-
-            {/* Infinite scroll trigger */}
-            <div ref={observerRef} className="mt-8 flex justify-center">
-              {isFetchingNextPage && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 text-indigo-400">
-                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent"></div>
-                  <span className="text-sm">Loading more articles...</span>
-                </motion.div>
-              )}
-              {!hasNextPage && posts.length > 0 && (
-                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-gray-400">
-                  You've reached the end of articles
-                </motion.p>
-              )}
-            </div>
-          </>
-        ) : (
-          !isPostsLoading && (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="py-12 text-center">
-              <div className="mb-4 text-gray-400">
-                <Search className="mx-auto mb-4 h-12 w-12 opacity-50" />
-                <h3 className="mb-2 text-xl font-semibold">No articles found</h3>
-                <p>Try adjusting your search terms or browse different categories.</p>
+        {/* Content Area with Loading States */}
+        <div className="relative">
+          {/* Semi-transparent overlay when filtering (not full page) */}
+          {isPostsFetching && !isInitialLoad && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-slate-950/50 backdrop-blur-sm"
+            >
+              <div className="flex items-center gap-3 rounded-lg bg-slate-900/90 px-6 py-3 text-indigo-400 shadow-lg">
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent"></div>
+                <span className="text-sm font-medium">Updating articles...</span>
               </div>
             </motion.div>
-          )
-        )}
+          )}
 
-        {/* Posts count info */}
-        {posts.length > 0 && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-8 text-center text-sm text-gray-400">
-            Showing {posts.length} of {totalPosts} articles
-          </motion.div>
-        )}
+          {/* Blog Posts */}
+          {posts && posts.length > 0 ? (
+            <>
+              <div className="grid gap-8 md:grid-cols-2">
+                {posts.map((post, index) => (
+                  <BlogPostCard key={`${post.id}-${index}`} post={post} index={index} />
+                ))}
+              </div>
 
-        {/* Error handling */}
-        {isPostsError && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="py-12 text-center">
-            <div className="mb-4 text-red-400">
-              <h3 className="mb-2 text-xl font-semibold">Failed to load articles</h3>
-              <p>Please try again later or check your connection.</p>
-            </div>
-          </motion.div>
-        )}
+              {/* Infinite scroll trigger */}
+              <div ref={observerRef} className="mt-8 flex justify-center">
+                {isFetchingNextPage && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 text-indigo-400">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent"></div>
+                    <span className="text-sm">Loading more articles...</span>
+                  </motion.div>
+                )}
+                {!hasNextPage && posts.length > 0 && (
+                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-gray-400">
+                    You've reached the end of articles
+                  </motion.p>
+                )}
+              </div>
+            </>
+          ) : (
+            !isPostsLoading && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="py-12 text-center">
+                <div className="mb-4 text-gray-400">
+                  <Search className="mx-auto mb-4 h-12 w-12 opacity-50" />
+                  <h3 className="mb-2 text-xl font-semibold">No articles found</h3>
+                  <p>Try adjusting your search terms or browse different categories.</p>
+                </div>
+              </motion.div>
+            )
+          )}
+
+          {/* Posts count info */}
+          {posts && posts.length > 0 && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-8 text-center text-sm text-gray-400">
+              Showing {posts.length} of {totalPosts} articles
+            </motion.div>
+          )}
+
+          {/* Error handling */}
+          {isPostsError && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="py-12 text-center">
+              <div className="mb-4 text-red-400">
+                <h3 className="mb-2 text-xl font-semibold">Failed to load articles</h3>
+                <p>Please try again later or check your connection.</p>
+              </div>
+            </motion.div>
+          )}
+        </div>
       </div>
     </div>
   )

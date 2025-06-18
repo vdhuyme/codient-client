@@ -8,6 +8,7 @@ import { useAuthorize } from '@/contexts/authorize'
 import Button from '../ui/button'
 import Input from '../ui/input'
 import ScrollArea from '../ui/scroll-area'
+import toast from 'react-hot-toast'
 
 const DialogSearch = ({ open, onClose, menuItems, navigate }) => {
   const [query, setQuery] = useState('')
@@ -397,6 +398,7 @@ const AdminLayout = () => {
 
               {/* Notifications */}
               <motion.button
+                onClick={() => toast.error('This feature is under development.')}
                 title="Notification"
                 className="relative rounded-lg p-2 text-gray-400 hover:bg-indigo-500/10 hover:text-indigo-300"
                 whileHover={{ scale: 1.05 }}

@@ -1,5 +1,3 @@
-'use client'
-
 import * as React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight, CalendarIcon, X } from 'lucide-react'
@@ -33,9 +31,9 @@ const DatePicker = React.forwardRef(
     const [yearSelectOpen, setYearSelectOpen] = React.useState(false)
     const [isMobile, setIsMobile] = React.useState(false)
     const popoverRef = React.useRef(null)
+    const yearPopoverRef = React.useRef(null)
     const triggerRef = React.useRef(null)
 
-    // Check if mobile
     React.useEffect(() => {
       const checkMobile = () => {
         setIsMobile(window.innerWidth < 768)
@@ -45,7 +43,6 @@ const DatePicker = React.forwardRef(
       return () => window.removeEventListener('resize', checkMobile)
     }, [])
 
-    // Update internal state when value changes externally
     React.useEffect(() => {
       setDate(value || null)
       if (value) {
@@ -53,11 +50,22 @@ const DatePicker = React.forwardRef(
       }
     }, [value])
 
-    // Handle click outside
     React.useEffect(() => {
       const handleClickOutside = (event) => {
+        // Close main popover if clicking outside of it and trigger
         if (popoverRef.current && !popoverRef.current.contains(event.target) && triggerRef.current && !triggerRef.current.contains(event.target)) {
           setOpen(false)
+          setYearSelectOpen(false)
+          return
+        }
+
+        // Close year selector if clicking outside of it but inside main popover
+        if (
+          yearPopoverRef.current &&
+          !yearPopoverRef.current.contains(event.target) &&
+          popoverRef.current &&
+          popoverRef.current.contains(event.target)
+        ) {
           setYearSelectOpen(false)
         }
       }
@@ -71,12 +79,14 @@ const DatePicker = React.forwardRef(
       }
     }, [open])
 
-    // Handle escape key
     React.useEffect(() => {
       const handleEscape = (event) => {
         if (event.key === 'Escape') {
-          setOpen(false)
-          setYearSelectOpen(false)
+          if (yearSelectOpen) {
+            setYearSelectOpen(false)
+          } else {
+            setOpen(false)
+          }
         }
       }
 
@@ -87,7 +97,7 @@ const DatePicker = React.forwardRef(
       return () => {
         document.removeEventListener('keydown', handleEscape)
       }
-    }, [open])
+    }, [open, yearSelectOpen])
 
     const handleSelect = (day) => {
       setDate(day)
@@ -128,10 +138,30 @@ const DatePicker = React.forwardRef(
       setYearSelectOpen(false)
     }
 
+    const handleYearToggle = (e) => {
+      e.stopPropagation()
+      setYearSelectOpen(!yearSelectOpen)
+    }
+
     const years = React.useMemo(() => {
+      let startYear
+      let endYear
       const currentYear = getYear(new Date())
-      return Array.from({ length: 21 }, (_, i) => currentYear - 10 + i)
-    }, [])
+
+      if (minDate) {
+        startYear = getYear(minDate)
+      } else {
+        startYear = currentYear - 10
+      }
+
+      if (maxDate) {
+        endYear = getYear(maxDate)
+      } else {
+        endYear = currentYear + 10
+      }
+
+      return Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i)
+    }, [minDate, maxDate])
 
     const days = React.useMemo(() => {
       const start = startOfMonth(currentMonth)
@@ -139,13 +169,12 @@ const DatePicker = React.forwardRef(
       return eachDayOfInterval({ start, end })
     }, [currentMonth])
 
-    // Get day names for the header
     const dayNames = React.useMemo(() => {
-      const date = new Date(2023, 8, 3) // A Sunday
+      const date = new Date(2023, 8, 3)
       const days = []
       for (let i = 0; i < 7; i++) {
         const day = addDays(date, i)
-        days.push(format(day, 'EEEEEE')) // 2-letter day name
+        days.push(format(day, 'EEEEEE'))
       }
       return days
     }, [])
@@ -197,13 +226,7 @@ const DatePicker = React.forwardRef(
         {open && <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" onClick={() => setOpen(false)} />}
 
         {open && (
-          <div
-            ref={popoverRef}
-            className={cn(
-              'fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2',
-              'w-[90vw] max-w-md md:w-auto' // Responsive width
-            )}
-          >
+          <div ref={popoverRef} className={cn('fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2', 'w-[90vw] max-w-md md:w-auto')}>
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: isMobile ? 20 : -10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -238,7 +261,7 @@ const DatePicker = React.forwardRef(
                 <div className="relative">
                   <Button
                     variant="ghost"
-                    onClick={() => setYearSelectOpen(!yearSelectOpen)}
+                    onClick={handleYearToggle}
                     className="rounded-lg bg-slate-800 px-3 py-2 text-sm font-medium hover:bg-slate-700"
                   >
                     {format(currentMonth, 'MMMM yyyy')}
@@ -247,10 +270,11 @@ const DatePicker = React.forwardRef(
                   <AnimatePresence>
                     {yearSelectOpen && (
                       <motion.div
+                        ref={yearPopoverRef}
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="absolute top-full left-1/2 z-10 mt-2 max-h-60 w-48 -translate-x-1/2 overflow-y-auto rounded-lg border border-slate-700 bg-slate-900 p-2 shadow-xl"
+                        className="absolute top-full left-1/2 z-20 mt-2 max-h-60 w-48 -translate-x-1/2 overflow-y-auto rounded-lg border border-slate-700 bg-slate-900 p-2 shadow-xl"
                       >
                         <div className="grid grid-cols-3 gap-1">
                           {years.map((year) => (
@@ -381,5 +405,4 @@ const DatePicker = React.forwardRef(
 )
 
 DatePicker.displayName = 'DatePicker'
-
 export { DatePicker }
