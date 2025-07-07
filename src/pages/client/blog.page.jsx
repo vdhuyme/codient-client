@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Search, Calendar, User, Clock, ChevronRight, Filter, ChevronLeft } from 'lucide-react'
+import { Search, Calendar, User, Clock, ChevronRight, Filter, ChevronLeft, LoaderCircle } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useDebounce } from '@/hooks/use.debounce'
 import { dateFormat } from '@/utils/date'
@@ -249,23 +249,17 @@ const BlogPage = () => {
 
         {/* Content Area with Loading States */}
         <div className="relative">
-          {/* Semi-transparent overlay when filtering (not full page) */}
           {isPostsFetching && !isInitialLoad && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-slate-950/50 backdrop-blur-sm"
-            >
-              <div className="flex items-center gap-3 rounded-lg bg-slate-900/90 px-6 py-3 text-indigo-400 shadow-lg">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent"></div>
-                <span className="text-sm font-medium">Updating articles...</span>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="py-12 text-center">
+              <div className="mb-4 text-gray-400">
+                <LoaderCircle className="mx-auto mb-4 h-12 w-12 animate-spin opacity-50" />
+                <h3 className="mb-2 text-xl font-semibold">Updating articles</h3>
               </div>
             </motion.div>
           )}
 
           {/* Blog Posts */}
-          {posts && posts.length > 0 ? (
+          {posts && posts.length > 0 && (
             <>
               <div className="grid gap-8 md:grid-cols-2">
                 {posts.map((post, index) => (
@@ -288,16 +282,6 @@ const BlogPage = () => {
                 )}
               </div>
             </>
-          ) : (
-            !isPostsLoading && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="py-12 text-center">
-                <div className="mb-4 text-gray-400">
-                  <Search className="mx-auto mb-4 h-12 w-12 opacity-50" />
-                  <h3 className="mb-2 text-xl font-semibold">No articles found</h3>
-                  <p>Try adjusting your search terms or browse different categories.</p>
-                </div>
-              </motion.div>
-            )
           )}
 
           {/* Posts count info */}

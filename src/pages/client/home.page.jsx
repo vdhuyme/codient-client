@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Github, Twitter, Facebook, Instagram, FileText, Sparkles, ExternalLink } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Github, Twitter, Facebook, Instagram, FileText, ExternalLink, FolderCheck } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import avatar from '@/assets/profile.png'
-
+import toast from 'react-hot-toast'
 const HomePage = () => {
   const containerRef = useRef(null)
   const [activeTooltip, setActiveTooltip] = useState(null)
@@ -12,8 +12,6 @@ const HomePage = () => {
   useEffect(() => {
     setDominantColor('rgba(79, 70, 229, 0.3)')
   }, [])
-
-  const skills = ['NodeJS', 'React', 'Tailwind CSS', 'ExpressJS', 'Typescript']
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950" ref={containerRef}>
@@ -257,32 +255,6 @@ const HomePage = () => {
             </p>
           </motion.div>
 
-          {/* Skills */}
-          <motion.div
-            className="mt-8 flex flex-wrap justify-center gap-3 md:justify-start"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 1.2 }}
-          >
-            {skills.map((skill, index) => (
-              <motion.span
-                key={skill}
-                className="inline-flex cursor-context-menu items-center rounded-full border border-indigo-500/30 bg-indigo-500/5 px-3 py-1 text-sm font-medium text-indigo-200 backdrop-blur-sm"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-                whileHover={{
-                  scale: 1.03,
-                  backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                  borderColor: 'rgba(99, 102, 241, 0.4)'
-                }}
-              >
-                <Sparkles className="mr-1.5 h-3 w-3 text-indigo-300" />
-                {skill}
-              </motion.span>
-            ))}
-          </motion.div>
-
           {/* Social links */}
           <motion.div
             className="mt-10 flex flex-wrap justify-center gap-5 md:justify-start"
@@ -334,7 +306,12 @@ const HomePage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1.6 }}
           >
-            <ActionButton primary label="Explore Articles" to={'/posts'} icon={<ExternalLink className="ml-2 h-4 w-4" />} />
+            <ActionButton primary label="Read My Thoughts" to={'/posts'} icon={<ExternalLink className="ml-2 h-4 w-4" />} />
+            <ActionButton
+              label="Things I’ve Built"
+              onClick={() => toast.error('This feature is under development.')}
+              icon={<FolderCheck className="ml-2 h-4 w-4" />}
+            />
           </motion.div>
         </motion.div>
       </div>
@@ -342,15 +319,11 @@ const HomePage = () => {
   )
 }
 
-const SocialButton = ({ icon, label, href, activeTooltip, setActiveTooltip }) => {
+const SocialButton = ({ icon, label, href }) => {
   const isExternal = href?.startsWith('http')
 
-  const commonProps = {
-    className:
-      'flex h-10 w-10 items-center justify-center rounded-full border border-indigo-500/20 bg-indigo-500/5 text-gray-300 backdrop-blur-sm transition-all hover:border-indigo-500/40 hover:text-white',
-    onMouseEnter: () => setActiveTooltip(label),
-    onMouseLeave: () => setActiveTooltip(null)
-  }
+  const baseClass =
+    'inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/5 px-3 py-2 text-sm font-medium text-gray-300 backdrop-blur-sm transition-all hover:border-indigo-500/40 hover:text-white'
 
   const content = (
     <motion.div
@@ -361,59 +334,37 @@ const SocialButton = ({ icon, label, href, activeTooltip, setActiveTooltip }) =>
       whileTap={{ scale: 0.97 }}
     >
       {isExternal ? (
-        <a href={href} target="_blank" rel="noopener noreferrer" {...commonProps}>
-          {icon}
+        <a href={href} target="_blank" rel="noopener noreferrer" className={baseClass}>
+          <span className="text-base">{icon}</span>
+          <span>{label}</span>
         </a>
       ) : (
-        <Link to={href} {...commonProps}>
-          {icon}
+        <Link to={href} className={baseClass}>
+          <span className="text-base">{icon}</span>
+          <span>{label}</span>
         </Link>
       )}
     </motion.div>
   )
 
-  return (
-    <div className="relative">
-      {content}
-
-      <AnimatePresence>
-        {activeTooltip === label && (
-          <motion.div
-            className="absolute top-full left-1/2 mt-2 -translate-x-1/2 transform"
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
-            transition={{ duration: 0.2 }}
-          >
-            <div className="relative rounded-md bg-indigo-500/90 px-2.5 py-1 text-xs font-medium whitespace-nowrap text-white backdrop-blur-sm">
-              {label}
-              <div className="absolute top-0 left-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rotate-45 transform bg-indigo-500/90" />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  )
+  return <div>{content}</div>
 }
 
 // Action Button
-const ActionButton = ({ label, icon, to, primary = false }) => {
+const ActionButton = ({ label, icon, to, primary = false, ...props }) => {
+  const baseClasses = 'group relative overflow-hidden rounded-md border px-5 py-2 text-sm font-medium transition-all hover:text-white'
+  const primaryStyle = 'border-indigo-500/40 bg-indigo-500/10 text-white'
+  const secondaryStyle = 'border-indigo-500/20 bg-indigo-500/5 text-indigo-200'
+
   return (
-    <motion.button
-      className={`group relative overflow-hidden rounded-md border ${
-        primary ? 'border-indigo-500/40 bg-indigo-500/10 text-white' : 'border-white/10 bg-white/5 text-gray-300'
-      } px-5 py-2 text-sm font-medium transition-all hover:text-white`}
-      whileHover={{ y: -2 }}
-      whileTap={{ y: 0 }}
-    >
-      {/* Subtle hover effect */}
+    <motion.button {...props} className={`${baseClasses} ${primary ? primaryStyle : secondaryStyle}`} whileHover={{ y: -2 }} whileTap={{ y: 0 }}>
+      {/* Hover overlay */}
       <motion.span
         className={`absolute inset-0 -z-10 opacity-0 transition-opacity duration-300 group-hover:opacity-100 ${
-          primary ? 'bg-indigo-500/20' : 'bg-white/10'
+          primary ? 'bg-indigo-500/20' : 'bg-indigo-500/10'
         }`}
       />
-
-      <Link to={to} className="flex items-center justify-center">
+      <Link to={to} className="flex items-center justify-center gap-2">
         {label}
         {icon}
       </Link>
