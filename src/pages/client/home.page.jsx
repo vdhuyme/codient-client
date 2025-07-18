@@ -249,9 +249,12 @@ const HomePage = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 1 }}
           >
-            <p className="leading-relaxed">I craft web apps using NodeJs, React, Tailwind CSS, and beyond.</p>
             <p className="leading-relaxed">
-              Always eager to learn and take on new challenges, I aim to contribute to projects that make a real difference.
+              I specialize in building robust web applications with a focus on backend systems — leveraging Node.js, TypeScript, and modern
+              frameworks.
+            </p>
+            <p className="leading-relaxed">
+              Passionate about scalable architecture, clean APIs, and developer experience. Always eager to learn and bring real value through code.
             </p>
           </motion.div>
 
@@ -323,7 +326,7 @@ const SocialButton = ({ icon, label, href }) => {
   const isExternal = href?.startsWith('http')
 
   const baseClass =
-    'inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/5 px-3 py-2 text-sm font-medium text-gray-300 backdrop-blur-sm transition-all hover:border-indigo-500/40 hover:text-white'
+    'inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/5 px-3 py-2 text-sm font-medium text-gray-300 backdrop-blur-sm transition-all hover:border-indigo-500/40 hover:text-indigo-100 hover:border-indigo-400 hover:bg-indigo-500/10'
 
   const content = (
     <motion.div
@@ -352,7 +355,8 @@ const SocialButton = ({ icon, label, href }) => {
 
 // Action Button
 const ActionButton = ({ label, icon, to, primary = false, ...props }) => {
-  const baseClasses = 'group relative overflow-hidden rounded-md border px-5 py-2 text-sm font-medium transition-all hover:text-white'
+  const baseClasses =
+    'group relative overflow-hidden rounded-md border px-5 py-2 text-sm font-medium transition-all hover:text-indigo-100 hover:border-indigo-400 hover:bg-indigo-500/10'
   const primaryStyle = 'border-indigo-500/40 bg-indigo-500/10 text-white'
   const secondaryStyle = 'border-indigo-500/20 bg-indigo-500/5 text-indigo-200'
 

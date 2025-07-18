@@ -260,8 +260,15 @@ const ResumeViewExporter = forwardRef((_, ref) => (
                       key={skill}
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.3, delay: index * 0.03 }}
-                      className="inline-flex items-center rounded-full border border-indigo-500/30 bg-indigo-500/5 px-3 py-1 text-sm font-medium text-indigo-200 backdrop-blur-sm"
+                      whileHover={{ scale: 1.05 }}
+                      transition={{
+                        duration: 0.3,
+                        delay: index * 0.03,
+                        type: 'spring',
+                        stiffness: 300,
+                        damping: 15
+                      }}
+                      className="inline-flex items-center rounded-full border border-indigo-500/30 bg-indigo-500/5 px-3 py-1 text-sm font-medium text-indigo-200 backdrop-blur-sm transition-all duration-300 hover:border-indigo-400 hover:bg-indigo-500/10 hover:text-indigo-100"
                     >
                       {skill}
                     </motion.span>
@@ -281,13 +288,7 @@ const ResumeViewExporter = forwardRef((_, ref) => (
               period="09/2019 - 05/2024"
               location="Can tho City, Vietnam"
               description="Graduated with honors in Software Engineering, specializing in web technologies and algorithm design. Achieved a GPA of 3.24."
-              courses={[
-                'Data Structures and Algorithms',
-                'Object-Oriented Programming',
-                'Database Systems',
-                'Web Development',
-                'Software Engineering'
-              ]}
+              courses={['Data Structures and Algorithms', 'Object-Oriented Programming', 'Database Systems', 'Web Development']}
             />
           </div>
         </Section>
@@ -403,7 +404,7 @@ const ExperienceItem = ({ title, company, period, location, description, achieve
 
     <div>
       <h4 className="mb-2 text-sm font-medium text-white">Key Achievements:</h4>
-      <ul className="space-y-1 text-sm text-gray-300">
+      <ul className="space-y-1 text-gray-300">
         {achievements.map((achievement, index) => (
           <li key={index} className="flex items-start">
             <span className="mr-2 text-indigo-400">•</span>
@@ -447,7 +448,7 @@ const EducationItem = ({ degree, institution, period, location, description, cou
         {courses.map((course, index) => (
           <span
             key={index}
-            className="rounded-full border border-indigo-500/30 bg-indigo-500/5 px-3 py-1 text-xs font-medium text-indigo-200 backdrop-blur-sm"
+            className="rounded-full border border-indigo-500/30 bg-indigo-500/5 px-3 py-1 text-sm font-medium text-indigo-200 backdrop-blur-sm"
           >
             {course}
           </span>
@@ -457,5 +458,5 @@ const EducationItem = ({ degree, institution, period, location, description, cou
   </div>
 )
 
-ResumeViewExporter.displayName = 'ResumePDFView'
+ResumeViewExporter.displayName = 'ResumeViewExporter'
 export default ResumeViewExporter
