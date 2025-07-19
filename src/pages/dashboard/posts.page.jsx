@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Plus, Edit, Trash2, Calendar, Clock, Tag, Folder, FileText, CheckCircle, FileClock, Eye, Upload, Download } from 'lucide-react'
+import { Plus, Edit, Trash2, Calendar, Clock, Tag, Folder, FileText, CheckCircle, FileClock } from 'lucide-react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Button from '@/components/ui/button'
@@ -450,17 +450,6 @@ const PostsPage = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <Tooltip content="Import">
-            <Button variant="outline" size="sm">
-              <Upload className="h-4 w-4" />
-            </Button>
-          </Tooltip>
-          <Tooltip content="Export">
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4" />
-            </Button>
-          </Tooltip>
-
           <PermissionGuard required={'post.create'}>
             <Button onClick={handleCreate} disabled={mutations.createPost.isPending}>
               <Plus className="mr-2 h-4 w-4" />
@@ -471,7 +460,7 @@ const PostsPage = () => {
       </motion.div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {[
           {
             label: 'Total Posts',
@@ -490,12 +479,6 @@ const PostsPage = () => {
             value: posts.filter((p) => p.status === 'draft').length,
             color: 'yellow',
             icon: FileClock
-          },
-          {
-            label: 'Views',
-            value: '12.5K',
-            color: 'red',
-            icon: Eye
           }
         ].map((stat, index) => {
           const Icon = stat.icon

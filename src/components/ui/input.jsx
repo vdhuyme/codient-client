@@ -1,7 +1,7 @@
 const Input = ({ type = 'text', placeholder, value, onChange, disabled = false, error = false, icon, className = '', ...props }) => {
   return (
     <div className={`relative ${className}`}>
-      {icon && <div className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400">{icon}</div>}
+      {icon && <div className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-200">{icon}</div>}
 
       <input
         type={type}

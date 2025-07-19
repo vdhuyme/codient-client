@@ -4,6 +4,7 @@ import { Github, Twitter, Facebook, Instagram, FileText, ExternalLink, FolderChe
 import { Link } from 'react-router-dom'
 import avatar from '@/assets/profile.png'
 import toast from 'react-hot-toast'
+
 const HomePage = () => {
   const containerRef = useRef(null)
   const [activeTooltip, setActiveTooltip] = useState(null)
@@ -22,7 +23,6 @@ const HomePage = () => {
           backgroundImage: `radial-gradient(circle at 50% 30%, ${dominantColor}, rgba(15, 23, 42, 0.9))`
         }}
       />
-
       {/* Subtle particles */}
       <div className="absolute inset-0 z-0">
         {[...Array(15)].map((_, i) => (
@@ -50,7 +50,6 @@ const HomePage = () => {
           />
         ))}
       </div>
-
       {/* Main content */}
       <div className="relative z-10 container mx-auto flex min-h-screen flex-col items-center justify-center px-4 py-20 md:flex-row md:items-center md:justify-between md:gap-12 lg:px-8">
         {/* Profile image section with automatic elegant effect */}
@@ -318,6 +317,16 @@ const HomePage = () => {
           </motion.div>
         </motion.div>
       </div>
+
+      <footer className="my-4 text-center text-sm text-gray-500">
+        <p>
+          Built by{' '}
+          <Link to="/admin/stats" className="relative z-10 font-medium transition-colors hover:text-indigo-400">
+            Vo Duc Huy
+          </Link>
+          — &copy; {new Date().getFullYear()} All rights reserved.
+        </p>
+      </footer>
     </div>
   )
 }

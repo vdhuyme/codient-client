@@ -6,7 +6,7 @@ import { ComposableMap, Geographies, Geography, ZoomableGroup } from 'react-simp
 import { Tooltip } from 'react-tooltip'
 import { format, startOfYear } from 'date-fns'
 import { useGA4s } from '@/hooks/use.stats'
-import { DateRangePicker } from '@/components/ui/date-range-picker'
+import Input from '@/components/ui/input'
 
 const geoUrl = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json'
 
@@ -15,6 +15,7 @@ const StatsPage = () => {
     from: format(startOfYear(new Date()), 'yyyy-MM-dd'),
     to: format(new Date(), 'yyyy-MM-dd')
   })
+
   const ga4Params = useMemo(
     () => ({
       startAt: dateRange.from,
@@ -23,12 +24,12 @@ const StatsPage = () => {
     [dateRange]
   )
 
-  const { data: ga4 = [] } = useGA4s(ga4Params)
-  const data = ga4.map((g) => {
-    if (g.country === 'United States') {
-      return { ...g, country: 'United States of America' }
+  const { data: stats = [] } = useGA4s(ga4Params)
+  const data = stats.map((stat) => {
+    if (stat.country === 'United States') {
+      return { ...stat, country: 'United States of America' }
     }
-    return g
+    return stat
   })
 
   const totalActiveUsers = data.reduce((sum, stat) => sum + stat.activeUsers, 0)
@@ -37,19 +38,20 @@ const StatsPage = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap items-center justify-between gap-2">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white">Analytics Dashboard</h1>
           <p className="mt-2 text-gray-400">View your website analytics and statistics</p>
         </div>
 
-        <div className="w-auto">
-          <DateRangePicker
-            minDate={new Date('2020-01-01')}
-            maxDate={new Date()}
-            value={dateRange}
-            onChange={setDateRange}
-            placeholder="Select date range"
+        <div className="flex flex-wrap gap-2">
+          <Input min="2019-01-01" type="date" value={dateRange.from} onChange={(e) => setDateRange((prev) => ({ ...prev, from: e.target.value }))} />
+          <Input
+            min={dateRange.from}
+            max={format(new Date(), 'yyyy-MM-dd')}
+            type="date"
+            value={dateRange.to}
+            onChange={(e) => setDateRange((prev) => ({ ...prev, to: e.target.value }))}
           />
         </div>
       </motion.div>
@@ -100,7 +102,6 @@ const StatsPage = () => {
           </CardHeader>
           <CardContent>
             <div className="relative w-full pb-[60%]">
-              {/* aspect ratio 5:3 */}
               <div className="absolute top-0 left-0 h-full w-full">
                 <ComposableMap
                   projection="geoMercator"

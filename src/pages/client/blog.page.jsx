@@ -42,14 +42,12 @@ const BlogPage = () => {
   const posts = postsData?.pages?.flatMap((page) => page.items)
   const totalPosts = postsData?.pages?.[0]?.meta.totalItems
 
-  // Track if this is the initial load or subsequent filtering
   useEffect(() => {
     if (posts && posts.length >= 0) {
       setIsInitialLoad(false)
     }
   }, [posts])
 
-  // Only show full overlay on true initial load (no data yet)
   const showFullOverlay = isInitialLoad && isPostsLoading && !posts
 
   useEffect(() => {
@@ -77,7 +75,6 @@ const BlogPage = () => {
     }
   }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
-  // Only show full overlay on true initial load
   if (showFullOverlay) {
     return <LoadingOverlay />
   }
@@ -253,7 +250,6 @@ const BlogPage = () => {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="py-12 text-center">
               <div className="mb-4 text-gray-400">
                 <LoaderCircle className="mx-auto mb-4 h-12 w-12 animate-spin opacity-50" />
-                <h3 className="mb-2 text-xl font-semibold">Updating articles</h3>
               </div>
             </motion.div>
           )}

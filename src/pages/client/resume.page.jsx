@@ -1,48 +1,10 @@
 import { motion } from 'framer-motion'
 import { Github, Linkedin, Mail, Phone, MapPin, Plane, Book, Music, Coffee, Code, Volleyball, Download, Loader, ChevronLeft } from 'lucide-react'
 import avatar from '@/assets/profile.png'
-import html2canvas from 'html2canvas-pro'
-import React, { useRef, useState } from 'react'
-import ResumeViewExporter from '@/components/customs/resume.view.exporter'
+import React from 'react'
 import { Link } from 'react-router-dom'
-import { dateFormat } from '@/utils/date'
 
 const ResumePage = () => {
-  const interests = [
-    { label: 'Traveling', icon: Plane },
-    { label: 'Reading', icon: Book },
-    { label: 'Listening to music', icon: Music },
-    { label: 'Having coffee with friends', icon: Coffee },
-    { label: 'Playing volleyball', icon: Volleyball },
-    { label: 'Exploring new technologies', icon: Code }
-  ]
-
-  const [isLoading, setIsLoading] = useState(false)
-  const cvExporterRef = useRef(null)
-  const handleDownload = async () => {
-    setIsLoading(true)
-    const filename = `Vo_Duc_Huy_Software_Engineer_${dateFormat(new Date(), 'dd-MM-yyyy_HH-mm')}.png`
-
-    try {
-      const element = cvExporterRef.current
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true
-      })
-
-      const imageData = canvas.toDataURL('image/png')
-
-      const link = document.createElement('a')
-      link.href = imageData
-      link.download = filename
-      link.click()
-    } catch (err) {
-      console.error('Error exporting image:', err)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   return (
     <React.Fragment>
       <div className="relative min-h-screen overflow-hidden bg-slate-950">
@@ -166,16 +128,6 @@ const ResumePage = () => {
                   <SocialLink icon={<Linkedin className="h-4 w-4" />} href="https://www.linkedin.com/in/vdhme" />
                   <SocialLink icon={<Mail className="h-4 w-4" />} href="mailto:voduchuy2001@gmail.com" />
                 </div>
-
-                <motion.button
-                  disabled={isLoading}
-                  onClick={handleDownload}
-                  className="mt-4 flex items-center rounded-md border border-indigo-500/40 bg-indigo-500/10 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-indigo-500/20"
-                  whileHover={{ scale: 1.03 }}
-                >
-                  {isLoading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                  {isLoading ? 'Downloading' : 'Download CV'}
-                </motion.button>
               </motion.div>
             </div>
           </header>
@@ -343,61 +295,22 @@ const ResumePage = () => {
             </Section>
 
             {/* Languages Section */}
-            <Section title="Languages & Interests">
-              <div className="grid gap-8 md:grid-cols-2">
-                <div>
-                  <h3 className="mb-3 text-lg font-medium text-white">Languages</h3>
-                  <div className="space-y-3 text-gray-300">
-                    <div className="flex justify-between">
-                      <span>Vietnamese</span>
-                      <span className="font-medium text-indigo-300">Native</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>English</span>
-                      <span className="font-medium text-indigo-300">TOEIC 600</span>
-                    </div>
+            <Section title="Languages">
+              <div className="grid gap-8">
+                <div className="space-y-3 text-gray-300">
+                  <div className="flex justify-between">
+                    <span>Vietnamese</span>
+                    <span className="font-medium text-indigo-300">Native</span>
                   </div>
-                </div>
-
-                <div>
-                  <h3 className="mb-3 text-lg font-medium text-white">Interests</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {interests.map((interest, index) => (
-                      <motion.span
-                        key={`interests-${index}`}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.3, delay: index * 0.05 }}
-                        whileHover={{
-                          scale: 1.03
-                        }}
-                        className="inline-flex cursor-context-menu items-center rounded-full border border-indigo-500/30 bg-indigo-500/5 px-3 py-1 text-sm font-medium text-indigo-200 backdrop-blur-sm"
-                      >
-                        <interest.icon className="mr-1.5 h-3 w-3 text-indigo-400" />
-                        {interest.label}
-                      </motion.span>
-                    ))}
+                  <div className="flex justify-between">
+                    <span>English</span>
+                    <span className="font-medium text-indigo-300">TOEIC 600 (01/2024 - 01/2026)</span>
                   </div>
                 </div>
               </div>
             </Section>
           </div>
         </div>
-      </div>
-
-      <div
-        ref={cvExporterRef}
-        style={{
-          width: '1440px',
-          height: 'auto',
-          position: 'absolute',
-          top: '-9999px',
-          left: '-9999px',
-          zIndex: -1,
-          background: 'white'
-        }}
-      >
-        <ResumeViewExporter />
       </div>
     </React.Fragment>
   )

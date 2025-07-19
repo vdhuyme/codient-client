@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { getPublishedCategories } from '@/api/published.categories'
-import { PER_PAGE, SORT_FIELDS, SORT_ORDERS } from '@/utils/constants'
+import { SORT_FIELDS, SORT_ORDERS } from '@/utils/constants'
+
+const PER_PAGE = 1000
 
 export const useBlogCategories = () => {
   return useQuery({

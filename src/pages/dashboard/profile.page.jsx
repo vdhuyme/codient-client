@@ -8,7 +8,6 @@ import toast from 'react-hot-toast'
 
 import Button from '@/components/ui/button'
 import Input from '@/components/ui/input'
-import { DatePicker } from '@/components/ui/date-picker'
 import FileUpload from '@/components/ui/file-upload'
 import { useAuthorize } from '@/contexts/authorize'
 import { changePassword, updateProfile } from '@/api/auth'
@@ -149,7 +148,9 @@ const ProfilePage = () => {
           <Controller
             name="dob"
             control={profileControl}
-            render={({ field }) => <DatePicker {...field} minDate={new Date('1950-01-01')} maxDate={new Date()} />}
+            render={({ field }) => (
+              <Input type="date" min="2000-01-01" max={new Date().toISOString().split('T')[0]} placeholder="Enter your date of birth" {...field} />
+            )}
           />
         </FormField>
       </div>

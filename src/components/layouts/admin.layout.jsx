@@ -1,140 +1,89 @@
-import { useState, useEffect, useRef } from 'react'
+'use client'
+
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, Home, Users, Bell, Search, User, LogOut, Sparkles, Tag, ChartColumnStacked, Notebook, MessageCircle, Globe } from 'lucide-react'
+import {
+  Menu,
+  X,
+  Home,
+  Users,
+  Bell,
+  Search,
+  User,
+  LogOut,
+  Sparkles,
+  Tag,
+  BarChartIcon as ChartColumnStacked,
+  Notebook,
+  MessageCircle,
+  Globe
+} from 'lucide-react'
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog'
 import { useAuth } from '@/contexts/auth'
 import { useAuthorize } from '@/contexts/authorize'
 import Button from '../ui/button'
-import Input from '../ui/input'
-import ScrollArea from '../ui/scroll-area'
 import toast from 'react-hot-toast'
-
-const DialogSearch = ({ open, onClose, menuItems, navigate }) => {
-  const [query, setQuery] = useState('')
-  const [selected, setSelected] = useState(0)
-  const inputRef = useRef(null)
-  const filtered = menuItems.filter((item) => item.label.toLowerCase().includes(query.toLowerCase()))
-
-  useEffect(() => {
-    if (open) {
-      setQuery('')
-      setSelected(0)
-      setTimeout(() => inputRef.current?.focus(), 50)
-    }
-  }, [open])
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'ArrowDown') {
-      setSelected((prev) => (prev + 1) % filtered.length)
-      e.preventDefault()
-    } else if (e.key === 'ArrowUp') {
-      setSelected((prev) => (prev - 1 + filtered.length) % filtered.length)
-      e.preventDefault()
-    } else if (e.key === 'Enter') {
-      if (filtered[selected]) {
-        navigate(filtered[selected].path)
-        onClose()
-      }
-    } else if (e.key === 'Escape') {
-      onClose()
-    }
-  }
-
-  return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-        >
-          <motion.div
-            className="w-full max-w-md rounded-xl border border-indigo-500/30 bg-slate-900 p-4 shadow-2xl"
-            initial={{ scale: 0.98, y: 40, opacity: 0 }}
-            animate={{ scale: 1, y: 0, opacity: 1 }}
-            exit={{ scale: 0.98, y: 40, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            onKeyDown={handleKeyDown}
-            tabIndex={-1}
-          >
-            <div className="mb-2">
-              <Input
-                ref={inputRef}
-                placeholder="Search features..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={handleKeyDown}
-                autoFocus
-                icon={<Search className="h-5 w-5 text-white" />}
-              />
-            </div>
-            <div className="max-h-64 divide-y divide-indigo-500/10 rounded-lg bg-slate-800/60">
-              <ScrollArea className="h-[20vh]">
-                {filtered.length === 0 && <div className="p-4 text-center text-gray-400">No features found</div>}
-                {filtered.map((item, idx) => (
-                  <button
-                    key={item.id}
-                    className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-all duration-100 ${
-                      idx === selected ? 'bg-indigo-500/20 text-indigo-300' : 'text-gray-300 hover:bg-slate-700/40'
-                    }`}
-                    onClick={() => {
-                      navigate(item.path)
-                      onClose()
-                    }}
-                    tabIndex={-1}
-                  >
-                    <item.icon className="h-5 w-5" />
-                    <span className="font-medium">{item.label}</span>
-                  </button>
-                ))}
-              </ScrollArea>
-            </div>
-            <div className="mt-3 flex items-center justify-between px-1 text-xs text-gray-500">
-              <div>
-                <kbd className="rounded bg-slate-700 px-1 py-0.5">↑</kbd>/<kbd className="rounded bg-slate-700 px-1 py-0.5">↓</kbd> to navigate
-              </div>
-              <div>
-                <kbd className="rounded bg-slate-700 px-1 py-0.5">Enter</kbd> to select
-              </div>
-              <div>
-                <kbd className="rounded bg-slate-700 px-1 py-0.5">Esc</kbd> to close
-              </div>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  )
-}
+import { SearchDialog } from '../customs/search-dialog'
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [isDesktop, setIsDesktop] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(false)
   const userMenuRef = useRef(null)
   const [searchDialogOpen, setSearchDialogOpen] = useState(false)
+  const resizeTimeoutRef = useRef(null)
 
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setSidebarOpen(true)
-      }
+  // Debounced resize handler to prevent excessive re-renders
+  const handleResize = useCallback(() => {
+    if (resizeTimeoutRef.current) {
+      clearTimeout(resizeTimeoutRef.current)
     }
 
-    handleResize()
+    resizeTimeoutRef.current = setTimeout(() => {
+      const newIsDesktop = window.innerWidth >= 1024
 
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
+      // Only update if desktop state actually changed
+      if (newIsDesktop !== isDesktop) {
+        setIsDesktop(newIsDesktop)
+
+        // Set sidebar state based on screen size, but only after initialization
+        if (isInitialized) {
+          setSidebarOpen(newIsDesktop)
+        }
+      }
+    }, 150) // Debounce for 150ms
+  }, [isDesktop, isInitialized])
+
+  // Initialize on mount
+  useEffect(() => {
+    const initialIsDesktop = window.innerWidth >= 1024
+    setIsDesktop(initialIsDesktop)
+    setSidebarOpen(initialIsDesktop)
+    setIsInitialized(true)
   }, [])
 
+  // Handle resize events
+  useEffect(() => {
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current)
+      }
+    }
+  }, [handleResize])
+
+  // Handle click outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (sidebarOpen && window.innerWidth < 1024 && !event.target.closest('.sidebar') && !event.target.closest('.menu-button')) {
+      // Only close sidebar on mobile when clicking outside
+      if (sidebarOpen && !isDesktop && !event.target.closest('.sidebar') && !event.target.closest('.menu-button')) {
         setSidebarOpen(false)
       }
 
+      // Close user menu when clicking outside
       if (userMenuOpen && userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setUserMenuOpen(false)
       }
@@ -142,7 +91,7 @@ const AdminLayout = () => {
 
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [sidebarOpen, userMenuOpen])
+  }, [sidebarOpen, userMenuOpen, isDesktop])
 
   const menuItems = [
     { id: 'stats', label: 'Stats', icon: Home, path: '/admin/stats' },
@@ -152,19 +101,42 @@ const AdminLayout = () => {
     { id: 'comments', label: 'Comments', icon: MessageCircle, path: '/admin/comments' },
     { id: 'users', label: 'Users', icon: Users, path: '/admin/users' }
   ]
+
   const [dialogOpen, setDialogOpen] = useState(false)
   const { logout } = useAuth()
   const { user } = useAuthorize()
   const navigate = useNavigate()
+
   const handleLogout = () => {
     logout()
     navigate('/login')
   }
 
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen)
+  }
+
+  const handleNavClick = () => {
+    // Only close sidebar on mobile
+    if (!isDesktop) {
+      setSidebarOpen(false)
+    }
+  }
+
+  // Don't render until initialized to prevent flash
+  if (!isInitialized) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-950">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-indigo-500"></div>
+      </div>
+    )
+  }
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950">
       {/* Search Dialog */}
-      <DialogSearch open={searchDialogOpen} onClose={() => setSearchDialogOpen(false)} menuItems={menuItems} navigate={navigate} />
+      <SearchDialog open={searchDialogOpen} onClose={() => setSearchDialogOpen(false)} menuItems={menuItems} navigate={navigate} />
+
       {/* Logout Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
@@ -224,125 +196,142 @@ const AdminLayout = () => {
       </div>
 
       {/* Sidebar */}
-      <AnimatePresence>
-        <aside
-          className={`sidebar fixed top-0 left-0 z-30 h-full w-64 transform border-r border-indigo-500/20 bg-slate-900/95 backdrop-blur-xl transition-transform duration-300 ease-in-out ${
-            sidebarOpen ? 'translate-x-0' : '-translate-x-64'
-          }`}
-        >
-          {/* Sidebar gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/5 via-transparent to-purple-500/5" />
-
-          <div className="relative z-10 flex h-full flex-col">
-            {/* Logo section with close button on mobile */}
-            <motion.div
-              className="flex h-16 items-center justify-between border-b border-indigo-500/20 px-6"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 }}
-            >
-              <div className="flex items-center space-x-3">
-                <motion.div
-                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Sparkles className="h-4 w-4 text-white" />
-                </motion.div>
-                <Link
-                  to={'/admin/stats'}
-                  className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-xl font-bold text-transparent uppercase"
-                >
-                  Huy D. Vo
-                </Link>
-              </div>
-
-              {/* Close button for mobile */}
+      <motion.aside
+        className={`sidebar fixed top-0 left-0 z-30 h-full w-64 border-r border-indigo-500/20 bg-slate-900/95 backdrop-blur-xl ${
+          isDesktop ? '' : 'lg:hidden'
+        }`}
+        initial={false}
+        animate={{
+          x: sidebarOpen ? 0 : -256
+        }}
+        transition={{
+          type: 'spring',
+          stiffness: 300,
+          damping: 30,
+          mass: 0.8
+        }}
+      >
+        {/* Sidebar gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/5 via-transparent to-purple-500/5" />
+        <div className="relative z-10 flex h-full flex-col">
+          {/* Logo section with close button on mobile */}
+          <motion.div
+            className="flex h-16 items-center justify-between border-b border-indigo-500/20 px-6"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+          >
+            <div className="flex items-center space-x-3">
+              <motion.div
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Sparkles className="h-4 w-4 text-white" />
+              </motion.div>
+              <Link
+                to={'/admin/stats'}
+                className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-xl font-bold text-transparent uppercase"
+              >
+                Huy D. Vo
+              </Link>
+            </div>
+            {/* Close button for mobile */}
+            {!isDesktop && (
               <motion.button
-                className="rounded-lg p-1 text-gray-400 hover:bg-indigo-500/10 hover:text-indigo-300 lg:hidden"
+                className="rounded-lg p-1 text-gray-400 hover:bg-indigo-500/10 hover:text-indigo-300"
                 onClick={() => setSidebarOpen(false)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
                 <X className="h-5 w-5" />
               </motion.button>
-            </motion.div>
+            )}
+          </motion.div>
 
-            {/* Navigation */}
-            <nav className="flex-1 space-y-2 px-4 py-6">
-              {menuItems.map((item, index) => {
-                const Icon = item.icon
-
-                return (
-                  <motion.div
-                    key={item.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    whileHover={{ x: 4 }}
-                    whileTap={{ scale: 0.98 }}
+          {/* Navigation */}
+          <nav className="flex-1 space-y-2 px-4 py-6">
+            {menuItems.map((item, index) => {
+              const Icon = item.icon
+              return (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  whileHover={{ x: 4 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <NavLink
+                    to={item.path}
+                    className={({ isActive }) =>
+                      `group relative flex w-full items-center space-x-3 rounded-lg px-3 py-2.5 transition-all duration-200 ${
+                        isActive
+                          ? 'bg-indigo-500/20 text-indigo-300 shadow-lg shadow-indigo-500/10'
+                          : 'text-gray-400 hover:bg-indigo-500/10 hover:text-indigo-300'
+                      }`
+                    }
+                    onClick={handleNavClick}
                   >
-                    <NavLink
-                      to={item.path}
-                      className={({ isActive }) =>
-                        `group relative flex w-full items-center space-x-3 rounded-lg px-3 py-2.5 transition-all duration-200 ${
-                          isActive
-                            ? 'bg-indigo-500/20 text-indigo-300 shadow-lg shadow-indigo-500/10'
-                            : 'text-gray-400 hover:bg-indigo-500/10 hover:text-indigo-300'
-                        }`
-                      }
-                      onClick={() => {
-                        if (window.innerWidth < 1024) {
-                          setSidebarOpen(false)
-                        }
-                      }}
-                    >
-                      <Icon className="h-5 w-5 transition-colors" />
-                      <span className="font-medium">{item.label}</span>
-                    </NavLink>
-                  </motion.div>
-                )
-              })}
-            </nav>
+                    <Icon className="h-5 w-5 transition-colors" />
+                    <span className="font-medium">{item.label}</span>
+                  </NavLink>
+                </motion.div>
+              )
+            })}
+          </nav>
 
-            {/* User profile section */}
-            <motion.div
-              className="border-t border-indigo-500/20 p-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <div className="flex items-center space-x-3 rounded-lg bg-indigo-500/10 p-3 backdrop-blur-sm">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-r from-indigo-400 to-purple-400 p-0.5">
-                  <div className="flex h-full w-full items-center justify-center rounded-full bg-slate-900">
-                    <User className="h-4 w-4 text-indigo-300" />
-                  </div>
+          {/* User profile section */}
+          <motion.div
+            className="border-t border-indigo-500/20 p-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="flex items-center space-x-3 rounded-lg bg-indigo-500/10 p-3 backdrop-blur-sm">
+              <div className="h-8 w-8 rounded-full bg-gradient-to-r from-indigo-400 to-purple-400 p-0.5">
+                <div className="flex h-full w-full items-center justify-center rounded-full bg-slate-900">
+                  <User className="h-4 w-4 text-indigo-300" />
                 </div>
+              </div>
+              <Link to={'/admin/profile'} onClick={handleNavClick}>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-white">{user?.name}</p>
                   <p className="truncate text-xs text-gray-400">{user?.email}</p>
                 </div>
-              </div>
-            </motion.div>
-          </div>
-        </aside>
-      </AnimatePresence>
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </motion.aside>
 
       {/* Mobile sidebar overlay */}
       <AnimatePresence>
-        {sidebarOpen && window.innerWidth < 1024 && (
+        {sidebarOpen && !isDesktop && (
           <motion.div
-            className="fixed inset-0 z-20 bg-black/50 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-20 bg-black/50 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             onClick={() => setSidebarOpen(false)}
           />
         )}
       </AnimatePresence>
 
       {/* Main content */}
-      <div className={`relative transition-all duration-300 ${sidebarOpen && window.innerWidth >= 1024 ? 'lg:ml-64' : ''}`}>
+      <motion.div
+        className="relative transition-all duration-300 ease-in-out"
+        animate={{
+          marginLeft: isDesktop && sidebarOpen ? 256 : 0
+        }}
+        transition={{
+          type: 'spring',
+          stiffness: 300,
+          damping: 30,
+          mass: 0.8
+        }}
+      >
         {/* Header */}
         <motion.header
           className="sticky top-0 z-20 border-b border-indigo-500/20 bg-slate-900/95 backdrop-blur-xl"
@@ -354,12 +343,25 @@ const AdminLayout = () => {
             {/* Mobile menu button */}
             <motion.button
               className="menu-button rounded-lg p-2 text-gray-400 hover:bg-indigo-500/10 hover:text-indigo-300 lg:hidden"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
+              onClick={toggleSidebar}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               <Menu className="h-6 w-6" />
             </motion.button>
+
+            {/* Desktop sidebar toggle */}
+            {isDesktop && (
+              <motion.button
+                className="hidden rounded-lg p-2 text-gray-400 hover:bg-indigo-500/10 hover:text-indigo-300 lg:block"
+                onClick={toggleSidebar}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+              >
+                <Menu className="h-6 w-6" />
+              </motion.button>
+            )}
 
             {/* Search bar */}
             <div className="flex flex-1 items-center justify-center px-2 lg:ml-6 lg:justify-start">
@@ -462,7 +464,7 @@ const AdminLayout = () => {
         <motion.main className="flex-1 p-4 sm:p-6 lg:p-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
           <Outlet />
         </motion.main>
-      </div>
+      </motion.div>
     </div>
   )
 }
