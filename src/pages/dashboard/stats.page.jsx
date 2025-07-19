@@ -7,6 +7,7 @@ import { Tooltip } from 'react-tooltip'
 import { format, startOfYear } from 'date-fns'
 import { useGA4s } from '@/hooks/use.stats'
 import Input from '@/components/ui/input'
+import DateInput from '@/components/ui/date-input'
 
 const geoUrl = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json'
 
@@ -45,11 +46,15 @@ const StatsPage = () => {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Input min="2019-01-01" type="date" value={dateRange.from} onChange={(e) => setDateRange((prev) => ({ ...prev, from: e.target.value }))} />
-          <Input
+          <DateInput
+            min="2019-01-01"
+            max="2025-12-31"
+            value={dateRange.from}
+            onChange={(e) => setDateRange((prev) => ({ ...prev, from: e.target.value }))}
+          />
+          <DateInput
             min={dateRange.from}
             max={format(new Date(), 'yyyy-MM-dd')}
-            type="date"
             value={dateRange.to}
             onChange={(e) => setDateRange((prev) => ({ ...prev, to: e.target.value }))}
           />

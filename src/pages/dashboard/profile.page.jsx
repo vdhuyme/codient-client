@@ -13,6 +13,7 @@ import { useAuthorize } from '@/contexts/authorize'
 import { changePassword, updateProfile } from '@/api/auth'
 import Label from '@/components/ui/label'
 import { format } from 'date-fns'
+import DateInput from '@/components/ui/date-input'
 
 const tabs = [
   {
@@ -149,7 +150,13 @@ const ProfilePage = () => {
             name="dob"
             control={profileControl}
             render={({ field }) => (
-              <Input type="date" min="2000-01-01" max={new Date().toISOString().split('T')[0]} placeholder="Enter your date of birth" {...field} />
+              <DateInput
+                min="2000-01-01"
+                max={new Date().toISOString().split('T')[0]}
+                placeholder="Enter your date of birth"
+                value={field.value}
+                onChange={(e) => field.onChange(e.target.value)}
+              />
             )}
           />
         </FormField>
