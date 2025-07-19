@@ -8,6 +8,7 @@ import { useBlogPosts } from '@/hooks/use.blog.posts'
 import { useBlogCategories } from '@/hooks/use.blog.categories'
 import { SORT_ORDERS } from '@/utils/constants'
 import LoadingOverlay from '@/components/customs/loading.overlay'
+import { defaultAvatar } from '@/utils/avatar'
 
 const BlogPage = () => {
   const [activeCategoryId, setActiveCategoryId] = useState(null)
@@ -313,7 +314,7 @@ const BlogPostCard = ({ post, index }) => (
       <div className="relative h-48 overflow-hidden">
         <motion.div className="absolute inset-0 bg-indigo-900/20" whileHover={{ opacity: 0 }} transition={{ duration: 0.3 }} />
         <motion.img
-          src={post.thumbnail}
+          src={post.thumbnail || defaultAvatar(post.title)}
           alt={post.title}
           className="h-full w-full object-cover transition-transform"
           whileHover={{ scale: 1.05 }}

@@ -15,7 +15,7 @@ import {
   ChevronDown,
   ChevronUp
 } from 'lucide-react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { FormProvider, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { TextareaField } from '@/components/customs/form.field'
@@ -29,6 +29,7 @@ import LoadingOverlay from '@/components/customs/loading.overlay'
 import { useState } from 'react'
 import Pagination from '@/components/ui/pagination'
 import { COMMENT_SCHEMA } from './schema/comment.schema'
+import { useAuth } from '@/contexts/auth'
 
 const BlogDetailPage = () => {
   const { id } = useParams()
@@ -48,6 +49,15 @@ const BlogDetailPage = () => {
     ...commentSort
   })
   const { createComment } = usePublishedCommentMutations(id)
+
+  const { isAuthenticated } = useAuth()
+  const navigate = useNavigate()
+  const signedIn = () => {
+    if (!isAuthenticated) {
+      toast.error('Sign in to comment!')
+      return navigate('/login')
+    }
+  }
 
   const handleSubmitComment = async (data) => {
     try {
@@ -168,7 +178,7 @@ const BlogDetailPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.5 }}
-              className="prose prose-invert prose-indigo scrollbar-hide max-w-full overflow-x-auto rounded-lg border border-indigo-500/20 bg-slate-900/50 p-6 break-words text-gray-400 backdrop-blur-sm [&_img]:max-w-full [&_pre]:break-words [&_table]:block [&_table]:overflow-x-auto"
+              className="ql-editor prose prose-invert prose-indigo scrollbar-hide max-w-full overflow-x-auto rounded-lg border border-indigo-500/20 bg-slate-900/50 p-6 break-words text-gray-400 backdrop-blur-sm [&_.ql-code-block]:min-w-full [&_.ql-code-block]:text-sm [&_.ql-code-block]:leading-relaxed [&_.ql-code-block]:break-words [&_.ql-code-block]:whitespace-pre [&_.ql-code-block-container]:mb-4 [&_.ql-code-block-container]:overflow-x-auto [&_.ql-code-block-container]:rounded-md [&_.ql-code-block-container]:bg-slate-800 [&_.ql-code-block-container]:p-4 [&_.ql-code-block-container]:font-mono [&_.ql-code-block-container]:text-indigo-300 [&_.ql-ui]:hidden [&_blockquote]:my-4 [&_blockquote]:ml-0 [&_blockquote]:rounded-sm [&_blockquote]:border-l-4 [&_blockquote]:border-indigo-500 [&_blockquote]:bg-indigo-500/5 [&_blockquote]:p-4 [&_blockquote]:pl-4 [&_blockquote]:text-gray-300 [&_blockquote]:italic [&_img]:max-w-full [&_pre]:break-words [&_table]:block [&_table]:overflow-x-auto"
               dangerouslySetInnerHTML={{ __html: post?.content }}
             />
 
@@ -297,9 +307,15 @@ const BlogDetailPage = () => {
               <FormProvider {...methods}>
                 <form onSubmit={methods.handleSubmit(handleSubmitComment)}>
                   <div className="mb-4">
-                    <TextareaField name="content" label="Your Comment" placeholder={'Share your thoughts...'} />
+                    <TextareaField
+                      disabled={!isAuthenticated}
+                      name="content"
+                      label="Your Comment"
+                      placeholder={isAuthenticated ? 'Share your thoughts...' : 'Sign in to comment'}
+                    />
                   </div>
                   <Button
+                    onClick={() => signedIn()}
                     disabled={createComment.isPending}
                     icon={
                       createComment.isPending ? (

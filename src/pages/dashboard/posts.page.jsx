@@ -22,6 +22,9 @@ import { useTagOptions, useTags } from '@/hooks/use.tags'
 import { convertSortingToParams } from '@/utils/convert-sorting-params'
 import { POST_SCHEMA } from './schema/post.schema'
 import PermissionGuard from '@/hocs/permission-guard'
+import QuillEditor from '@/components/ui/quill-editor'
+import { cn } from '@/lib/utils'
+import { defaultAvatar } from '@/utils/avatar'
 
 const FormField = ({ label, required, error, children }) => (
   <div className="space-y-2">
@@ -68,7 +71,6 @@ const PostForm = ({ defaultValues, onSubmit, isEdit = false, loading = false }) 
       tagIds: data.tagIds.map((id) => Number(id))
     }
 
-    console.log('Submitted data: ', formattedData)
     onSubmit(formattedData)
   }
 
@@ -115,7 +117,12 @@ const PostForm = ({ defaultValues, onSubmit, isEdit = false, loading = false }) 
               control={control}
               render={({ field }) => (
                 <div>
-                  <Textarea {...field} placeholder="Write your post content here..." rows={8} className={errors.content ? 'border-red-500' : ''} />
+                  <QuillEditor
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Write your post content here..."
+                    className={cn(errors.content && 'border-red-500')}
+                  />
                   <div className="mt-1 text-xs text-gray-500">{watchedContent?.length || 0} characters (minimum 50)</div>
                 </div>
               )}
@@ -320,7 +327,7 @@ const PostsPage = () => {
         header: 'Thumbnail',
         cell: ({ row }) => (
           <div className="h-12 w-16 overflow-hidden rounded-lg bg-slate-700">
-            <img src={row.original.thumbnail || '/placeholder.svg'} alt={row.original.title} className="h-full w-full object-cover" />
+            <img src={row.original.thumbnail || defaultAvatar(row.original.title)} alt={row.original.title} className="h-full w-full object-cover" />
           </div>
         ),
         enableSorting: false
@@ -532,7 +539,7 @@ const PostsPage = () => {
       </motion.div>
 
       {/* Create Dialog */}
-      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen} size="xl">
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen} size="xxl">
         <DialogContent className="scrollbar-hide max-h-[90vh] max-w-4xl overflow-y-auto">
           <DialogClose onClose={() => setCreateDialogOpen(false)} />
           <DialogHeader>
@@ -544,7 +551,7 @@ const PostsPage = () => {
       </Dialog>
 
       {/* Edit Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen} size="xl">
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen} size="xxl">
         <DialogContent className="scrollbar-hide max-h-[90vh] max-w-4xl overflow-y-auto">
           <DialogClose onClose={() => setEditDialogOpen(false)} />
           <DialogHeader>

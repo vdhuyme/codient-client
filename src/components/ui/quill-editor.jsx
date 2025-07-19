@@ -1,0 +1,108 @@
+import { useEffect } from 'react'
+import { useQuill } from 'react-quilljs'
+import './highlight.js'
+import Quill from 'quill'
+import { ImageDrop } from 'quill-image-drop-module'
+import QuillResizeImage from 'quill-resize-image'
+
+Quill.register('modules/imageDrop', ImageDrop)
+Quill.register('modules/imageResize', QuillResizeImage)
+
+const QuillEditor = ({ value = '', onChange = () => {}, placeholder = 'Write your content here...', height = '300px', className = '' }) => {
+  const theme = 'snow'
+
+  const modules = {
+    toolbar: [
+      [{ header: [1, 2, 3, 4, 5, 6, false] }],
+      [{ font: [] }],
+      [{ size: ['small', false, 'large', 'huge'] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ color: [] }, { background: [] }],
+      [{ script: 'sub' }, { script: 'super' }],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      [{ indent: '-1' }, { indent: '+1' }],
+      [{ direction: 'rtl' }],
+      [{ align: [] }],
+      ['blockquote', 'code-block'],
+      ['link', 'image', 'video', 'formula'],
+      ['clean']
+    ],
+    history: {
+      delay: 1000,
+      maxStack: 50,
+      userOnly: false
+    },
+    clipboard: {
+      matchVisual: false
+    },
+    syntax: true,
+    imageResize: {},
+    imageDrop: true
+  }
+
+  const formats = [
+    'header',
+    'font',
+    'size',
+    'bold',
+    'italic',
+    'underline',
+    'strike',
+    'code',
+    'color',
+    'background',
+    'script',
+    'list',
+    'indent',
+    'direction',
+    'align',
+    'blockquote',
+    'code-block',
+    'link',
+    'image',
+    'video',
+    'formula'
+  ]
+
+  const { quill, quillRef } = useQuill({
+    theme,
+    modules,
+    formats,
+    placeholder
+  })
+
+  useEffect(() => {
+    if (quill) {
+      quill.on('text-change', () => {
+        const content = quill.root.innerHTML
+        onChange(content)
+      })
+    }
+  }, [quill, onChange])
+
+  // Set giá trị ban đầu
+  useEffect(() => {
+    if (quill && value !== quill.root.innerHTML) {
+      quill.root.innerHTML = value
+    }
+  }, [quill, value])
+
+  return (
+    <div className={`quill-editor-container ${className}`}>
+      <style jsx="true">{`
+        .quill-editor-container .ql-container {
+          background-color: var(--quill-bg);
+          border: 1px solid var(--quill-border);
+          border-radius: 0 0 8px 8px;
+          color: var(--quill-text);
+          font-size: 14px;
+          min-height: ${height};
+        }
+      `}</style>
+
+      <div ref={quillRef} />
+    </div>
+  )
+}
+
+export default QuillEditor
