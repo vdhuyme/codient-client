@@ -1,6 +1,6 @@
 import api from '@/utils/axios'
 
-export const getCategories = async ({ page, limit, search, sortBy = 'createdAt', orderBy = 'DESC' }) => {
+export const getCategories = async ({ page, limit = 1000, search, sortBy = 'createdAt', orderBy = 'DESC' }) => {
   const response = await api.get('/categories', { params: { page, limit, search, sortBy, orderBy } })
   return response.data
 }

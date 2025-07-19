@@ -1,23 +1,6 @@
-'use client'
-
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  Menu,
-  X,
-  Home,
-  Users,
-  Bell,
-  Search,
-  User,
-  LogOut,
-  Sparkles,
-  Tag,
-  BarChartIcon as ChartColumnStacked,
-  Notebook,
-  MessageCircle,
-  Globe
-} from 'lucide-react'
+import { Menu, X, Home, Users, Bell, Search, User, LogOut, Sparkles, Tag, Notebook, MessageCircle, Globe, Layers2 } from 'lucide-react'
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog'
 import { useAuth } from '@/contexts/auth'
@@ -95,7 +78,7 @@ const AdminLayout = () => {
 
   const menuItems = [
     { id: 'stats', label: 'Stats', icon: Home, path: '/admin/stats' },
-    { id: 'categories', label: 'Categories', icon: ChartColumnStacked, path: '/admin/categories' },
+    { id: 'categories', label: 'Categories', icon: Layers2, path: '/admin/categories' },
     { id: 'tags', label: 'Tags', icon: Tag, path: '/admin/tags' },
     { id: 'posts', label: 'Posts', icon: Notebook, path: '/admin/posts' },
     { id: 'comments', label: 'Comments', icon: MessageCircle, path: '/admin/comments' },
