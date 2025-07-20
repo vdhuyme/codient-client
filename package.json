@@ -38,7 +38,6 @@
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.12.1",
-    "highlight.js": "^11.11.1",
     "lucide-react": "^0.511.0",
     "nprogress": "^0.2.0",
     "quill-image-drop-module": "^1.0.3",
@@ -55,6 +54,7 @@
     "styled-jsx": "^5.1.7",
     "tailwind-merge": "^3.3.0",
     "tailwindcss": "^4.1.7",
+    "vite-plugin-commonjs": "^0.10.4",
     "zod": "^3.25.13"
   },
   "devDependencies": {

@@ -1,16 +1,12 @@
 import { useEffect } from 'react'
 import { useQuill } from 'react-quilljs'
-import './highlight.js'
 import Quill from 'quill'
 import { ImageDrop } from 'quill-image-drop-module'
 import QuillResizeImage from 'quill-resize-image'
-
 Quill.register('modules/imageDrop', ImageDrop)
 Quill.register('modules/imageResize', QuillResizeImage)
 
 const QuillEditor = ({ value = '', onChange = () => {}, placeholder = 'Write your content here...', height = '300px', className = '' }) => {
-  const theme = 'snow'
-
   const modules = {
     toolbar: [
       [{ header: [1, 2, 3, 4, 5, 6, false] }],
@@ -35,7 +31,6 @@ const QuillEditor = ({ value = '', onChange = () => {}, placeholder = 'Write you
     clipboard: {
       matchVisual: false
     },
-    syntax: true,
     imageResize: {},
     imageDrop: true
   }
@@ -65,7 +60,6 @@ const QuillEditor = ({ value = '', onChange = () => {}, placeholder = 'Write you
   ]
 
   const { quill, quillRef } = useQuill({
-    theme,
     modules,
     formats,
     placeholder
@@ -99,7 +93,6 @@ const QuillEditor = ({ value = '', onChange = () => {}, placeholder = 'Write you
           min-height: ${height};
         }
       `}</style>
-
       <div ref={quillRef} />
     </div>
   )

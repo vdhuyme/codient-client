@@ -48,7 +48,7 @@ const StatsPage = () => {
         <div className="grid grid-cols-2 gap-2">
           <DateInput
             min="2019-01-01"
-            max="2025-12-31"
+            max={dateRange.to}
             value={dateRange.from}
             onChange={(e) => setDateRange((prev) => ({ ...prev, from: e.target.value }))}
           />

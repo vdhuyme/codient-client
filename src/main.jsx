@@ -7,7 +7,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthorizeProvider } from './contexts/authorize.jsx'
 import { StyleRegistry } from 'styled-jsx'
 import 'quill/dist/quill.snow.css'
-import './components/ui/highlight.js'
 
 const queryClient = new QueryClient()
 
