@@ -51,6 +51,10 @@
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
+.ql-tooltip {
+  left: 0 !important;
+}
+
 .quill-editor-container .ql-toolbar,
 .quill-editor-container .ql-container {
   font-family: 'Plus Jakarta Sans', sans-serif;
