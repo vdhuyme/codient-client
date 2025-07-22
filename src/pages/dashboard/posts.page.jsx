@@ -467,7 +467,7 @@ const PostsPage = () => {
       </motion.div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2">
         {[
           {
             label: 'Total Posts',
@@ -480,12 +480,6 @@ const PostsPage = () => {
             value: posts.filter((p) => p.status === 'published').length,
             color: 'green',
             icon: CheckCircle
-          },
-          {
-            label: 'Drafts',
-            value: posts.filter((p) => p.status === 'draft').length,
-            color: 'yellow',
-            icon: FileClock
           }
         ].map((stat, index) => {
           const Icon = stat.icon

@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sofia&family=Slabo+27px&family=Roboto:wght@300;400;700&family=Inconsolata:wght@200;300;400;500;600;700;800;900&family=Ubuntu:wght@300;400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
@@ -40,6 +41,67 @@
 }
 
 /* Quill Editor Dark Theme */
+/* CSS for Quill font options */
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value='sofia']::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value='sofia']::before {
+  content: 'Sofia';
+  font-family: 'Sofia', cursive;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value='slabo']::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value='slabo']::before {
+  content: 'Slabo';
+  font-family: 'Slabo 27px', serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value='roboto']::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value='roboto']::before {
+  content: 'Roboto';
+  font-family: 'Roboto', sans-serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value='inconsolata']::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value='inconsolata']::before {
+  content: 'Inconsolata';
+  font-family: 'Inconsolata', monospace;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value='jakarta']::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value='jakarta']::before {
+  content: 'Jakarta Sans';
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value='ubuntu']::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value='ubuntu']::before {
+  content: 'Ubuntu';
+  font-family: 'Ubuntu', sans-serif;
+}
+
+.ql-font-sofia {
+  font-family: 'Sofia', cursive;
+}
+
+.ql-font-slabo {
+  font-family: 'Slabo 27px', serif;
+}
+
+.ql-font-roboto {
+  font-family: 'Roboto', sans-serif;
+}
+
+.ql-font-inconsolata {
+  font-family: 'Inconsolata', monospace;
+}
+
+.ql-font-jakarta {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.ql-font-ubuntu {
+  font-family: 'Ubuntu', sans-serif;
+}
+
 .quill-editor-container {
   --quill-bg: #1e293b;
   --quill-border: #334155;

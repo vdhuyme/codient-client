@@ -275,8 +275,8 @@ const TagsPage = () => {
             icon: TagIcon
           },
           {
-            label: 'Active Tags',
-            value: tags.filter((t) => t.status === 'active').length,
+            label: 'Published',
+            value: tags.filter((t) => t.status === 'published').length,
             color: 'green',
             icon: TagIcon
           }

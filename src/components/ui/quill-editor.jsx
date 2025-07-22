@@ -3,14 +3,19 @@ import { useQuill } from 'react-quilljs'
 import Quill from 'quill'
 import { ImageDrop } from 'quill-image-drop-module'
 import QuillResizeImage from 'quill-resize-image'
+
+const FontAttributor = Quill.import('attributors/class/font')
+FontAttributor.whitelist = ['jakarta', 'sofia', 'slabo', 'roboto', 'inconsolata', 'ubuntu']
+
+Quill.register(FontAttributor, true)
 Quill.register('modules/imageDrop', ImageDrop)
 Quill.register('modules/imageResize', QuillResizeImage)
 
-const QuillEditor = ({ value = '', onChange = () => {}, placeholder = 'Write your content here...', height = '300px', className = '' }) => {
+const QuillEditor = ({ value = '', onChange = () => {}, placeholder = 'Write your content here...', className = '' }) => {
   const modules = {
     toolbar: [
       [{ header: [1, 2, 3, 4, 5, 6, false] }],
-      [{ font: [] }],
+      [{ font: FontAttributor.whitelist }],
       [{ size: ['small', false, 'large', 'huge'] }],
       ['bold', 'italic', 'underline', 'strike'],
       [{ color: [] }, { background: [] }],
@@ -83,16 +88,6 @@ const QuillEditor = ({ value = '', onChange = () => {}, placeholder = 'Write you
 
   return (
     <div className={`quill-editor-container ${className}`}>
-      <style jsx="true">{`
-        .quill-editor-container .ql-container {
-          background-color: var(--quill-bg);
-          border: 1px solid var(--quill-border);
-          border-radius: 0 0 8px 8px;
-          color: var(--quill-text);
-          font-size: 14px;
-          min-height: ${height};
-        }
-      `}</style>
       <div ref={quillRef} />
     </div>
   )
