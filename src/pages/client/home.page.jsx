@@ -318,7 +318,7 @@ const HomePage = () => {
         </motion.div>
       </div>
 
-      <footer className="my-4 text-center text-sm text-gray-500">
+      <footer className="text-center text-sm text-gray-500">
         <p>
           Built by{' '}
           <Link to="/admin/stats" className="relative z-10 font-medium transition-colors hover:text-indigo-400">

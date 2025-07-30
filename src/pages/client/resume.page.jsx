@@ -82,8 +82,8 @@ const ResumePage = () => {
                 </motion.p>
 
                 <div className="flex flex-wrap gap-6">
-                  <ContactItem icon={<Mail className="h-4 w-4" />} value="voduchuy2001@gmail.com" />
-                  <ContactItem icon={<Phone className="h-4 w-4" />} value="+84 962 785 101" />
+                  <ContactItem icon={<Mail className="h-4 w-4" />} value="mailto:voduchuy2001@gmail.com" />
+                  <ContactItem icon={<Phone className="h-4 w-4" />} value="tel:+84962785101" />
                   <ContactItem icon={<MapPin className="h-4 w-4" />} value="Can Tho City, Vietnam" />
                 </div>
               </div>
@@ -298,13 +298,13 @@ const ResumePage = () => {
             <Section title="Languages">
               <div className="grid gap-8">
                 <div className="space-y-3 text-gray-300">
-                  <div className="flex justify-between">
-                    <span>Vietnamese</span>
-                    <span className="font-medium text-indigo-300">Native</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg">Vietnamese</span>
+                    <span className="text-sm font-medium text-indigo-300">Native</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>English</span>
-                    <span className="font-medium text-indigo-300">TOEIC 600 (01/2024 - 01/2026)</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg">English</span>
+                    <span className="text-sm font-medium text-indigo-300">TOEIC 600 (01/2024 - 01/2026)</span>
                   </div>
                 </div>
               </div>
@@ -316,13 +316,44 @@ const ResumePage = () => {
   )
 }
 
-const ContactItem = ({ icon, value }) => (
-  <div className="flex items-center text-gray-300">
-    <span className="mr-2 text-indigo-400">{icon}</span>
-    <span>{value}</span>
-  </div>
-)
+const ContactItem = ({ icon, value }) => {
+  const renderValue = () => {
+    if (typeof value !== 'string') return value
 
+    if (value.startsWith('mailto:')) {
+      return (
+        <a href={value} className="hover:underline">
+          {value.replace('mailto:', '')}
+        </a>
+      )
+    }
+
+    if (value.startsWith('tel:')) {
+      return (
+        <a href={value} className="hover:underline">
+          {value.replace('tel:', '')}
+        </a>
+      )
+    }
+
+    if (value.startsWith('http://') || value.startsWith('https://')) {
+      return (
+        <a href={value} target="_blank" rel="noopener noreferrer" className="hover:underline">
+          {value}
+        </a>
+      )
+    }
+
+    return <span>{value}</span>
+  }
+
+  return (
+    <div className="flex items-center text-gray-300">
+      <span className="mr-2 text-indigo-400">{icon}</span>
+      {renderValue()}
+    </div>
+  )
+}
 const SocialLink = ({ icon, href }) => (
   <motion.a
     href={href}
@@ -368,7 +399,7 @@ const ExperienceItem = ({ title, company, period, location, description, achieve
     {/* Tech Stack */}
     {techStack && techStack.length > 0 && (
       <div className="mb-4">
-        <h4 className="mb-2 text-sm font-medium text-white">Tech Stack:</h4>
+        <h4 className="mb-3 text-sm font-medium text-white">Tech Stack:</h4>
         <div className="flex flex-wrap gap-2">
           {techStack.map((tech, index) => (
             <motion.span
@@ -387,8 +418,8 @@ const ExperienceItem = ({ title, company, period, location, description, achieve
     )}
 
     <div>
-      <h4 className="mb-2 text-sm font-medium text-white">Key Achievements:</h4>
-      <ul className="space-y-1 text-gray-300">
+      <h4 className="mb-3 text-sm font-medium text-white">Key Achievements:</h4>
+      <ul className="space-y-2 text-gray-300">
         {achievements.map((achievement, index) => (
           <li key={index} className="flex items-start">
             <span className="mr-2 text-indigo-400">•</span>
