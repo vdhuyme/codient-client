@@ -9,31 +9,20 @@ export const useBlogPosts = ({ searchQuery, sortOrder = SORT_ORDERS.DESC, catego
       return await getPublishedPosts({
         page: pageParam,
         limit,
-        search: searchQuery.trim(),
+        search: searchQuery?.trim(),
         sortBy: SORT_FIELDS.CREATED_AT,
         orderBy: sortOrder,
         categoryId
       })
     },
-    getNextPageParam: (lastPage, allPages) => {
-      const posts = lastPage.items || []
-      if (!posts || posts.length === 0 || posts.length < limit) {
-        return undefined
+    getNextPageParam: (lastPage) => {
+      if (lastPage?.meta?.nextPage) {
+        return lastPage.meta.currentPage + 1
       }
 
-      if (lastPage.meta?.totalItems !== undefined) {
-        const totalLoadedItems = allPages.reduce((total, page) => {
-          const pageItems = page.posts || page.items || []
-          return total + pageItems.length
-        }, 0)
-        if (totalLoadedItems >= lastPage.meta.totalItems) {
-          return undefined
-        }
-      }
-
-      return allPages.length + 1
+      return undefined
     },
-    staleTime: 1 * 60 * 1000,
-    gcTime: 1 * 60 * 1000
+    staleTime: 60 * 1000,
+    gcTime: 60 * 1000
   })
 }
