@@ -22,6 +22,7 @@ import ProfilePage from '@/pages/dashboard/profile.page'
 import TagsPage from '@/pages/dashboard/tags.page'
 import UserPage from '@/pages/dashboard/users.page'
 import GoogleCallback from '@/pages/auth/google.callback'
+import ScrollProgressBar from '@/components/customs/scroll-progress-bar'
 
 const App = () => {
   return (
@@ -59,7 +60,7 @@ const App = () => {
       </Routes>
 
       <ScrollToTop />
-
+      <ScrollProgressBar />
       <Toaster position="top-right" />
     </Router>
   )
