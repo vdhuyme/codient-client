@@ -28,6 +28,12 @@ The blog interface provides an excellent reading experience with clean typograph
 
 ![Blog Interface](./assets/blog.png)
 
+## Resume Interface
+
+The resume interface showcases a professional layout with clear sections, modern design, and easy-to-read formatting for presenting personal and career information.
+
+![Resume Interface](./assets/resume.png)
+
 ## Technologies Used
 
 ### Frontend (codient-client)
