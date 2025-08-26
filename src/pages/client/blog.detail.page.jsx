@@ -30,6 +30,7 @@ import { useState } from 'react'
 import Pagination from '@/components/ui/pagination'
 import { COMMENT_SCHEMA } from './schema/comment.schema'
 import { useAuth } from '@/contexts/auth'
+import { defaultAvatar } from '@/utils/avatar'
 
 const BlogDetailPage = () => {
   const { id } = useParams()
@@ -379,7 +380,7 @@ const RelatedPostCard = ({ post, index }) => (
       <div className="relative h-40 overflow-hidden">
         <motion.div className="absolute inset-0 bg-indigo-900/20" whileHover={{ opacity: 0 }} transition={{ duration: 0.3 }} />
         <motion.img
-          src={post.thumbnail}
+          src={post.thumbnail || defaultAvatar(post.title)}
           alt={post.title}
           className="h-full w-full object-cover transition-transform"
           whileHover={{ scale: 1.05 }}
