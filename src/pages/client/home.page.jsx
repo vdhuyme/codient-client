@@ -4,6 +4,7 @@ import { Github, Twitter, Facebook, Instagram, FileText, ExternalLink, FolderChe
 import { Link } from 'react-router-dom'
 import avatar from '@/assets/profile.png'
 import toast from 'react-hot-toast'
+import { Lens } from '@/components/magicui/lens'
 
 const HomePage = () => {
   const containerRef = useRef(null)
@@ -131,7 +132,9 @@ const HomePage = () => {
                   repeatType: 'loop'
                 }}
               >
-                <img src={avatar} alt="Vo Duc Huy" className="h-full w-full object-cover" />
+                <Lens>
+                  <img src={avatar} alt="Vo Duc Huy" className="h-full w-full object-cover" />
+                </Lens>
               </motion.div>
 
               {/* Animated light dots around avatar */}
@@ -318,7 +321,7 @@ const HomePage = () => {
         </motion.div>
       </div>
 
-      <footer className="text-center text-sm text-gray-500">
+      <footer className="pointer-events-auto fixed bottom-0 left-0 z-[9999] w-full text-center text-sm text-gray-500">
         <p>
           Built by{' '}
           <Link to="/admin/stats" className="relative z-10 font-medium transition-colors hover:text-indigo-400">
