@@ -321,7 +321,7 @@ const HomePage = () => {
         </motion.div>
       </div>
 
-      <footer className="pointer-events-auto fixed bottom-0 left-0 z-[9999] w-full text-center text-sm text-gray-500">
+      <footer className="text-center text-sm text-gray-500 md:pointer-events-auto md:fixed md:bottom-0 md:left-0 md:z-[9999] md:w-full">
         <p>
           Built by{' '}
           <Link to="/admin/stats" className="relative z-10 font-medium transition-colors hover:text-indigo-400">
